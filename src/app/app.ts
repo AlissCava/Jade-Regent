@@ -40,19 +40,18 @@ export class App implements OnInit {
     });
   });
 
-  ngOnInit(): void {
+ngOnInit(): void {
     this.shapeService.getAllShapes().subscribe({
-      next: (data) => {
+      next: (data: WildShape[]) => {
         this.shapes.set(data);
         this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Errore caricamento forme selvatiche:', err);
+      error: (err: unknown) => {
+        console.error('Errore durante il recupero delle forme selvatiche:', err);
         this.loading.set(false);
       }
     });
   }
-}
 
 // Alias per compatibilità
 export { App as AppComponent };
