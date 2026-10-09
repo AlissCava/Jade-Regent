@@ -1,35 +1,39 @@
-<div class="app-container">
-  <header class="header">
-    <h1>🌿 Wild Shape Codex — Airyn</h1>
-    <p class="subtitle">Guida rapida alle forme selvatiche per druidi (Pathfinder 1E)</p>
+<div class="app-layout">
+  <!-- Header Druidico -->
+  <header class="app-header">
+    <div class="header-badge">Druid Codex • PF 1E</div>
+    <h1 class="header-title">🌿 Forma Selvatica</h1>
+    <p class="header-sub">Grimorio rapido per Airyn — Jade Regent</p>
   </header>
 
-  <!-- Pannello Filtri -->
-  <section class="filters-card">
-    <div class="filter-group search-bar">
-      <label for="search">Cerca Creatura</label>
+  <!-- Sticky Control Bar (Filtri & Ricerca) -->
+  <div class="control-panel">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
       <input 
-        id="search"
-        type="text" 
+        type="search" 
         [ngModel]="searchTerm()" 
         (ngModelChange)="searchTerm.set($event)" 
-        placeholder="Es. Leone, Aquila, Cobra..." 
+        placeholder="Cerca creatura (es. Leone, Tigre, Aquila)..."
+        autocomplete="off"
       />
+      <button *ngIf="searchTerm()" class="clear-search" (click)="searchTerm.set('')">✕</button>
     </div>
 
-    <div class="filters-row">
-      <div class="filter-group">
-        <label for="bs-level">Forma della Bestia</label>
-        <select id="bs-level" [ngModel]="selectedBsLevel()" (ngModelChange)="selectedBsLevel.set($event)">
+    <!-- Dropdown Selettori -->
+    <div class="selectors-grid">
+      <div class="select-wrapper">
+        <label>Forma Bestia</label>
+        <select [ngModel]="selectedBsLevel()" (ngModelChange)="selectedBsLevel.set($event)">
           <option value="Tutti">Tutti i Livelli</option>
-          <option value="1">Forma Bestia I (Lv 1)</option>
-          <option value="2">Forma Bestia II (Lv 2)</option>
+          <option value="1">Forma Bestia I (Lv 4)</option>
+          <option value="2">Forma Bestia II (Lv 6)</option>
         </select>
       </div>
 
-      <div class="filter-group">
-        <label for="size">Taglia</label>
-        <select id="size" [ngModel]="selectedSize()" (ngModelChange)="selectedSize.set($event)">
+      <div class="select-wrapper">
+        <label>Taglia</label>
+        <select [ngModel]="selectedSize()" (ngModelChange)="selectedSize.set($event)">
           <option value="Tutte">Tutte le taglie</option>
           <option value="Minuscola">Minuscola</option>
           <option value="Piccola">Piccola</option>
@@ -39,76 +43,135 @@
       </div>
     </div>
 
-    <div class="chips-row">
+    <!-- Chips a scorrimento orizzontale (Swipe sui telefoni) -->
+    <div class="chips-container">
       <button 
         type="button"
         class="chip" 
         [class.active]="onlyPounce()" 
         (click)="onlyPounce.set(!onlyPounce())">
-        🐾 Balzare (Pounce)
+        🐾 Balzare
       </button>
+
+      <button 
+        type="button"
+        class="chip" 
+        [class.active]="onlyGrab()" 
+        (click)="onlyGrab.set(!onlyGrab())">
+        🪢 Afferrare
+      </button>
+
+      <button 
+        type="button"
+        class="chip" 
+        [class.active]="onlyTrip()" 
+        (click)="onlyTrip.set(!onlyTrip())">
+        🦵 Sbilanciare
+      </button>
+
       <button 
         type="button"
         class="chip" 
         [class.active]="onlyFly()" 
         (click)="onlyFly.set(!onlyFly())">
-        🦅 Solo Volo
+        🦅 Volo
       </button>
+
       <button 
         type="button"
         class="chip" 
         [class.active]="onlySwim()" 
         (click)="onlySwim.set(!onlySwim())">
-        🌊 Solo Nuoto
+        🌊 Nuoto
+      </button>
+
+      <button 
+        type="button"
+        class="chip" 
+        [class.active]="onlyClimb()" 
+        (click)="onlyClimb.set(!onlyClimb())">
+        🧗 Scalata
+      </button>
+
+      <!-- Bottone Reset rapido -->
+      <button 
+        *ngIf="hasActiveFilters()"
+        type="button"
+        class="chip reset-chip"
+        (click)="resetFilters()">
+        ↺ Azzera filtri
       </button>
     </div>
-  </section>
+  </div>
 
-  <!-- Barra di stato e conteggio -->
-  <div class="status-bar">
-    <span *ngIf="loading()">Caricamento forme selvatiche dal database...</span>
+  <!-- Barra conteggio -->
+  <div class="results-info">
+    <span *ngIf="loading()" class="loading-text">
+      <span class="spinner"></span> Consultazione della foresta in corso...
+    </span>
     <span *ngIf="!loading()">
-      Trovate <strong>{{ filteredShapes().length }}</strong> forme su {{ shapes().length }}
+      Visualizzate <strong>{{ filteredShapes().length }}</strong> di {{ shapes().length }} forme
     </span>
   </div>
 
-  <!-- Griglia Schede Creature -->
-  <main class="shapes-grid">
-    <article class="shape-card" *ngFor="let s of filteredShapes()">
-      <div class="card-header">
-        <h2>{{ s.name }}</h2>
-        <span class="badge size-badge">{{ s.size }}</span>
-        <span class="badge bs-badge">BS {{ s.bs_level }}</span>
-      </div>
-
-      <div class="card-body">
-        <div class="speeds">
-          <div class="speed-item" *ngIf="s.fly_speed">
-            <span class="icon">🦅</span> <strong>Volo:</strong> {{ s.fly_speed }} ({{ s.fly_maneuverability }})
+  <!-- Griglia Creature Responsive -->
+  <main class="creatures-grid">
+    <article class="creature-card" *ngFor="let s of filteredShapes()">
+      <!-- Card Top: Nome, Taglia, Livello BS -->
+      <div class="card-top">
+        <div class="card-titles">
+          <h2 class="card-name">{{ s.name }}</h2>
+          <div class="badges-row">
+            <span class="badge size-badge" [attr.data-size]="s.size">{{ s.size }}</span>
+            <span class="badge bs-badge" [class.bs2]="s.bs_level === 2">BS {{ s.bs_level }}</span>
           </div>
-          <div class="speed-item" *ngIf="s.swim_speed">
-            <span class="icon">🌊</span> <strong>Nuoto:</strong> {{ s.swim_speed }}
-          </div>
-          <div class="speed-item" *ngIf="s.climb_speed">
-            <span class="icon">🧗</span> <strong>Scalata:</strong> {{ s.climb_speed }}
-          </div>
-        </div>
-
-        <div class="special-abilities">
-          <span class="ability-tag" *ngIf="s.has_pounce">Balzare</span>
-          <span class="ability-tag" *ngIf="s.has_grab">Afferrare</span>
-          <span class="ability-tag" *ngIf="s.has_trip">Sbilanciare</span>
-          <span class="ability-tag" *ngIf="s.has_scent">Fiuto</span>
-          <span class="ability-tag" *ngIf="s.darkvision">Scurovisione</span>
-          <span class="ability-tag" *ngIf="s.low_light_vision">Visione Crepuscolare</span>
         </div>
       </div>
 
-      <div class="card-footer">
-        <a [href]="s.golarion_url" target="_blank" rel="noopener noreferrer" class="wiki-link">
-          Vedi su Golarion Wiki ↗
+      <!-- Card Stats: Velocità Speciali -->
+      <div class="card-speeds" *ngIf="s.fly_speed || s.swim_speed || s.climb_speed">
+        <div class="speed-pill fly" *ngIf="s.fly_speed">
+          <span class="pill-icon">🦅</span>
+          <span class="pill-text">{{ s.fly_speed }}</span>
+          <span class="pill-sub">({{ s.fly_maneuverability }})</span>
+        </div>
+
+        <div class="speed-pill swim" *ngIf="s.swim_speed">
+          <span class="pill-icon">🌊</span>
+          <span class="pill-text">{{ s.swim_speed }}</span>
+        </div>
+
+        <div class="speed-pill climb" *ngIf="s.climb_speed">
+          <span class="pill-icon">🧗</span>
+          <span class="pill-text">{{ s.climb_speed }}</span>
+        </div>
+      </div>
+
+      <!-- Card Tags: Abilità e Sensi -->
+      <div class="card-abilities">
+        <span class="ability-tag pounce" *ngIf="s.has_pounce">🐾 Balzare</span>
+        <span class="ability-tag grab" *ngIf="s.has_grab">🪢 Afferrare</span>
+        <span class="ability-tag trip" *ngIf="s.has_trip">🦵 Sbilanciare</span>
+        <span class="ability-tag scent" *ngIf="s.has_scent">👃 Fiuto</span>
+        <span class="ability-tag sense" *ngIf="s.darkvision">👁️ Scurovisione</span>
+        <span class="ability-tag sense" *ngIf="s.low_light_vision">🌒 Crepuscolare</span>
+      </div>
+
+      <!-- Card Footer: Link Wiki -->
+      <footer class="card-footer">
+        <a [href]="s.golarion_url" target="_blank" rel="noopener noreferrer" class="wiki-btn">
+          <span>Regole su Golarion Wiki</span>
+          <span class="btn-arrow">↗</span>
         </a>
-      </div>
+      </footer>
     </article>
   </main>
+
+  <!-- Stato vuoto se la ricerca non trova nulla -->
+  <div class="empty-state" *ngIf="!loading() && filteredShapes().length === 0">
+    <div class="empty-icon">🍃</div>
+    <h3>Nessuna forma animale trovata</h3>
+    <p>Nessuna creatura corrisponde ai filtri selezionati.</p>
+    <button class="reset-btn" (click)="resetFilters()">Reimposta tutti i filtri</button>
+  </div>
 </div>
