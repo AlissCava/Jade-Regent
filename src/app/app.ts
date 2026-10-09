@@ -14,11 +14,9 @@ import { WildShape } from './models/wild-shape.model';
 export class App implements OnInit {
   private shapeService = inject(WildShapeService);
 
-  // Dati e stato di caricamento
   shapes = signal<WildShape[]>([]);
   loading = signal<boolean>(true);
 
-  // Filtri reattivi
   searchTerm = signal<string>('');
   selectedSize = signal<string>('Tutte');
   selectedBsLevel = signal<string>('Tutti');
@@ -26,7 +24,6 @@ export class App implements OnInit {
   onlyFly = signal<boolean>(false);
   onlySwim = signal<boolean>(false);
 
-  // Calcolo lista filtrata client-side
   filteredShapes = computed(() => {
     return this.shapes().filter((s) => {
       const matchName = s.name.toLowerCase().includes(this.searchTerm().toLowerCase());
@@ -40,7 +37,7 @@ export class App implements OnInit {
     });
   });
 
-ngOnInit(): void {
+  ngOnInit(): void {
     this.shapeService.getAllShapes().subscribe({
       next: (data: WildShape[]) => {
         this.shapes.set(data);
@@ -52,6 +49,4 @@ ngOnInit(): void {
       }
     });
   }
-
-// Alias per compatibilità
-export { App as AppComponent };
+}
