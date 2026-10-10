@@ -77,6 +77,7 @@ export class CharacterSheetComponent implements OnInit {
   rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
   rollerSection = signal<'combat' | 'damage' | 'saves' | 'skills'>('combat');
 
+  // MODIFICATORI DI LANCIO CHECKBOX
   modInspire = signal<boolean>(false);
   modDivineFavor = signal<boolean>(false);
   modPrayer = signal<boolean>(false);
@@ -86,6 +87,11 @@ export class CharacterSheetComponent implements OnInit {
 
   lastResult = signal<RollResult | null>(null);
 
+  // SUPPORTO ACCESSIBILITÀ & VOICEOVER
+  voiceAnnouncement = signal<string>('');
+  ttsAudioEnabled = signal<boolean>(false); // Voce audio sintetica (opzionale con toggle)
+
+  // MODALE LEVEL UP
   showLevelUpModal = signal<boolean>(false);
   modalTab = signal<'general' | 'stats' | 'skills' | 'companion'>('general');
   editLevel = signal<number>(7);
@@ -93,6 +99,7 @@ export class CharacterSheetComponent implements OnInit {
   newSkillName = '';
   newSkillStat = 'DES';
 
+  // BUFF TATTICI SCHEDA
   inspireCourage = signal<boolean>(false);
   bannerActive = signal<boolean>(false);
   challengeActive = signal<boolean>(false);
@@ -101,12 +108,9 @@ export class CharacterSheetComponent implements OnInit {
   powerAttack = signal<boolean>(false);
   powerAttackHisui = signal<boolean>(false);
 
-  get ryoujinLevel(): number {
-    return this.charRecord()?.level ?? 7;
-  }
-  get ryoujinBab(): number {
-    return this.charRecord()?.data.character.bab ?? 7;
-  }
+  // GETTER DINAMICI
+  get ryoujinLevel(): number { return this.charRecord()?.level ?? 7; }
+  get ryoujinBab(): number { return this.charRecord()?.data.character.bab ?? 7; }
   get ryoujinStrMod(): number {
     const str = this.charRecord()?.data.character.str ?? 22;
     return Math.floor((str - 10) / 2);
@@ -116,93 +120,43 @@ export class CharacterSheetComponent implements OnInit {
     return Math.floor((dex - 10) / 2);
   }
 
-  get powerAtkPenalty(): number {
-    return 1 + Math.floor(this.ryoujinBab / 4);
-  }
-  get powerAtkDmgTwoHand(): number {
-    return this.powerAtkPenalty * 3;
-  }
+  get powerAtkPenalty(): number { return 1 + Math.floor(this.ryoujinBab / 4); }
+  get powerAtkDmgTwoHand(): number { return this.powerAtkPenalty * 3; }
 
-  get maxResolve(): number {
-    return Math.max(1, Math.floor(this.ryoujinLevel / 2));
-  }
-  get resolvePips(): number[] {
-    return Array.from({ length: this.maxResolve }, (_, i) => i);
-  }
+  get maxResolve(): number { return Math.max(1, Math.floor(this.ryoujinLevel / 2)); }
+  get resolvePips(): number[] { return Array.from({ length: this.maxResolve }, (_, i) => i); }
 
-  get maxChallenge(): number {
-    return Math.max(1, Math.ceil(this.ryoujinLevel / 3));
-  }
-  get challengePips(): number[] {
-    return Array.from({ length: this.maxChallenge }, (_, i) => i);
-  }
+  get maxChallenge(): number { return Math.max(1, Math.ceil(this.ryoujinLevel / 3)); }
+  get challengePips(): number[] { return Array.from({ length: this.maxChallenge }, (_, i) => i); }
 
-  get katana1TxC(): number {
-    return this.ryoujinBab + this.ryoujinStrMod + 1;
-  }
-  get katana1CritTxC(): number {
-    return this.katana1TxC + 2;
-  }
-  get katana2TxC(): number {
-    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty;
-  }
-  get katana2CritTxC(): number {
-    return this.katana2TxC + 2;
-  }
+  get katana1TxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
+  get katana1CritTxC(): number { return this.katana1TxC + 2; }
+  get katana2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty; }
+  get katana2CritTxC(): number { return this.katana2TxC + 2; }
 
-  get suishen1TxC(): number {
-    return this.ryoujinBab + this.ryoujinStrMod + 2;
-  }
-  get suishen1CritTxC(): number {
-    return this.suishen1TxC + 2;
-  }
-  get suishen2TxC(): number {
-    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 2 - this.powerAtkPenalty;
-  }
-  get suishen2CritTxC(): number {
-    return this.suishen2TxC + 2;
-  }
+  get suishen1TxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 2; }
+  get suishen1CritTxC(): number { return this.suishen1TxC + 2; }
+  get suishen2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 2 - this.powerAtkPenalty; }
+  get suishen2CritTxC(): number { return this.suishen2TxC + 2; }
 
-  get bow1TxC(): number {
-    return this.ryoujinBab + this.ryoujinDexMod + 1;
-  }
-  get bow2TxC(): number {
-    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinDexMod + 1;
-  }
+  get bow1TxC(): number { return this.ryoujinBab + this.ryoujinDexMod + 1; }
+  get bow2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinDexMod + 1; }
 
-  get bmcTxC(): number {
-    return this.ryoujinBab + this.ryoujinStrMod + 1;
-  }
+  get bmcTxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
 
-  get katanaPodDmg(): number {
-    return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand;
-  }
-  get suishenDmg(): number {
-    return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand;
-  }
-  get bowDmg(): number {
-    return Math.min(this.ryoujinStrMod, 2) + 1;
-  }
+  get katanaPodDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand; }
+  get suishenDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand; }
+  get bowDmg(): number { return Math.min(this.ryoujinStrMod, 2) + 1; }
 
   get hisuiStrMod(): number {
     const str = this.charRecord()?.data.companion?.str ?? 25;
     return Math.floor((str - 10) / 2);
   }
-  get hisuiBiteTxC(): number {
-    return this.charRecord()?.data.companion?.attack_bonus ?? 11;
-  }
-  get hisuiBitePodTxC(): number {
-    return this.hisuiBiteTxC - 2;
-  }
-  get hisuiTripCmb(): number {
-    return this.charRecord()?.data.companion?.trip_cmb ?? 11;
-  }
-  get hisuiBitePodDmg(): number {
-    return Math.floor(this.hisuiStrMod * 1.5) + 6;
-  }
-  get hisuiBiteBaseDmg(): number {
-    return Math.floor(this.hisuiStrMod * 1.5);
-  }
+  get hisuiBiteTxC(): number { return this.charRecord()?.data.companion?.attack_bonus ?? 11; }
+  get hisuiBitePodTxC(): number { return this.hisuiBiteTxC - 2; }
+  get hisuiTripCmb(): number { return this.charRecord()?.data.companion?.trip_cmb ?? 11; }
+  get hisuiBitePodDmg(): number { return Math.floor(this.hisuiStrMod * 1.5) + 6; }
+  get hisuiBiteBaseDmg(): number { return Math.floor(this.hisuiStrMod * 1.5); }
 
   attackMod = computed(() => {
     let mod = 0;
@@ -267,6 +221,7 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
+  // MOTORE DI LANCIO CON FEEDBACK IMMEDIATO PER VOICEOVER
   rollAction(action: DiceAction): void {
     const isAtk = action.type === 'atk';
     const isDmg = action.type === 'dmg';
@@ -275,33 +230,25 @@ export class CharacterSheetComponent implements OnInit {
     let extraMod = 0;
     const bonusParts: string[] = [];
 
-    if (this.modChallenge() && isDmg) {
-      if (!action.isElemental) {
-        const challBonus = this.charRecord()?.level || 7;
-        extraMod += challBonus;
-        bonusParts.push(`+${challBonus} Sfida`);
-      }
+    if (this.modChallenge() && isDmg && !action.isElemental) {
+      const challBonus = this.charRecord()?.level || 7;
+      extraMod += challBonus;
+      bonusParts.push(`+${challBonus} Sfida`);
     }
 
-    if (this.modInspire()) {
-      if (isAtk || (isDmg && !action.isElemental)) {
-        extraMod += 2;
-        bonusParts.push('+2 Ispirare');
-      }
+    if (this.modInspire() && (isAtk || (isDmg && !action.isElemental))) {
+      extraMod += 2;
+      bonusParts.push('+2 Ispirare');
     }
 
-    if (this.modDivineFavor()) {
-      if (isAtk || (isDmg && !action.isElemental)) {
-        extraMod += 2;
-        bonusParts.push('+2 Favore');
-      }
+    if (this.modDivineFavor() && (isAtk || (isDmg && !action.isElemental))) {
+      extraMod += 2;
+      bonusParts.push('+2 Favore');
     }
 
-    if (this.modPrayer()) {
-      if (isAtk || (isDmg && !action.isElemental) || isSave) {
-        extraMod += 1;
-        bonusParts.push('+1 Preghiera');
-      }
+    if (this.modPrayer() && (isAtk || (isDmg && !action.isElemental) || isSave)) {
+      extraMod += 1;
+      bonusParts.push('+1 Preghiera');
     }
 
     if (this.modFlank() && isAtk) {
@@ -343,6 +290,14 @@ export class CharacterSheetComponent implements OnInit {
       isFumble,
       breakdown
     });
+
+    // COSTRUZIONE FRASE IMMEDIATA PER IL VOCALE
+    let spokenPhrase = `${action.name}: dado ${rolls.join(', ')}. Totale ${total}.`;
+    if (isCrit) spokenPhrase = `Minaccia di critico! ${spokenPhrase}`;
+    if (isFumble) spokenPhrase = `Fallimento automatico! ${spokenPhrase}`;
+
+    this.voiceAnnouncement.set(spokenPhrase);
+    this.speakTTS(spokenPhrase);
   }
 
   quickRoll(faces: number): void {
@@ -357,6 +312,23 @@ export class CharacterSheetComponent implements OnInit {
       isFumble: r === 1,
       breakdown: `Dado: ${r}`
     });
+
+    const phrase = `Dado da ${faces}: risultato ${r}`;
+    this.voiceAnnouncement.set(phrase);
+    this.speakTTS(phrase);
+  }
+
+  // SINTESI VOCALE FLUIDA (WEB SPEECH API)
+  private speakTTS(text: string): void {
+    if (!this.ttsAudioEnabled()) return;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel(); // Interrompe frasi precedenti per reattività istantanea
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'it-IT';
+      utterance.rate = 1.15; // Leggermente più veloce per un parlato naturale
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
   }
 
   modifyHp(target: 'main' | 'companion', amount: number): void {
@@ -367,10 +339,12 @@ export class CharacterSheetComponent implements OnInit {
       const cur = rec.data.character.hp_current;
       const max = rec.data.character.hp_max;
       rec.data.character.hp_current = Math.max(0, Math.min(max, cur + amount));
+      this.voiceAnnouncement.set(`Punti ferita Ryoujin: ${rec.data.character.hp_current} su ${max}`);
     } else if (rec.data.companion) {
       const cur = rec.data.companion.hp_current;
       const max = rec.data.companion.hp_max;
       rec.data.companion.hp_current = Math.max(0, Math.min(max, cur + amount));
+      this.voiceAnnouncement.set(`Punti ferita Hisui: ${rec.data.companion.hp_current} su ${max}`);
     }
 
     this.charRecord.set({ ...rec });
@@ -384,6 +358,7 @@ export class CharacterSheetComponent implements OnInit {
     rec.data.character.resolve_current = cur > index ? index : index + 1;
     rec.data.character.resolve_max = this.maxResolve;
     this.charRecord.set({ ...rec });
+    this.voiceAnnouncement.set(`Fermezza: ${rec.data.character.resolve_current} su ${this.maxResolve}`);
     this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
   }
 
@@ -394,6 +369,7 @@ export class CharacterSheetComponent implements OnInit {
     rec.data.character.challenge_current = cur > index ? index : index + 1;
     rec.data.character.challenge_max = this.maxChallenge;
     this.charRecord.set({ ...rec });
+    this.voiceAnnouncement.set(`Sfide del Ronin: ${rec.data.character.challenge_current} su ${this.maxChallenge}`);
     this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
   }
 
