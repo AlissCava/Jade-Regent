@@ -1,14 +1,17 @@
 <div class="app-layout">
   <!-- Navbar Fissa in Alto -->
   <header class="navbar">
-    <!-- TITOLO = TASTO HOME -->
+    <!-- TITOLO = HOME BUTTON -->
     <a routerLink="/" class="nav-brand" (click)="closeMenu()" title="Torna alla Home">
       <span class="brand-icon">🏯</span>
       <span class="brand-name">Jade Regent</span>
     </a>
 
-    <!-- Menu Desktop (visibile solo su schermi grandi) -->
+    <!-- Menu Desktop (visibile su PC/Tablet) -->
     <nav class="nav-links desktop-nav">
+      <a routerLink="/character" routerLinkActive="active" class="nav-item">
+        ⚔️ Ryoujin & Hisui
+      </a>
       <a routerLink="/wild-shapes" routerLinkActive="active" class="nav-item">
         🌿 Bestiario
       </a>
@@ -17,7 +20,7 @@
       </a>
     </nav>
 
-    <!-- Tasto Hamburger (visibile su smartphone) -->
+    <!-- Tasto Hamburger Mobile -->
     <button 
       type="button" 
       class="burger-btn" 
@@ -30,20 +33,24 @@
     </button>
   </header>
 
-  <!-- Sfondo oscurato quando il menu è aperto (tap per chiudere) -->
-  <div 
-    class="mobile-backdrop" 
-    *ngIf="isMenuOpen()" 
-    (click)="closeMenu()">
-  </div>
+  <!-- Overlay sfondo per chiudere il menu mobile -->
+  <div class="mobile-backdrop" *ngIf="isMenuOpen()" (click)="closeMenu()"></div>
 
-  <!-- Tendina Menu Mobile a Scomparsa -->
+  <!-- Menu Mobile a Scomparsa -->
   <nav class="mobile-menu" [class.open]="isMenuOpen()">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()" class="mobile-item">
       <span class="item-icon">🏠</span>
       <div class="item-text">
         <span class="item-title">Home</span>
         <span class="item-sub">Dashboard della carovana</span>
+      </div>
+    </a>
+
+    <a routerLink="/character" routerLinkActive="active" (click)="closeMenu()" class="mobile-item">
+      <span class="item-icon">⚔️</span>
+      <div class="item-text">
+        <span class="item-title">Scheda Ryoujin & Hisui</span>
+        <span class="item-sub">Samurai Tiefling Lv 5 & Lupo da Guerra</span>
       </div>
     </a>
 
@@ -64,8 +71,8 @@
     </a>
   </nav>
 
-  <!-- Contenuto principale gestito dal router -->
+  <!-- Contenuto della pagina corrente -->
   <main class="page-viewport" (click)="closeMenu()">
     <router-outlet></router-outlet>
   </main>
-</div>
+</div>  

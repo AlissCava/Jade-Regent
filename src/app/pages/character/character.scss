@@ -1,0 +1,631 @@
+$bg-card: #131c2e;
+$border-card: #22324f;
+$gold: #f59e0b;
+$crimson: #ef4444;
+$emerald: #10b981;
+$blue: #38bdf8;
+$text-light: #f8fafc;
+$text-muted: #94a3b8;
+
+.char-page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* SELETTORE TAB RYOUJIN / HISUI */
+.char-nav-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+
+  .char-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #0d1424;
+    border: 1px solid #243553;
+    border-radius: 12px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $text-muted;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active { transform: scale(0.98); }
+
+    &.ryoujin-btn.active {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: $crimson;
+      color: #fca5a5;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+    }
+
+    &.hisui-btn.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: $blue;
+      color: #bae6fd;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+    }
+  }
+}
+
+/* INTESTAZIONE SCHEDA HERO */
+.sheet-hero {
+  text-align: center;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.12), rgba(19, 28, 46, 0.6));
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 16px;
+  padding: 1.25rem 1rem;
+  margin-bottom: 1rem;
+
+  &.wolf-hero {
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.12), rgba(19, 28, 46, 0.6));
+    border-color: rgba(56, 189, 248, 0.3);
+  }
+
+  .hero-top {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+
+    .race-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: $crimson;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      &.wolf-tag { color: $blue; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); }
+    }
+
+    .class-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: $gold;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+    }
+  }
+
+  .char-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.3rem;
+  }
+
+  .char-quote {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: #94a3b8;
+  }
+}
+
+/* COMBAT STATUS GRID */
+.combat-status-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 992px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .status-card {
+    background: $bg-card;
+    border: 1px solid $border-card;
+    border-radius: 14px;
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .status-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: $text-muted;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+    }
+  }
+
+  /* HP Card */
+  .hp-card {
+    border-color: rgba(239, 68, 68, 0.4);
+
+    .hp-display {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+
+      .hp-current {
+        font-family: 'Cinzel', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+
+        &.low-hp { color: #f87171; animation: pulse 1.5s infinite; }
+      }
+      .hp-divider { color: $text-muted; }
+      .hp-max { font-size: 0.9rem; color: $text-muted; }
+    }
+
+    .hp-stepper {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.3rem;
+      margin-top: 0.6rem;
+
+      .hp-btn {
+        height: 28px;
+        background: #0d1424;
+        border: 1px solid #283958;
+        border-radius: 6px;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+
+        &.damage:hover { background: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+        &.heal:hover { background: rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+      }
+    }
+  }
+
+  /* CA Card */
+  .ca-card {
+    .ca-main-val {
+      font-family: 'Cinzel', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #67e8f9;
+      line-height: 1;
+      margin: 0.2rem 0;
+    }
+
+    .ca-sub-pills {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+
+      .ca-pill {
+        font-size: 0.7rem;
+        color: $text-muted;
+        background: #0d1424;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        strong { color: #fff; }
+      }
+    }
+  }
+
+  /* Init Card */
+  .init-card {
+    .stat-dual-row {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+
+      .sub-lbl { font-size: 0.68rem; text-transform: uppercase; color: $text-muted; }
+      .highlight-val {
+        font-family: 'Cinzel', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $gold;
+
+        &.wolf-spd { color: $blue; }
+        small { font-size: 0.75rem; color: $text-muted; }
+      }
+    }
+  }
+
+  /* Saves Card */
+  .saves-card {
+    .saves-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem;
+
+      .save-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #0d1424;
+        border: 1px solid #233452;
+        padding: 0.3rem 0.2rem;
+        border-radius: 6px;
+
+        .s-name { font-size: 0.62rem; text-transform: uppercase; color: $text-muted; }
+        .s-val { font-size: 1.1rem; font-weight: 700; color: #fff; }
+      }
+    }
+
+    .save-note {
+      font-size: 0.65rem;
+      color: $text-muted;
+      margin-top: 0.45rem;
+      text-align: center;
+    }
+  }
+}
+
+/* STRISCIA CARATTERISTICHE */
+.attributes-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.4rem;
+  background: #0d1424;
+  border: 1px solid $border-card;
+  border-radius: 12px;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+
+  .attr-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.3rem 0;
+
+    .attr-name { font-size: 0.65rem; font-weight: 700; color: $text-muted; }
+    .attr-val { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .attr-mod { font-size: 0.75rem; font-weight: 700; color: $emerald; }
+
+    &.primary {
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 8px;
+      .attr-mod { color: #fca5a5; }
+    }
+  }
+}
+
+/* PANNELLO BUFF TATTICI */
+.tactical-buffs-panel {
+  background: #0e172a;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 14px;
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+
+  .buffs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $gold;
+    margin-bottom: 0.6rem;
+
+    .buff-sum {
+      font-size: 0.82rem;
+      color: #fff;
+      strong { color: #fde68a; }
+    }
+  }
+
+  .buff-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+
+    .buff-chip {
+      background: #080d1a;
+      border: 1px solid #283958;
+      color: #cbd5e1;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &.active {
+        background: rgba(245, 158, 11, 0.2);
+        border-color: $gold;
+        color: #fef08a;
+      }
+
+      &.power-atk.active {
+        background: rgba(239, 68, 68, 0.25);
+        border-color: $crimson;
+        color: #fca5a5;
+      }
+    }
+  }
+}
+
+/* SEZIONI E CARD GENERALI */
+.section-card {
+  background: $bg-card;
+  border: 1px solid $border-card;
+  border-radius: 14px;
+  padding: 1.1rem;
+  margin-bottom: 1rem;
+
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    color: #fff;
+    margin-bottom: 0.85rem;
+  }
+}
+
+/* ARMI & ATTACCHI */
+.weapons-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .weapon-card {
+    background: #0d1424;
+    border: 1px solid #233452;
+    border-radius: 12px;
+    padding: 0.85rem;
+
+    &.legendary {
+      border-color: rgba(245, 158, 11, 0.45);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), #0d1424);
+    }
+
+    &.wolf-card {
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .wpn-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.6rem;
+
+      .wpn-badge {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: $gold;
+        letter-spacing: 0.05em;
+
+        &.wolf { color: $blue; }
+      }
+
+      .wpn-name {
+        font-family: 'Cinzel', serif;
+        font-size: 1.05rem;
+        color: #fff;
+        margin-top: 0.15rem;
+      }
+
+      .wpn-crit {
+        font-size: 0.74rem;
+        color: $text-muted;
+        background: #131c2e;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+      }
+    }
+
+    .wpn-stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      background: #080d18;
+      border: 1px solid #1a283f;
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+
+      .stat-calc {
+        display: flex;
+        flex-direction: column;
+        .lbl { font-size: 0.65rem; text-transform: uppercase; color: $text-muted; }
+        .val.highlight { font-size: 1.05rem; font-weight: 700; color: #fde68a; }
+      }
+    }
+
+    .wpn-special-powers, .trip-free-box {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      line-height: 1.4;
+      margin-top: 0.6rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #1a283f;
+
+      strong { color: #f8fafc; }
+    }
+  }
+}
+
+/* FERMEZZA & SFIDA */
+.resources-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .resource-box {
+    background: #0d1424;
+    border: 1px solid #233452;
+    border-radius: 12px;
+    padding: 0.85rem;
+
+    .res-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+
+      .res-title { font-family: 'Cinzel', serif; font-size: 0.92rem; font-weight: 700; color: #fff; }
+      .res-val { font-size: 0.78rem; font-weight: 700; color: $gold; }
+    }
+
+    .res-desc {
+      font-size: 0.72rem;
+      color: $text-muted;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .use-pips {
+      display: flex;
+      gap: 0.5rem;
+
+      .pip {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #1a283f;
+        border: 2px solid #334a75;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &.filled {
+          background: $gold;
+          border-color: #fef08a;
+          box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+        }
+
+        &.challenge-pip.filled {
+          background: $crimson;
+          border-color: #fca5a5;
+          box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+        }
+      }
+    }
+  }
+}
+
+/* TRATTI E RESISTENZE BADGES */
+.traits-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  .trait-badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    font-weight: 600;
+    background: #0d1424;
+    border: 1px solid #233452;
+    color: #cbd5e1;
+
+    &.fire { color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
+    &.cold { color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); }
+    &.electric { color: #fde68a; border-color: rgba(245, 158, 11, 0.4); }
+    &.darkvision { color: #c084fc; border-color: rgba(168, 85, 247, 0.4); }
+    &.banner { color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
+  }
+}
+
+/* TALENTI */
+.feats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  .feat-item {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+    padding: 0.35rem 0.5rem;
+    background: #0d1424;
+    border-radius: 6px;
+
+    strong { color: #fff; }
+  }
+}
+
+/* GRIGLIA A DUE COLONNE */
+.dual-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.skills-mini-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  .skill-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    padding: 0.25rem 0.4rem;
+    border-bottom: 1px solid #1a283f;
+
+    strong { color: $emerald; }
+  }
+}
+
+.gear-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+
+  li { margin-bottom: 0.35rem; }
+  strong { color: #fff; }
+}
+
+/* COMANDI HISUI */
+.tricks-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  .trick-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #bae6fd;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 0.3rem 0.6rem;
+    border-radius: 9999px;
+  }
+}
+
+.bmc-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  background: #080d18;
+  border: 1px solid #1a283f;
+  border-radius: 8px;
+  padding: 0.6rem;
+  text-align: center;
+
+  .lbl { font-size: 0.68rem; text-transform: uppercase; color: $text-muted; }
+  .val { font-size: 1.2rem; font-weight: 700; color: #fff; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

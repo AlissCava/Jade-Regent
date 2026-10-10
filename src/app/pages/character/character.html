@@ -1,0 +1,491 @@
+<div class="char-page-container">
+  <!-- SELECTOR SCHEDE: RYOUJIN / HISUI -->
+  <div class="char-nav-tabs">
+    <button 
+      type="button" 
+      class="char-tab-btn ryoujin-btn" 
+      [class.active]="activeTab() === 'ryoujin'" 
+      (click)="activeTab.set('ryoujin')">
+      ⚔️ Ryoujin (Samurai 5)
+    </button>
+    <button 
+      type="button" 
+      class="char-tab-btn hisui-btn" 
+      [class.active]="activeTab() === 'hisui'" 
+      (click)="activeTab.set('hisui')">
+      🐺 Hisui (Lupo da Guerra)
+    </button>
+  </div>
+
+  <!-- ==================== SEZIONE 1: SCHEDA RYOUJIN ==================== -->
+  <div *ngIf="activeTab() === 'ryoujin'" class="char-sheet">
+    <header class="sheet-hero">
+      <div class="hero-top">
+        <span class="race-tag">Tiefling (Oni-Spawn) • Esterno Nativo</span>
+        <span class="class-tag">Samurai Ronin Lv 5</span>
+      </div>
+      <h1 class="char-title">竜刃 • Ryoujin</h1>
+      <p class="char-quote">«Nessun signore a cui piegare il capo, nessun passo indietro di fronte alla lama.»</p>
+    </header>
+
+    <!-- STATUS BAR COMBATTIMENTO -->
+    <div class="combat-status-grid">
+      <!-- Punti Ferita -->
+      <div class="status-card hp-card">
+        <span class="status-label">Punti Ferita</span>
+        <div class="hp-display">
+          <span class="hp-current" [class.low-hp]="currentHpRyoujin() < 30">{{ currentHpRyoujin() }}</span>
+          <span class="hp-divider">/</span>
+          <span class="hp-max">{{ maxHpRyoujin }} PF</span>
+        </div>
+        <div class="hp-stepper">
+          <button type="button" class="hp-btn damage" (click)="modifyHp('ryoujin', -5)">−5</button>
+          <button type="button" class="hp-btn damage" (click)="modifyHp('ryoujin', -1)">−1</button>
+          <button type="button" class="hp-btn heal" (click)="modifyHp('ryoujin', 1)">+1</button>
+          <button type="button" class="hp-btn heal" (click)="modifyHp('ryoujin', 5)">+5</button>
+        </div>
+      </div>
+
+      <!-- Classe Armatura -->
+      <div class="status-card ca-card">
+        <span class="status-label">Classe Armatura</span>
+        <div class="ca-main-val">23</div>
+        <div class="ca-sub-pills">
+          <span class="ca-pill">Contatto: <strong>13</strong></span>
+          <span class="ca-pill">Impreparato: <strong>21</strong></span>
+        </div>
+      </div>
+
+      <!-- Iniziativa e Velocità -->
+      <div class="status-card init-card">
+        <span class="status-label">Iniziativa & Moto</span>
+        <div class="stat-dual-row">
+          <div>
+            <span class="sub-lbl">Iniziativa</span>
+            <div class="highlight-val">+2</div>
+          </div>
+          <div>
+            <span class="sub-lbl">Velocità</span>
+            <div class="highlight-val">6 m <small>(4 cas.)</small></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiri Salvezza -->
+      <div class="status-card saves-card">
+        <span class="status-label">Tiri Salvezza</span>
+        <div class="saves-grid">
+          <div class="save-box fort">
+            <span class="s-name">Tempra</span>
+            <span class="s-val">+10</span>
+          </div>
+          <div class="save-box ref">
+            <span class="s-name">Riflessi</span>
+            <span class="s-val">+5</span>
+          </div>
+          <div class="save-box will">
+            <span class="s-name">Volontà</span>
+            <span class="s-val">+6</span>
+          </div>
+        </div>
+        <div class="save-note">+2 a TS contro Paura • Ritira Tempra/Vol con Risoluto</div>
+      </div>
+    </div>
+
+    <!-- CARATTERISTICHE PRINCIPALI -->
+    <div class="attributes-strip">
+      <div class="attr-cell primary">
+        <span class="attr-name">FOR</span>
+        <span class="attr-val">22</span>
+        <span class="attr-mod">+6</span>
+      </div>
+      <div class="attr-cell">
+        <span class="attr-name">DES</span>
+        <span class="attr-val">15</span>
+        <span class="attr-mod">+2</span>
+      </div>
+      <div class="attr-cell">
+        <span class="attr-name">COS</span>
+        <span class="attr-val">16</span>
+        <span class="attr-mod">+3</span>
+      </div>
+      <div class="attr-cell">
+        <span class="attr-name">INT</span>
+        <span class="attr-val">15</span>
+        <span class="attr-mod">+2</span>
+      </div>
+      <div class="attr-cell">
+        <span class="attr-name">SAG</span>
+        <span class="attr-val">12</span>
+        <span class="attr-mod">+1</span>
+      </div>
+      <div class="attr-cell">
+        <span class="attr-name">CAR</span>
+        <span class="attr-val">13</span>
+        <span class="attr-mod">+1</span>
+      </div>
+    </div>
+
+    <!-- PANNELLO MODIFICATORI TATTICI (BUFF AL VOLO) -->
+    <div class="tactical-buffs-panel">
+      <div class="buffs-header">
+        <span>⚡ MODIFICATORI ATTIVI IN COMBATTIMENTO</span>
+        <span class="buff-sum">TxC: <strong>{{ attackModifier() >= 0 ? '+' + attackModifier() : attackModifier() }}</strong> | Danni: <strong>{{ damageModifier() >= 0 ? '+' + damageModifier() : damageModifier() }}</strong></span>
+      </div>
+      <div class="buff-chips">
+        <button type="button" class="buff-chip" [class.active]="inspireCourage()" (click)="inspireCourage.set(!inspireCourage())">
+          🎺 Ispirare Coraggio (+2/+2)
+        </button>
+        <button type="button" class="buff-chip" [class.active]="bannerActive()" (click)="bannerActive.set(!bannerActive())">
+          🎌 Stendardo (+1 TxC)
+        </button>
+        <button type="button" class="buff-chip" [class.active]="challengeActive()" (click)="challengeActive.set(!challengeActive())">
+          ⚔️ Sfida del Ronin (+2 TxC / +7 Danni)
+        </button>
+        <button type="button" class="buff-chip" [class.active]="flanking()" (click)="flanking.set(!flanking())">
+          👥 Fiancheggiamento (+2 TxC)
+        </button>
+        <button type="button" class="buff-chip" [class.active]="divineFavorActive()" (click)="divineFavorActive.set(!divineFavorActive())">
+          ✨ Favore Divino (+2/+2)
+        </button>
+        <button type="button" class="buff-chip power-atk" [class.active]="powerAttack()" (click)="powerAttack.set(!powerAttack())">
+          💥 Attacco Poderoso (-2 TxC / +6 Danni)
+        </button>
+      </div>
+    </div>
+
+    <!-- ARMI & ATTACCHI -->
+    <div class="section-card">
+      <h2 class="section-title">🗡️ Armi & Azioni di Attacco</h2>
+      
+      <div class="weapons-grid">
+        <!-- SUISHEN -->
+        <div class="weapon-card legendary">
+          <div class="wpn-top">
+            <div>
+              <span class="wpn-badge">Lama Intelligente • Leggendaria</span>
+              <h3 class="wpn-name">Suishen (+2 Fiammeggiante Difensiva)</h3>
+            </div>
+            <div class="wpn-crit">Crit: 18-20 / x2</div>
+          </div>
+          <div class="wpn-stats-row">
+            <div class="stat-calc">
+              <span class="lbl">Tiro per Colpire</span>
+              <span class="val highlight">+{{ 15 + attackModifier() }}</span>
+            </div>
+            <div class="stat-calc">
+              <span class="lbl">Danno a Due Mani</span>
+              <span class="val highlight">1d8 + {{ 7 + damageModifier() }} + 1d6 fuoco</span>
+            </div>
+          </div>
+          <div class="wpn-special-powers">
+            <span>✨ <strong>Poteri di Suishen:</strong> Resistenza agli elementi 3v/g • Vedere Invisibilità • Luce Diurna • Camminare sul Fuoco • Resistenza Freddo</span>
+          </div>
+        </div>
+
+        <!-- KATANA +1 -->
+        <div class="weapon-card">
+          <div class="wpn-top">
+            <div>
+              <span class="wpn-badge">Arma Perfetta</span>
+              <h3 class="wpn-name">Katana Deadly +1 (Due Mani)</h3>
+            </div>
+            <div class="wpn-crit">Crit: 18-20 / x2 (+2 conferma)</div>
+          </div>
+          <div class="wpn-stats-row">
+            <div class="stat-calc">
+              <span class="lbl">Tiro per Colpire</span>
+              <span class="val highlight">+{{ 14 + attackModifier() }}</span>
+            </div>
+            <div class="stat-calc">
+              <span class="lbl">Danno Katana</span>
+              <span class="val highlight">1d8 + {{ 10 + damageModifier() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARCO LUNGO COMPOSITO -->
+        <div class="weapon-card">
+          <div class="wpn-top">
+            <div>
+              <span class="wpn-badge">Distanza (Gittata 33 m / 22 caselle)</span>
+              <h3 class="wpn-name">Arco Lungo Composito (+2 For) +1</h3>
+            </div>
+            <div class="wpn-crit">Crit: 20 / x3</div>
+          </div>
+          <div class="wpn-stats-row">
+            <div class="stat-calc">
+              <span class="lbl">Tiro per Colpire</span>
+              <span class="val highlight">+{{ 10 + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}</span>
+            </div>
+            <div class="stat-calc">
+              <span class="lbl">Danno a Freccia</span>
+              <span class="val highlight">1d8 + {{ 3 + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAPACITÀ SPECIALI & USI GIORNALIERI -->
+    <div class="section-card">
+      <h2 class="section-title">⛩️ Fermezza, Sfide & Resistenze</h2>
+
+      <div class="resources-row">
+        <!-- FERMEZZA -->
+        <div class="resource-box">
+          <div class="res-head">
+            <span class="res-title">Fermezza (Ronin)</span>
+            <span class="res-val">{{ resolveUses() }} / 3 rimasti</span>
+          </div>
+          <p class="res-desc">Ritira TS Volontà dopo il 1° round • Tira 2 volte per stabilizzarti • Rimuovi scosso, infermo o affaticato.</p>
+          <div class="use-pips">
+            <span *ngFor="let i of [0, 1, 2]" class="pip" [class.filled]="i < resolveUses()" (click)="toggleResolve(i)"></span>
+          </div>
+        </div>
+
+        <!-- SFIDA -->
+        <div class="resource-box">
+          <div class="res-head">
+            <span class="res-title">Sfida del Ronin</span>
+            <span class="res-val">{{ challengeUses() }} / 3 rimaste</span>
+          </div>
+          <p class="res-desc">+5 danni (+7 indicato), +2 TxC, +2 Schivare CA contro il bersaglio (-2 CA contro gli altri).</p>
+          <div class="use-pips">
+            <span *ngFor="let i of [0, 1, 2]" class="pip challenge-pip" [class.filled]="i < challengeUses()" (click)="toggleChallenge(i)"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRATTI & RESISTENZE -->
+      <div class="traits-grid">
+        <div class="trait-badge fire">🔥 Resistenza Fuoco: 5</div>
+        <div class="trait-badge cold">❄️ Resistenza Freddo: 5</div>
+        <div class="trait-badge electric">⚡ Resistenza Elettricità: 5</div>
+        <div class="trait-badge darkvision">👁️ Scurovisione 18 m</div>
+        <div class="trait-badge spell">✨ Alterare se stesso (1v/g)</div>
+        <div class="trait-badge banner">🎌 Stendardo (+1 morale carica/paura alleati entro 18 m)</div>
+      </div>
+    </div>
+
+    <!-- TALENTI CHIAVE -->
+    <div class="section-card">
+      <h2 class="section-title">🥋 Talenti & Manovre</h2>
+      <div class="feats-list">
+        <div class="feat-item">
+          <strong>Undersized Mount (Cavalcatura Piccola)</strong>: ti permette di cavalcare allegramente Hisui anche se siete entrambi di taglia Media!
+        </div>
+        <div class="feat-item">
+          <strong>Wolfrider</strong>: bonus e sinergie dedicate al combattimento in sella a lupi da guerra.
+        </div>
+        <div class="feat-item">
+          <strong>Attacco Poderoso</strong>: -2 ai tiri per colpire, +6 ai danni impugnando la katana a due mani.
+        </div>
+        <div class="feat-item">
+          <strong>Weapon Expertise (Katana)</strong>: estrai la katana come azione gratuita, +2 al tiro per confermare i colpi critici.
+        </div>
+        <div class="feat-item">
+          <strong>Volontà di Ferro</strong>: +2 bonus a tutti i tiri salvezza su Volontà.
+        </div>
+        <div class="feat-item">
+          <strong>Mounted Archer</strong>: penalità dimezzate per scoccare frecce con l'arco mentre Hisui è in movimento.
+        </div>
+      </div>
+    </div>
+
+    <!-- ABILITÀ CHIAVE & INVENTARIO -->
+    <div class="dual-columns-grid">
+      <div class="section-card">
+        <h2 class="section-title">📊 Abilità Addestrate</h2>
+        <div class="skills-mini-table">
+          <div class="skill-row"><span>Cavalcare (DES)</span><strong>+12</strong></div>
+          <div class="skill-row"><span>Addestrare Animali (CAR)</span><strong>+10</strong></div>
+          <div class="skill-row"><span>Intimidire (CAR)</span><strong>+11</strong></div>
+          <div class="skill-row"><span>Percezione (SAG)</span><strong>+7</strong></div>
+          <div class="skill-row"><span>Percepire Intenzioni (SAG)</span><strong>+10</strong></div>
+          <div class="skill-row"><span>Sopravvivenza (SAG)</span><strong>+7</strong></div>
+          <div class="skill-row"><span>Conoscenze (Locali) (INT)</span><strong>+10</strong></div>
+          <div class="skill-row"><span>Conoscenze (Nobiltà) (INT)</span><strong>+6</strong></div>
+          <div class="skill-row"><span>Nuotare (FOR)</span><strong>+7</strong></div>
+          <div class="skill-row"><span>Scalare (FOR)</span><strong>+7</strong></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2 class="section-title">🎒 Equipaggiamento</h2>
+        <ul class="gear-list">
+          <li><strong>O-Yoroi +1 Perfetta</strong>: CA +9, Penalità -6 alla prova, peso 22 kg.</li>
+          <li><strong>Mantello della Resistenza +1</strong>: +1 a Tempra, Riflessi e Volontà.</li>
+          <li><strong>Anello apri-porte</strong>: 3 cariche rimaste.</li>
+          <li><strong>Frecce Assassine</strong>: 3x Umani, 1x Kitsune, 2x Esterni Nativi.</li>
+          <li><strong>Munizioni standard & Fuochi d'artificio</strong>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SEZIONE 2: SOTTOSCHEDA HISUI ==================== -->
+  <div *ngIf="activeTab() === 'hisui'" class="char-sheet hisui-theme">
+    <header class="sheet-hero wolf-hero">
+      <div class="hero-top">
+        <span class="race-tag wolf-tag">Lupo da Guerra • Compagno Animale</span>
+        <span class="class-tag">6 Dadi Vita (6d8)</span>
+      </div>
+      <h1 class="char-title">🐺 Hisui</h1>
+      <p class="char-quote">«Il lupo bianco delle steppe, legato alla sella del samurai.»</p>
+    </header>
+
+    <!-- STATUS BAR COMBATTIMENTO HISUI -->
+    <div class="combat-status-grid">
+      <!-- Punti Ferita Hisui -->
+      <div class="status-card hp-card">
+        <span class="status-label">Punti Ferita</span>
+        <div class="hp-display">
+          <span class="hp-current" [class.low-hp]="currentHpHisui() < 25">{{ currentHpHisui() }}</span>
+          <span class="hp-divider">/</span>
+          <span class="hp-max">{{ maxHpHisui }} PF</span>
+        </div>
+        <div class="hp-stepper">
+          <button type="button" class="hp-btn damage" (click)="modifyHp('hisui', -5)">−5</button>
+          <button type="button" class="hp-btn damage" (click)="modifyHp('hisui', -1)">−1</button>
+          <button type="button" class="hp-btn heal" (click)="modifyHp('hisui', 1)">+1</button>
+          <button type="button" class="hp-btn heal" (click)="modifyHp('hisui', 5)">+5</button>
+        </div>
+      </div>
+
+      <!-- CA Hisui -->
+      <div class="status-card ca-card">
+        <span class="status-label">Classe Armatura</span>
+        <div class="ca-main-val">21</div>
+        <div class="ca-sub-pills">
+          <span class="ca-pill">Contatto: <strong>12</strong></span>
+          <span class="ca-pill">Impreparato: <strong>19</strong></span>
+        </div>
+      </div>
+
+      <!-- Iniziativa e Velocità -->
+      <div class="status-card init-card">
+        <span class="status-label">Iniziativa & Corsa</span>
+        <div class="stat-dual-row">
+          <div>
+            <span class="sub-lbl">Iniziativa</span>
+            <div class="highlight-val">+2</div>
+          </div>
+          <div>
+            <span class="sub-lbl">Velocità</span>
+            <div class="highlight-val wolf-spd">15 m <small>(10 cas.)</small></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiri Salvezza Hisui -->
+      <div class="status-card saves-card">
+        <span class="status-label">Tiri Salvezza</span>
+        <div class="saves-grid">
+          <div class="save-box fort"><span class="s-name">Tempra</span><span class="s-val">+10</span></div>
+          <div class="save-box ref"><span class="s-name">Riflessi</span><span class="s-val">+8</span></div>
+          <div class="save-box will"><span class="s-name">Volontà</span><span class="s-val">+3</span></div>
+        </div>
+        <div class="save-note">Devozione: +4 morale vs Ammaliamento/Charme • Eludere attivo</div>
+      </div>
+    </div>
+
+    <!-- CARATTERISTICHE HISUI -->
+    <div class="attributes-strip">
+      <div class="attr-cell primary"><span class="attr-name">FOR</span><span class="attr-val">25</span><span class="attr-mod">+7</span></div>
+      <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">15</span><span class="attr-mod">+3</span></div>
+      <div class="attr-cell"><span class="attr-name">COS</span><span class="attr-val">20</span><span class="attr-mod">+5</span></div>
+      <div class="attr-cell"><span class="attr-name">INT</span><span class="attr-val">2</span><span class="attr-mod">-4</span></div>
+      <div class="attr-cell"><span class="attr-name">SAG</span><span class="attr-val">12</span><span class="attr-mod">+1</span></div>
+      <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">6</span><span class="attr-mod">-2</span></div>
+    </div>
+
+    <!-- MODIFICATORI TATTICI HISUI -->
+    <div class="tactical-buffs-panel">
+      <div class="buffs-header">
+        <span>⚡ MODIFICATORI CONDIVISI CON RYOUJIN</span>
+        <span class="buff-sum">TxC: <strong>{{ attackModifierHisui() >= 0 ? '+' + attackModifierHisui() : attackModifierHisui() }}</strong> | Danni: <strong>{{ damageModifierHisui() >= 0 ? '+' + damageModifierHisui() : damageModifierHisui() }}</strong></span>
+      </div>
+      <div class="buff-chips">
+        <button type="button" class="buff-chip" [class.active]="inspireCourage()" (click)="inspireCourage.set(!inspireCourage())">
+          🎺 Ispirare Coraggio (+2/+2)
+        </button>
+        <button type="button" class="buff-chip" [class.active]="bannerActive()" (click)="bannerActive.set(!bannerActive())">
+          🎌 Stendardo (+1 TxC)
+        </button>
+        <button type="button" class="buff-chip" [class.active]="flanking()" (click)="flanking.set(!flanking())">
+          👥 Fiancheggiamento (+2 TxC)
+        </button>
+        <button type="button" class="buff-chip power-atk" [class.active]="powerAttackHisui()" (click)="powerAttackHisui.set(!powerAttackHisui())">
+          💥 Morso Poderoso (-2 TxC / +6 Danni)
+        </button>
+      </div>
+    </div>
+
+    <!-- ATTACCO DEL LUPO -->
+    <div class="section-card">
+      <h2 class="section-title">🐺 Attacchi Naturali & Manovre</h2>
+      <div class="weapons-grid">
+        <div class="weapon-card wolf-card">
+          <div class="wpn-top">
+            <div>
+              <span class="wpn-badge wolf">Attacco Naturale Principale</span>
+              <h3 class="wpn-name">Morso (con Sbilanciare Gratuito)</h3>
+            </div>
+            <div class="wpn-crit">Critico: 20 / x2</div>
+          </div>
+          <div class="wpn-stats-row">
+            <div class="stat-calc">
+              <span class="lbl">Tiro per Colpire</span>
+              <span class="val highlight">+{{ 11 + attackModifierHisui() }}</span>
+            </div>
+            <div class="stat-calc">
+              <span class="lbl">Danno Morso</span>
+              <span class="val highlight">1d8 + {{ 10 + damageModifierHisui() }}</span>
+            </div>
+          </div>
+          <div class="trip-free-box">
+            <span>🦵 <strong>Sbilanciare (Trip) Automatico:</strong> Se il morso va a segno, Hisui tenta immediatamente una manovra di Sbilanciare gratuita con BMC <strong>+11</strong> senza provocare attacchi d'opportunità!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANOVRE, TRATTI E TRUCCHI HISUI -->
+    <div class="dual-columns-grid">
+      <div class="section-card">
+        <h2 class="section-title">🐾 Tratti & Difese</h2>
+        <div class="feats-list">
+          <div class="feat-item"><strong>Eludere (Evasion)</strong>: Se supera un TS sui Riflessi che dimezza i danni, non subisce alcun danno.</div>
+          <div class="feat-item"><strong>Fiuto (Scent)</strong>: Individua creature entro 9 metri (18 m controvento).</div>
+          <div class="feat-item"><strong>Visione Crepuscolare</strong>: Vede il doppio della distanza nella penombra.</div>
+          <div class="feat-item"><strong>Devozione</strong>: +4 di bonus morale a tutti i TS su Volontà contro incantesimi ed effetti di ammaliamento.</div>
+          <div class="feat-item"><strong>Ferocious Beast</strong> & <strong>Attacco Poderoso</strong> addestrato.</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2 class="section-title">🍖 Comandi Addestrati (Tricks)</h2>
+        <div class="tricks-cloud">
+          <span class="trick-tag">⚔️ Attacca (tutti i nemici)</span>
+          <span class="trick-tag">✋ Fermo</span>
+          <span class="trick-tag">🛡️ Difendi</span>
+          <span class="trick-tag">🔙 Indietro</span>
+          <span class="trick-tag">👃 Annusa / Tracce</span>
+          <span class="trick-tag">🔍 Cerca</span>
+          <span class="trick-tag">🎾 Intratteni / Riporta</span>
+        </div>
+        <div class="bmc-box" style="margin-top: 1rem;">
+          <div class="stat-calc">
+            <span class="lbl">Bonus Manovra (BMC)</span>
+            <span class="val">+11</span>
+          </div>
+          <div class="stat-calc">
+            <span class="lbl">Difesa Manovra (DMC)</span>
+            <span class="val">25</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
