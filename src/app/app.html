@@ -1,15 +1,14 @@
 <div class="app-layout">
   <!-- Navbar Fissa in Alto -->
   <header class="navbar">
-    <a routerLink="/" class="nav-brand">
+    <!-- TITOLO = TASTO HOME -->
+    <a routerLink="/" class="nav-brand" (click)="closeMenu()" title="Torna alla Home">
       <span class="brand-icon">🏯</span>
       <span class="brand-name">Jade Regent</span>
     </a>
 
-    <nav class="nav-links">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
-        🏠 Home
-      </a>
+    <!-- Menu Desktop (visibile solo su schermi grandi) -->
+    <nav class="nav-links desktop-nav">
       <a routerLink="/wild-shapes" routerLinkActive="active" class="nav-item">
         🌿 Bestiario
       </a>
@@ -17,10 +16,56 @@
         📜 Grimorio
       </a>
     </nav>
+
+    <!-- Tasto Hamburger (visibile su smartphone) -->
+    <button 
+      type="button" 
+      class="burger-btn" 
+      [class.open]="isMenuOpen()" 
+      (click)="toggleMenu()" 
+      aria-label="Apri menu">
+      <span class="burger-line"></span>
+      <span class="burger-line"></span>
+      <span class="burger-line"></span>
+    </button>
   </header>
 
-  <!-- Qui dentro Angular carica dinamicamente la pagina attiva -->
-  <main class="page-viewport">
+  <!-- Sfondo oscurato quando il menu è aperto (tap per chiudere) -->
+  <div 
+    class="mobile-backdrop" 
+    *ngIf="isMenuOpen()" 
+    (click)="closeMenu()">
+  </div>
+
+  <!-- Tendina Menu Mobile a Scomparsa -->
+  <nav class="mobile-menu" [class.open]="isMenuOpen()">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()" class="mobile-item">
+      <span class="item-icon">🏠</span>
+      <div class="item-text">
+        <span class="item-title">Home</span>
+        <span class="item-sub">Dashboard della carovana</span>
+      </div>
+    </a>
+
+    <a routerLink="/wild-shapes" routerLinkActive="active" (click)="closeMenu()" class="mobile-item">
+      <span class="item-icon">🌿</span>
+      <div class="item-text">
+        <span class="item-title">Codex Bestiario</span>
+        <span class="item-sub">Forme Selvatiche per Airyn</span>
+      </div>
+    </a>
+
+    <a routerLink="/spells" routerLinkActive="active" (click)="closeMenu()" class="mobile-item">
+      <span class="item-icon">📜</span>
+      <div class="item-text">
+        <span class="item-title">Grimorio Incantesimi</span>
+        <span class="item-sub">Incantesimi Druido & Magus con calcolo LI</span>
+      </div>
+    </a>
+  </nav>
+
+  <!-- Contenuto principale gestito dal router -->
+  <main class="page-viewport" (click)="closeMenu()">
     <router-outlet></router-outlet>
   </main>
 </div>
