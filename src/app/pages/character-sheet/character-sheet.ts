@@ -5,17 +5,6 @@ import { ActivatedRoute } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
 import { CharacterRecord, CharacterSheetData, SkillItem } from '../../models/character.model';
 
-export interface DiceAction {
-  name: string;
-  sub: string;
-  diceCount: number;
-  diceFaces: number;
-  baseMod: number;
-  type: 'atk' | 'dmg' | 'save' | 'skill';
-  critMin?: number;
-  isElemental?: boolean;
-}
-
 export interface RollResult {
   title: string;
   d20: number;
@@ -72,12 +61,12 @@ export class CharacterSheetComponent implements OnInit {
   saveSuccess = signal<boolean>(false);
 
   charRecord = signal<CharacterRecord | null>(null);
-  activeTab = signal<'main' | 'companion' | 'roller'>('main');
+  activeTab = signal<'main' | 'companion' | 'roller'>('roller');
 
   rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
   rollerSection = signal<'combat' | 'damage' | 'saves' | 'skills'>('combat');
 
-  // MODIFICATORI DI LANCIO CHECKBOX
+  // MODIFICATORI DI LANCIO CHECKBOX (STILE APP DADI)
   modInspire = signal<boolean>(false);
   modDivineFavor = signal<boolean>(false);
   modPrayer = signal<boolean>(false);
@@ -87,9 +76,9 @@ export class CharacterSheetComponent implements OnInit {
 
   lastResult = signal<RollResult | null>(null);
 
-  // SUPPORTO ACCESSIBILITÀ & VOICEOVER
+  // ACCESSIBILITÀ & SINTESI VOCALE
   voiceAnnouncement = signal<string>('');
-  ttsAudioEnabled = signal<boolean>(false); // Voce audio sintetica (opzionale con toggle)
+  ttsAudioEnabled = signal<boolean>(false);
 
   // MODALE LEVEL UP
   showLevelUpModal = signal<boolean>(false);
@@ -108,7 +97,7 @@ export class CharacterSheetComponent implements OnInit {
   powerAttack = signal<boolean>(false);
   powerAttackHisui = signal<boolean>(false);
 
-  // GETTER DINAMICI
+  // ==================== CALCOLI 100% DINAMICI ====================
   get ryoujinLevel(): number { return this.charRecord()?.level ?? 7; }
   get ryoujinBab(): number { return this.charRecord()?.data.character.bab ?? 7; }
   get ryoujinStrMod(): number {
@@ -120,15 +109,18 @@ export class CharacterSheetComponent implements OnInit {
     return Math.floor((dex - 10) / 2);
   }
 
+  // Progressione Attacco Poderoso (-2 al BAB 4-7, -3 al BAB 8-11...)
   get powerAtkPenalty(): number { return 1 + Math.floor(this.ryoujinBab / 4); }
   get powerAtkDmgTwoHand(): number { return this.powerAtkPenalty * 3; }
 
+  // Risorse del Ronin
   get maxResolve(): number { return Math.max(1, Math.floor(this.ryoujinLevel / 2)); }
   get resolvePips(): number[] { return Array.from({ length: this.maxResolve }, (_, i) => i); }
 
   get maxChallenge(): number { return Math.max(1, Math.ceil(this.ryoujinLevel / 3)); }
   get challengePips(): number[] { return Array.from({ length: this.maxChallenge }, (_, i) => i); }
 
+  // Attacchi Ryoujin dinamici
   get katana1TxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
   get katana1CritTxC(): number { return this.katana1TxC + 2; }
   get katana2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty; }
@@ -144,10 +136,12 @@ export class CharacterSheetComponent implements OnInit {
 
   get bmcTxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
 
+  // Danni Ryoujin dinamici
   get katanaPodDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand; }
   get suishenDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand; }
   get bowDmg(): number { return Math.min(this.ryoujinStrMod, 2) + 1; }
 
+  // Statistiche Hisui dinamiche
   get hisuiStrMod(): number {
     const str = this.charRecord()?.data.companion?.str ?? 25;
     return Math.floor((str - 10) / 2);
@@ -221,39 +215,51 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
-  // MOTORE DI LANCIO CON FEEDBACK IMMEDIATO PER VOICEOVER
-  rollAction(action: DiceAction): void {
-    const isAtk = action.type === 'atk';
-    const isDmg = action.type === 'dmg';
-    const isSave = action.type === 'save';
+  // ==================== COSTRUTTORE FORMULA DINAMICA ====================
+  getRollFormula(actionType: 'atk' | 'dmg' | 'save' | 'skill', diceStr: string, baseMod: number, isElemental = false, critBonus = 0): string {
+    let parts = `${diceStr}${baseMod >= 0 ? '+' + baseMod : baseMod}`;
+    if (critBonus > 0) {
+      parts += `+${critBonus}`;
+    }
+
+    const extraParts: string[] = [];
+    if (this.modBanner() && actionType === 'atk') extraParts.push('+1');
+    if (this.modChallenge() && actionType === 'dmg' && !isElemental) extraParts.push(`+${this.ryoujinLevel}`);
+    if (this.modInspire() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental))) extraParts.push('+2');
+    if (this.modDivineFavor() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental))) extraParts.push('+2');
+    if (this.modFlank() && actionType === 'atk') extraParts.push('+2');
+    if (this.modPrayer() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental) || actionType === 'save' || actionType === 'skill')) {
+      extraParts.push('+1');
+    }
+
+    if (extraParts.length > 0) {
+      return `${parts} ${extraParts.join(' ')}`;
+    }
+    return parts;
+  }
+
+  // ==================== MOTORE LANCIO DADI 100% DINAMICO ====================
+  rollDynamicAction(
+    name: string,
+    diceCount: number,
+    diceFaces: number,
+    baseMod: number,
+    type: 'atk' | 'dmg' | 'save' | 'skill',
+    critMin = 20,
+    isElemental = false,
+    critBonus = 0
+  ): void {
+    const isAtk = type === 'atk';
+    const isDmg = type === 'dmg';
+    const isSave = type === 'save';
+    const isSkill = type === 'skill';
 
     let extraMod = 0;
     const bonusParts: string[] = [];
 
-    if (this.modChallenge() && isDmg && !action.isElemental) {
-      const challBonus = this.charRecord()?.level || 7;
-      extraMod += challBonus;
-      bonusParts.push(`+${challBonus} Sfida`);
-    }
-
-    if (this.modInspire() && (isAtk || (isDmg && !action.isElemental))) {
-      extraMod += 2;
-      bonusParts.push('+2 Ispirare');
-    }
-
-    if (this.modDivineFavor() && (isAtk || (isDmg && !action.isElemental))) {
-      extraMod += 2;
-      bonusParts.push('+2 Favore');
-    }
-
-    if (this.modPrayer() && (isAtk || (isDmg && !action.isElemental) || isSave)) {
-      extraMod += 1;
-      bonusParts.push('+1 Preghiera');
-    }
-
-    if (this.modFlank() && isAtk) {
-      extraMod += 2;
-      bonusParts.push('+2 Fiancheggio');
+    if (critBonus > 0) {
+      extraMod += critBonus;
+      bonusParts.push(`+${critBonus} Maestria`);
     }
 
     if (this.modBanner() && isAtk) {
@@ -261,38 +267,65 @@ export class CharacterSheetComponent implements OnInit {
       bonusParts.push('+1 Stendardo');
     }
 
+    if (this.modChallenge() && isDmg && !isElemental) {
+      const challBonus = this.ryoujinLevel;
+      extraMod += challBonus;
+      bonusParts.push(`+${challBonus} Sfida`);
+    }
+
+    if (this.modInspire() && (isAtk || (isDmg && !isElemental))) {
+      extraMod += 2;
+      bonusParts.push('+2 Ispirare');
+    }
+
+    if (this.modDivineFavor() && (isAtk || (isDmg && !isElemental))) {
+      extraMod += 2;
+      bonusParts.push('+2 Favore');
+    }
+
+    if (this.modFlank() && isAtk) {
+      extraMod += 2;
+      bonusParts.push('+2 Fiancheggio');
+    }
+
+    if (this.modPrayer() && (isAtk || (isDmg && !isElemental) || isSave || isSkill)) {
+      extraMod += 1;
+      bonusParts.push('+1 Preghiera');
+    }
+
     const rolls: number[] = [];
     let diceSum = 0;
-
-    for (let i = 0; i < action.diceCount; i++) {
-      const r = Math.floor(Math.random() * action.diceFaces) + 1;
+    for (let i = 0; i < diceCount; i++) {
+      const r = Math.floor(Math.random() * diceFaces) + 1;
       rolls.push(r);
       diceSum += r;
     }
 
-    const total = diceSum + action.baseMod + extraMod;
-    const d20 = action.diceFaces === 20 ? rolls[0] : 0;
-    const isCrit = d20 >= (action.critMin || 20);
+    const total = diceSum + baseMod + extraMod;
+    const d20 = diceFaces === 20 ? rolls[0] : 0;
+    const isCrit = d20 >= critMin;
     const isFumble = d20 === 1;
 
-    let breakdown = `Dado: [${rolls.join(', ')}] + Base: ${action.baseMod}`;
+    const diceStr = diceFaces === 0 ? '' : `${diceCount > 1 ? diceCount : ''}d${diceFaces}`;
+    const fullFormula = this.getRollFormula(type, diceStr, baseMod, isElemental, critBonus);
+
+    let breakdown = `Dado: [${rolls.join(', ')}] + Base: ${baseMod}`;
     if (bonusParts.length > 0) {
       breakdown += ' ' + bonusParts.join(' ');
     }
 
     this.lastResult.set({
-      title: action.name,
+      title: name,
       d20,
       rolls,
-      formula: action.sub,
+      formula: fullFormula,
       total,
       isCrit,
       isFumble,
       breakdown
     });
 
-    // COSTRUZIONE FRASE IMMEDIATA PER IL VOCALE
-    let spokenPhrase = `${action.name}: dado ${rolls.join(', ')}. Totale ${total}.`;
+    let spokenPhrase = `${name}: dado ${rolls.join(', ')}. Totale ${total}.`;
     if (isCrit) spokenPhrase = `Minaccia di critico! ${spokenPhrase}`;
     if (isFumble) spokenPhrase = `Fallimento automatico! ${spokenPhrase}`;
 
@@ -318,14 +351,13 @@ export class CharacterSheetComponent implements OnInit {
     this.speakTTS(phrase);
   }
 
-  // SINTESI VOCALE FLUIDA (WEB SPEECH API)
   private speakTTS(text: string): void {
     if (!this.ttsAudioEnabled()) return;
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel(); // Interrompe frasi precedenti per reattività istantanea
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'it-IT';
-      utterance.rate = 1.15; // Leggermente più veloce per un parlato naturale
+      utterance.rate = 1.15;
       utterance.pitch = 1.0;
       window.speechSynthesis.speak(utterance);
     }
