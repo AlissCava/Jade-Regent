@@ -135,12 +135,11 @@ export class SpellsComponent implements OnInit {
 
   changeCl(delta: number): void {
     const next = this.casterLevel() + delta;
-    if (next >= 1 && next <= 20) {
+    if (next >= 1 && next <= 25) {
       this.casterLevel.set(next);
     }
   }
 
-  // CALCOLO RAGGIO CON CONVERSIONE CASELLE
   getCalculatedRange(rangeStr: string | null | undefined): string {
     if (!rangeStr) return '—';
     const cl = this.casterLevel();
@@ -165,7 +164,6 @@ export class SpellsComponent implements OnInit {
       return `${dist} m (${squares} caselle)`;
     }
 
-    // Distanze fisse in metri
     const numMatch = lower.match(/(\d+(?:,\d+)?)\s*m/);
     if (numMatch) {
       const meters = parseFloat(numMatch[1].replace(',', '.'));
@@ -176,7 +174,6 @@ export class SpellsComponent implements OnInit {
     return rangeStr;
   }
 
-  // CALCOLO DURATA CON TURNI DI COMBATTIMENTO
   getCalculatedDuration(durStr: string | null | undefined): string {
     if (!durStr) return '—';
     const cl = this.casterLevel();
@@ -211,7 +208,6 @@ export class SpellsComponent implements OnInit {
     return durStr;
   }
 
-  // CALCOLO COMPLETO TUTTI I PARAMETRI DINAMICI
   getCalculatedMetrics(spell: Spell | null | undefined): CalculatedMetric[] {
     if (!spell) return [];
     const cl = this.casterLevel();
@@ -219,7 +215,6 @@ export class SpellsComponent implements OnInit {
     const text = ((spell.full_description || '') + ' ' + (spell.short_description || '')).toLowerCase();
     const sName = spell.name.toLowerCase();
 
-    // 1. Raggio & Caselle
     metrics.push({
       icon: '📏',
       label: 'Raggio Effettivo',
@@ -227,7 +222,6 @@ export class SpellsComponent implements OnInit {
       highlight: true
     });
 
-    // 2. Durata
     metrics.push({
       icon: '⏳',
       label: 'Durata Effettiva',
@@ -235,7 +229,6 @@ export class SpellsComponent implements OnInit {
       highlight: true
     });
 
-    // 3. Prova Superamento RI (Spell Penetration)
     if (spell.spell_res && spell.spell_res.toLowerCase().trim() !== 'no') {
       metrics.push({
         icon: '🎲',
@@ -245,46 +238,50 @@ export class SpellsComponent implements OnInit {
       });
     }
 
-    // 4. Incantesimi iconici / Meccaniche speciali
+    // Incantesimi specifici con scaling aperto (senza blocco Math.min per talenti come Intensificati)
     if (sName.includes('dardo incantato') || sName.includes('magic missile')) {
-      const missiles = Math.min(5, 1 + Math.floor((cl - 1) / 2));
+      const missiles = 1 + Math.floor((cl - 1) / 2);
       metrics.push({
         icon: '✨',
         label: 'Dardi Creati',
-        value: `${missiles} Dardi (tot. ${missiles}d4 + ${missiles})`,
+        value: `${missiles} Dardi (${missiles}d4 + ${missiles}) • base max 5`,
         highlight: true
       });
     } else if (sName.includes('raggio rovente') || sName.includes('scorching ray')) {
-      const rays = Math.min(3, 1 + Math.floor(Math.max(0, cl - 3) / 4));
+      const rays = 1 + Math.floor(Math.max(0, cl - 3) / 4);
       metrics.push({
         icon: '🔥',
         label: 'Raggi di Fuoco',
-        value: `${rays} Raggi (tot. ${rays * 4}d6 fuoco)`,
+        value: `${rays} Raggi (${rays * 4}d6 fuoco) • base max 3`,
         highlight: true
       });
     } else if (sName.includes('cura ferite leggere')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `1d8 + ${Math.min(cl, 5)} PF`, highlight: true });
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `1d8 + ${cl} PF (base max +5)`, highlight: true });
     } else if (sName.includes('cura ferite moderate')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `2d8 + ${Math.min(cl, 10)} PF`, highlight: true });
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `2d8 + ${cl} PF (base max +10)`, highlight: true });
     } else if (sName.includes('cura ferite gravi')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `3d8 + ${Math.min(cl, 15)} PF`, highlight: true });
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `3d8 + ${cl} PF (base max +15)`, highlight: true });
     } else if (sName.includes('cura ferite critiche')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `4d8 + ${Math.min(cl, 20)} PF`, highlight: true });
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `4d8 + ${cl} PF (base max +20)`, highlight: true });
     } else if (sName.includes('stretta folgorante') || sName.includes('shocking grasp')) {
-      const dice = Math.min(cl, 5);
-      metrics.push({ icon: '⚡', label: 'Danno Elettrico', value: `${dice}d6 (Cap a 5d6)`, highlight: true });
+      metrics.push({
+        icon: '⚡',
+        label: 'Danno Elettrico',
+        value: `${cl}d6 (base max 5d6, superabile con Incantesimi Intensificati)`,
+        highlight: true
+      });
     } else {
-      // Regex parsing generico per dadi di danno con massimo
+      // Danno generico da testo
       const matchDiceMax = text.match(/(\d+)d(\d+)[^.;\n]*?(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*(\d+)d\d+\)/);
       if (matchDiceMax) {
         const dicePerLvl = parseInt(matchDiceMax[1], 10);
         const faces = matchDiceMax[2];
         const maxDice = parseInt(matchDiceMax[3], 10);
-        const actualDice = Math.min(cl * dicePerLvl, maxDice);
+        const actualDice = cl * dicePerLvl; // Scala liberamente con il LI
         metrics.push({
           icon: '💥',
           label: 'Danno Scalato',
-          value: `${actualDice}d${faces} (Cap ${maxDice}d${faces})`,
+          value: `${actualDice}d${faces} (base max ${maxDice}d${faces})`,
           highlight: true
         });
       } else {
@@ -300,20 +297,19 @@ export class SpellsComponent implements OnInit {
         }
       }
 
-      // Bonus fisso +1 per livello (max +X)
+      // Bonus numerici
       const matchBonus = text.match(/\+\s*1\s*(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*\+(\d+)\)/);
       if (matchBonus) {
         const maxB = parseInt(matchBonus[1], 10);
         metrics.push({
           icon: '➕',
           label: 'Bonus Numerico',
-          value: `+${Math.min(cl, maxB)} (Cap +${maxB})`,
+          value: `+${cl} (base max +${maxB})`,
           highlight: true
         });
       }
     }
 
-    // Bersagli scalati (es. 1 creatura per livello)
     if (text.includes('1 creatura/livello') || text.includes('un bersaglio per livello') || text.includes('una creatura per livello')) {
       metrics.push({
         icon: '👥',
@@ -326,7 +322,6 @@ export class SpellsComponent implements OnInit {
     return metrics;
   }
 
-  // Ritorna la sintesi del calcolo principale per la card
   getQuickCardMetric(spell: Spell): string | null {
     const list = this.getCalculatedMetrics(spell);
     const power = list.find(m => m.label.includes('Danno') || m.label.includes('Cura') || m.label.includes('Dardi') || m.label.includes('Raggi'));
