@@ -2,7 +2,9 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WildShapeService } from './services/wild-shape.service';
+import { SpellService } from './services/spell.service';
 import { WildShape } from './models/wild-shape.model';
+import { Spell } from './models/spell.model';
 
 @Component({
   selector: 'app-root',
@@ -13,11 +15,14 @@ import { WildShape } from './models/wild-shape.model';
 })
 export class App implements OnInit {
   private shapeService = inject(WildShapeService);
+  private spellService = inject(SpellService);
 
+  // Switcher moduli
+  activeTab = signal<'shapes' | 'spells'>('shapes');
+
+  // --- STATO FORME SELVATICHE ---
   shapes = signal<WildShape[]>([]);
-  loading = signal<boolean>(true);
-
-  // Filtri
+  loadingShapes = signal<boolean>(true);
   searchTerm = signal<string>('');
   selectedSize = signal<string>('Tutte');
   selectedBsLevel = signal<string>('Tutti');
@@ -28,8 +33,7 @@ export class App implements OnInit {
   onlyTrip = signal<boolean>(false);
   onlyGrab = signal<boolean>(false);
 
-  // Verifica se ci sono filtri attivi (per mostrare il tasto reset)
-  hasActiveFilters = computed(() => {
+  hasActiveShapeFilters = computed(() => {
     return (
       this.searchTerm().trim().length > 0 ||
       this.selectedSize() !== 'Tutte' ||
@@ -55,25 +59,85 @@ export class App implements OnInit {
       const matchFly = !this.onlyFly() || (s.fly_speed !== null && s.fly_speed !== 'No');
       const matchSwim = !this.onlySwim() || (s.swim_speed !== null && s.swim_speed !== 'No');
       const matchClimb = !this.onlyClimb() || (s.climb_speed !== null && s.climb_speed !== 'No');
-
       return matchName && matchSize && matchLevel && matchPounce && matchTrip && matchGrab && matchFly && matchSwim && matchClimb;
+    });
+  });
+
+  // --- STATO INCANTESIMI ---
+  spells = signal<Spell[]>([]);
+  loadingSpells = signal<boolean>(true);
+  spellSearch = signal<string>('');
+  selectedClass = signal<'druid' | 'magus' | 'all'>('druid');
+  selectedSpellLevel = signal<string>('all');
+  onlyTouch = signal<boolean>(false);
+
+  selectedSpell = signal<Spell | null>(null);
+
+  hasActiveSpellFilters = computed(() => {
+    return (
+      this.spellSearch().trim().length > 0 ||
+      this.selectedSpellLevel() !== 'all' ||
+      this.onlyTouch()
+    );
+  });
+
+  filteredSpells = computed(() => {
+    const term = this.spellSearch().toLowerCase().trim();
+    const cls = this.selectedClass();
+    const lvl = this.selectedSpellLevel();
+    const touch = this.onlyTouch();
+
+    return this.spells().filter((s) => {
+      let matchClass = false;
+      if (cls === 'druid') matchClass = s.druid_level !== null;
+      else if (cls === 'magus') matchClass = s.magus_level !== null;
+      else matchClass = s.druid_level !== null || s.magus_level !== null;
+
+      if (!matchClass) return false;
+
+      if (lvl !== 'all') {
+        const targetLvl = Number(lvl);
+        if (cls === 'druid' && s.druid_level !== targetLvl) return false;
+        if (cls === 'magus' && s.magus_level !== targetLvl) return false;
+        if (cls === 'all' && s.druid_level !== targetLvl && s.magus_level !== targetLvl) return false;
+      }
+
+      if (touch) {
+        const isTouch = (s.range && s.range.toLowerCase().includes('contatto')) ||
+                        (s.casting_time && s.casting_time.toLowerCase().includes('contatto'));
+        if (!isTouch) return false;
+      }
+
+      if (term !== '') {
+        const inName = s.name.toLowerCase().includes(term);
+        const inShort = s.short_description ? s.short_description.toLowerCase().includes(term) : false;
+        const inSchool = s.school ? s.school.toLowerCase().includes(term) : false;
+        if (!inName && !inShort && !inSchool) return false;
+      }
+
+      return true;
     });
   });
 
   ngOnInit(): void {
     this.shapeService.getAllShapes().subscribe({
-      next: (data: WildShape[]) => {
+      next: (data) => {
         this.shapes.set(data);
-        this.loading.set(false);
+        this.loadingShapes.set(false);
       },
-      error: (err: unknown) => {
-        console.error('Errore durante il recupero delle forme selvatiche:', err);
-        this.loading.set(false);
-      }
+      error: () => this.loadingShapes.set(false)
+    });
+
+    this.spellService.getSpells().subscribe({
+      next: (data) => {
+        this.spells.set(data);
+        this.loadingSpells.set(false);
+      },
+      error: () => this.loadingSpells.set(false)
     });
   }
 
-  resetFilters(): void {
+  resetShapeFilters(): void {
     this.searchTerm.set('');
     this.selectedSize.set('Tutte');
     this.selectedBsLevel.set('Tutti');
@@ -83,5 +147,11 @@ export class App implements OnInit {
     this.onlyClimb.set(false);
     this.onlyTrip.set(false);
     this.onlyGrab.set(false);
+  }
+
+  resetSpellFilters(): void {
+    this.spellSearch.set('');
+    this.selectedSpellLevel.set('all');
+    this.onlyTouch.set(false);
   }
 }

@@ -1,177 +1,249 @@
 <div class="app-layout">
-  <!-- Header Druidico -->
-  <header class="app-header">
-    <div class="header-badge">Druid Codex • PF 1E</div>
-    <h1 class="header-title">🌿 Forma Selvatica</h1>
-    <p class="header-sub">Grimorio rapido per Airyn — Jade Regent</p>
-  </header>
+  <!-- Navigazione Moduli -->
+  <nav class="nav-tabs">
+    <button 
+      class="nav-tab" 
+      [class.active]="activeTab() === 'shapes'" 
+      (click)="activeTab.set('shapes')">
+      🌿 Forme Selvatiche
+    </button>
+    <button 
+      class="nav-tab" 
+      [class.active]="activeTab() === 'spells'" 
+      (click)="activeTab.set('spells')">
+      📜 Grimorio Incantesimi
+    </button>
+  </nav>
 
-  <!-- Sticky Control Bar (Filtri & Ricerca) -->
-  <div class="control-panel">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input 
-        type="search" 
-        [ngModel]="searchTerm()" 
-        (ngModelChange)="searchTerm.set($event)" 
-        placeholder="Cerca creatura (es. Leone, Tigre, Aquila)..."
-        autocomplete="off"
-      />
-      <button *ngIf="searchTerm()" class="clear-search" (click)="searchTerm.set('')">✕</button>
-    </div>
+  <!-- ==================== VISTA 1: FORME SELVATICHE ==================== -->
+  <ng-container *ngIf="activeTab() === 'shapes'">
+    <header class="app-header">
+      <div class="header-badge">Druid Codex • PF 1E</div>
+      <h1 class="header-title">🌿 Forma Selvatica</h1>
+      <p class="header-sub">Codex per Airyn — Jade Regent</p>
+    </header>
 
-    <!-- Dropdown Selettori -->
-    <div class="selectors-grid">
-      <div class="select-wrapper">
-        <label>Forma Bestia</label>
-        <select [ngModel]="selectedBsLevel()" (ngModelChange)="selectedBsLevel.set($event)">
-          <option value="Tutti">Tutti i Livelli</option>
-          <option value="1">Forma Bestia I (Lv 4)</option>
-          <option value="2">Forma Bestia II (Lv 6)</option>
-        </select>
+    <div class="control-panel">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="search" 
+          [ngModel]="searchTerm()" 
+          (ngModelChange)="searchTerm.set($event)" 
+          placeholder="Cerca creatura (es. Leone, Tigre, Aquila)..."
+        />
+        <button *ngIf="searchTerm()" class="clear-search" (click)="searchTerm.set('')">✕</button>
       </div>
 
-      <div class="select-wrapper">
-        <label>Taglia</label>
-        <select [ngModel]="selectedSize()" (ngModelChange)="selectedSize.set($event)">
-          <option value="Tutte">Tutte le taglie</option>
-          <option value="Minuscola">Minuscola</option>
-          <option value="Piccola">Piccola</option>
-          <option value="Media">Media</option>
-          <option value="Grande">Grande</option>
-        </select>
+      <div class="selectors-grid">
+        <div class="select-wrapper">
+          <label>Forma Bestia</label>
+          <select [ngModel]="selectedBsLevel()" (ngModelChange)="selectedBsLevel.set($event)">
+            <option value="Tutti">Tutti i Livelli</option>
+            <option value="1">Forma Bestia I (Lv 4)</option>
+            <option value="2">Forma Bestia II (Lv 6)</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label>Taglia</label>
+          <select [ngModel]="selectedSize()" (ngModelChange)="selectedSize.set($event)">
+            <option value="Tutte">Tutte le taglie</option>
+            <option value="Minuscola">Minuscola</option>
+            <option value="Piccola">Piccola</option>
+            <option value="Media">Media</option>
+            <option value="Grande">Grande</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="chips-container">
+        <button type="button" class="chip" [class.active]="onlyPounce()" (click)="onlyPounce.set(!onlyPounce())">🐾 Balzare</button>
+        <button type="button" class="chip" [class.active]="onlyGrab()" (click)="onlyGrab.set(!onlyGrab())">🪢 Afferrare</button>
+        <button type="button" class="chip" [class.active]="onlyTrip()" (click)="onlyTrip.set(!onlyTrip())">🦵 Sbilanciare</button>
+        <button type="button" class="chip" [class.active]="onlyFly()" (click)="onlyFly.set(!onlyFly())">🦅 Volo</button>
+        <button type="button" class="chip" [class.active]="onlySwim()" (click)="onlySwim.set(!onlySwim())">🌊 Nuoto</button>
+        <button type="button" class="chip" [class.active]="onlyClimb()" (click)="onlyClimb.set(!onlyClimb())">🧗 Scalata</button>
+        <button *ngIf="hasActiveShapeFilters()" type="button" class="chip reset-chip" (click)="resetShapeFilters()">↺ Azzera</button>
       </div>
     </div>
 
-    <!-- Chips a scorrimento orizzontale (Swipe sui telefoni) -->
-    <div class="chips-container">
-      <button 
-        type="button"
-        class="chip" 
-        [class.active]="onlyPounce()" 
-        (click)="onlyPounce.set(!onlyPounce())">
-        🐾 Balzare
-      </button>
-
-      <button 
-        type="button"
-        class="chip" 
-        [class.active]="onlyGrab()" 
-        (click)="onlyGrab.set(!onlyGrab())">
-        🪢 Afferrare
-      </button>
-
-      <button 
-        type="button"
-        class="chip" 
-        [class.active]="onlyTrip()" 
-        (click)="onlyTrip.set(!onlyTrip())">
-        🦵 Sbilanciare
-      </button>
-
-      <button 
-        type="button"
-        class="chip" 
-        [class.active]="onlyFly()" 
-        (click)="onlyFly.set(!onlyFly())">
-        🦅 Volo
-      </button>
-
-      <button 
-        type="button"
-        class="chip" 
-        [class.active]="onlySwim()" 
-        (click)="onlySwim.set(!onlySwim())">
-        🌊 Nuoto
-      </button>
-
-      <button 
-        type="button"
-        class="chip" 
-        [class.active]="onlyClimb()" 
-        (click)="onlyClimb.set(!onlyClimb())">
-        🧗 Scalata
-      </button>
-
-      <!-- Bottone Reset rapido -->
-      <button 
-        *ngIf="hasActiveFilters()"
-        type="button"
-        class="chip reset-chip"
-        (click)="resetFilters()">
-        ↺ Azzera filtri
-      </button>
+    <div class="results-info">
+      <span *ngIf="loadingShapes()" class="loading-text"><span class="spinner"></span> Caricamento creature...</span>
+      <span *ngIf="!loadingShapes()">Visualizzate <strong>{{ filteredShapes().length }}</strong> di {{ shapes().length }} forme</span>
     </div>
-  </div>
 
-  <!-- Barra conteggio -->
-  <div class="results-info">
-    <span *ngIf="loading()" class="loading-text">
-      <span class="spinner"></span> Consultazione della foresta in corso...
-    </span>
-    <span *ngIf="!loading()">
-      Visualizzate <strong>{{ filteredShapes().length }}</strong> di {{ shapes().length }} forme
-    </span>
-  </div>
-
-  <!-- Griglia Creature Responsive -->
-  <main class="creatures-grid">
-    <article class="creature-card" *ngFor="let s of filteredShapes()">
-      <!-- Card Top: Nome, Taglia, Livello BS -->
-      <div class="card-top">
-        <div class="card-titles">
-          <h2 class="card-name">{{ s.name }}</h2>
-          <div class="badges-row">
-            <span class="badge size-badge" [attr.data-size]="s.size">{{ s.size }}</span>
-            <span class="badge bs-badge" [class.bs2]="s.bs_level === 2">BS {{ s.bs_level }}</span>
+    <main class="creatures-grid">
+      <article class="creature-card" *ngFor="let s of filteredShapes()">
+        <div class="card-top">
+          <div class="card-titles">
+            <h2 class="card-name">{{ s.name }}</h2>
+            <div class="badges-row">
+              <span class="badge size-badge" [attr.data-size]="s.size">{{ s.size }}</span>
+              <span class="badge bs-badge" [class.bs2]="s.bs_level === 2">BS {{ s.bs_level }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Card Stats: Velocità Speciali -->
-      <div class="card-speeds" *ngIf="s.fly_speed || s.swim_speed || s.climb_speed">
-        <div class="speed-pill fly" *ngIf="s.fly_speed">
-          <span class="pill-icon">🦅</span>
-          <span class="pill-text">{{ s.fly_speed }}</span>
-          <span class="pill-sub">({{ s.fly_maneuverability }})</span>
+        <div class="card-speeds" *ngIf="s.fly_speed || s.swim_speed || s.climb_speed">
+          <div class="speed-pill fly" *ngIf="s.fly_speed">🦅 {{ s.fly_speed }} ({{ s.fly_maneuverability }})</div>
+          <div class="speed-pill swim" *ngIf="s.swim_speed">🌊 {{ s.swim_speed }}</div>
+          <div class="speed-pill climb" *ngIf="s.climb_speed">🧗 {{ s.climb_speed }}</div>
         </div>
 
-        <div class="speed-pill swim" *ngIf="s.swim_speed">
-          <span class="pill-icon">🌊</span>
-          <span class="pill-text">{{ s.swim_speed }}</span>
+        <div class="card-abilities">
+          <span class="ability-tag pounce" *ngIf="s.has_pounce">🐾 Balzare</span>
+          <span class="ability-tag grab" *ngIf="s.has_grab">🪢 Afferrare</span>
+          <span class="ability-tag trip" *ngIf="s.has_trip">🦵 Sbilanciare</span>
+          <span class="ability-tag scent" *ngIf="s.has_scent">👃 Fiuto</span>
+          <span class="ability-tag sense" *ngIf="s.darkvision">👁️ Scurovisione</span>
+          <span class="ability-tag sense" *ngIf="s.low_light_vision">🌒 Crepuscolare</span>
         </div>
 
-        <div class="speed-pill climb" *ngIf="s.climb_speed">
-          <span class="pill-icon">🧗</span>
-          <span class="pill-text">{{ s.climb_speed }}</span>
+        <footer class="card-footer">
+          <a [href]="s.golarion_url" target="_blank" rel="noopener noreferrer" class="wiki-btn">
+            <span>Regole su Golarion Wiki</span>
+            <span>↗</span>
+          </a>
+        </footer>
+      </article>
+    </main>
+  </ng-container>
+
+  <!-- ==================== VISTA 2: GRIMORIO INCANTESIMI ==================== -->
+  <ng-container *ngIf="activeTab() === 'spells'">
+    <header class="app-header">
+      <div class="header-badge gold">Arcane & Divine Codex</div>
+      <h1 class="header-title">📜 Grimorio Incantesimi</h1>
+      <p class="header-sub">Compendio completo per Druido & Magus</p>
+    </header>
+
+    <div class="control-panel">
+      <!-- Selettore Classe -->
+      <div class="class-selector">
+        <button class="class-btn" [class.active]="selectedClass() === 'druid'" (click)="selectedClass.set('druid')">🌿 Druido (Airyn)</button>
+        <button class="class-btn" [class.active]="selectedClass() === 'magus'" (click)="selectedClass.set('magus')">⚔️ Magus</button>
+        <button class="class-btn" [class.active]="selectedClass() === 'all'" (click)="selectedClass.set('all')">🌐 Entrambi</button>
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="search" 
+          [ngModel]="spellSearch()" 
+          (ngModelChange)="spellSearch.set($event)" 
+          placeholder="Cerca incantesimo (es. Stretta Folgorante, Nebbia, Palla di Fuoco)..."
+        />
+        <button *ngIf="spellSearch()" class="clear-search" (click)="spellSearch.set('')">✕</button>
+      </div>
+
+      <!-- Chip Livello Slot & Filtro Spellstrike -->
+      <div class="chips-container">
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === 'all'" (click)="selectedSpellLevel.set('all')">Tutti i Livelli</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '0'" (click)="selectedSpellLevel.set('0')">Liv. 0</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '1'" (click)="selectedSpellLevel.set('1')">1°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '2'" (click)="selectedSpellLevel.set('2')">2°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '3'" (click)="selectedSpellLevel.set('3')">3°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '4'" (click)="selectedSpellLevel.set('4')">4°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '5'" (click)="selectedSpellLevel.set('5')">5°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '6'" (click)="selectedSpellLevel.set('6')">6°</button>
+        <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '7'" (click)="selectedSpellLevel.set('7')">7°</button>
+        <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '8'" (click)="selectedSpellLevel.set('8')">8°</button>
+        <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '9'" (click)="selectedSpellLevel.set('9')">9°</button>
+
+        <button type="button" class="chip touch-chip" [class.active]="onlyTouch()" (click)="onlyTouch.set(!onlyTouch())">⚡ A Contatto (Spellstrike)</button>
+        <button *ngIf="hasActiveSpellFilters()" type="button" class="chip reset-chip" (click)="resetSpellFilters()">↺ Azzera</button>
+      </div>
+    </div>
+
+    <div class="results-info">
+      <span *ngIf="loadingSpells()" class="loading-text"><span class="spinner"></span> Caricamento incantesimi...</span>
+      <span *ngIf="!loadingSpells()">Trovati <strong>{{ filteredSpells().length }}</strong> incantesimi</span>
+    </div>
+
+    <!-- Griglia Schede Incantesimi -->
+    <main class="creatures-grid">
+      <article class="creature-card spell-card" *ngFor="let sp of filteredSpells()" (click)="selectedSpell.set(sp)">
+        <div class="card-top">
+          <div class="card-titles">
+            <h2 class="card-name">{{ sp.name }}</h2>
+            <div class="badges-row">
+              <span class="badge class-level-badge druid" *ngIf="sp.druid_level !== null">🌿 Dru {{ sp.druid_level }}</span>
+              <span class="badge class-level-badge magus" *ngIf="sp.magus_level !== null">⚔️ Mag {{ sp.magus_level }}</span>
+              <span class="badge school-badge" *ngIf="sp.school">{{ sp.school }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-speeds">
+          <div class="speed-pill" *ngIf="sp.casting_time">⏱️ {{ sp.casting_time }}</div>
+          <div class="speed-pill" *ngIf="sp.range">📏 {{ sp.range }}</div>
+        </div>
+
+        <p class="spell-summary">{{ sp.short_description || 'Tocca per aprire le regole complete.' }}</p>
+
+        <footer class="card-footer">
+          <div class="read-more-hint">
+            <span>Leggi regole complete</span>
+            <span>📖</span>
+          </div>
+        </footer>
+      </article>
+    </main>
+  </ng-container>
+
+  <!-- ==================== MODALE / BOTTOM SHEET DELLE REGOLE INTEGRALI ==================== -->
+  <div class="modal-backdrop" *ngIf="selectedSpell()" (click)="selectedSpell.set(null)">
+    <div class="modal-sheet" (click)="$event.stopPropagation()">
+      <div class="modal-handle" (click)="selectedSpell.set(null)"></div>
+
+      <header class="modal-header">
+        <div class="modal-title-row">
+          <h2 class="modal-title">{{ selectedSpell()?.name }}</h2>
+          <button class="modal-close-btn" (click)="selectedSpell.set(null)">✕</button>
+        </div>
+
+        <div class="badges-row" style="margin-top: 0.5rem; display: flex; gap: 0.35rem;">
+          <span class="badge class-level-badge druid" *ngIf="selectedSpell()?.druid_level !== null">🌿 Druido {{ selectedSpell()?.druid_level }}</span>
+          <span class="badge class-level-badge magus" *ngIf="selectedSpell()?.magus_level !== null">⚔️ Magus {{ selectedSpell()?.magus_level }}</span>
+          <span class="badge school-badge" *ngIf="selectedSpell()?.school">{{ selectedSpell()?.school }}</span>
+        </div>
+      </header>
+
+      <div class="modal-stats-grid">
+        <div class="stat-box" *ngIf="selectedSpell()?.casting_time">
+          <span class="stat-lbl">Tempo di Lancio</span>
+          <span class="stat-val">{{ selectedSpell()?.casting_time }}</span>
+        </div>
+        <div class="stat-box" *ngIf="selectedSpell()?.range">
+          <span class="stat-lbl">Raggio di Azione</span>
+          <span class="stat-val">{{ selectedSpell()?.range }}</span>
+        </div>
+        <div class="stat-box" *ngIf="selectedSpell()?.duration">
+          <span class="stat-lbl">Durata</span>
+          <span class="stat-val">{{ selectedSpell()?.duration }}</span>
+        </div>
+        <div class="stat-box" *ngIf="selectedSpell()?.saving_throw">
+          <span class="stat-lbl">Tiro Salvezza</span>
+          <span class="stat-val">{{ selectedSpell()?.saving_throw }}</span>
+        </div>
+        <div class="stat-box" *ngIf="selectedSpell()?.spell_res">
+          <span class="stat-lbl">Resistenza Incantesimi</span>
+          <span class="stat-val">{{ selectedSpell()?.spell_res }}</span>
         </div>
       </div>
 
-      <!-- Card Tags: Abilità e Sensi -->
-      <div class="card-abilities">
-        <span class="ability-tag pounce" *ngIf="s.has_pounce">🐾 Balzare</span>
-        <span class="ability-tag grab" *ngIf="s.has_grab">🪢 Afferrare</span>
-        <span class="ability-tag trip" *ngIf="s.has_trip">🦵 Sbilanciare</span>
-        <span class="ability-tag scent" *ngIf="s.has_scent">👃 Fiuto</span>
-        <span class="ability-tag sense" *ngIf="s.darkvision">👁️ Scurovisione</span>
-        <span class="ability-tag sense" *ngIf="s.low_light_vision">🌒 Crepuscolare</span>
+      <div class="modal-description">
+        <h3>Descrizione delle Regole</h3>
+        <p>{{ selectedSpell()?.full_description || selectedSpell()?.short_description }}</p>
       </div>
 
-      <!-- Card Footer: Link Wiki -->
-      <footer class="card-footer">
-        <a [href]="s.golarion_url" target="_blank" rel="noopener noreferrer" class="wiki-btn">
-          <span>Regole su Golarion Wiki</span>
-          <span class="btn-arrow">↗</span>
+      <footer class="modal-footer" *ngIf="selectedSpell()?.golarion_url">
+        <a [href]="selectedSpell()?.golarion_url" target="_blank" rel="noopener noreferrer" class="wiki-btn">
+          <span>Consulta su Golarion Wiki</span>
+          <span>↗</span>
         </a>
       </footer>
-    </article>
-  </main>
-
-  <!-- Stato vuoto se la ricerca non trova nulla -->
-  <div class="empty-state" *ngIf="!loading() && filteredShapes().length === 0">
-    <div class="empty-icon">🍃</div>
-    <h3>Nessuna forma animale trovata</h3>
-    <p>Nessuna creatura corrisponde ai filtri selezionati.</p>
-    <button class="reset-btn" (click)="resetFilters()">Reimposta tutti i filtri</button>
+    </div>
   </div>
 </div>
