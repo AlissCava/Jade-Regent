@@ -13,7 +13,7 @@ export interface DiceAction {
   baseMod: number;
   type: 'atk' | 'dmg' | 'save' | 'skill';
   critMin?: number;
-  damageDiceExtra?: { count: number; faces: number; name: string };
+  isElemental?: boolean; // Se true, esclude Sfida e modificatori fisici
 }
 
 export interface RollResult {
@@ -72,18 +72,17 @@ export class CharacterSheetComponent implements OnInit {
   saveSuccess = signal<boolean>(false);
 
   charRecord = signal<CharacterRecord | null>(null);
-
-  // Tab Principale: Scheda Ryoujin, Scheda Hisui, oppure Lanciatore Dadi
-  activeTab = signal<'main' | 'companion' | 'roller'>('main');
+  activeTab = signal<'main' | 'companion' | 'roller'>('roller'); // Apre direttamente il roller per comodità
 
   // --- STATO LANCIATORE DADI ---
   rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
   rollerSection = signal<'combat' | 'damage' | 'saves' | 'skills'>('combat');
 
-  // Modificatori di Lancio (Checkbox come nelle foto)
+  // Modificatori di Lancio Checkbox
   modInspire = signal<boolean>(false);     // +2 TxC / +2 Danni
   modDivineFavor = signal<boolean>(false); // +2 TxC / +2 Danni
   modPrayer = signal<boolean>(false);      // +1 TxC / +1 Danni / +1 TS
+  modChallenge = signal<boolean>(false);   // +7 Danni (non su fiammeggianti!)
   modFlank = signal<boolean>(false);       // +2 TxC
   modBanner = signal<boolean>(false);      // +1 TxC
 
@@ -170,32 +169,55 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
-  // --- MOTORE LANCIO DADI ---
+  // --- MOTORE LANCIO DADI CON ESCLUSIONE SFIDA SU FIAMMEGGIANTE ---
   rollAction(action: DiceAction): void {
     const isAtk = action.type === 'atk';
     const isDmg = action.type === 'dmg';
     const isSave = action.type === 'save';
 
-    // Calcolo bonus addizionali da checkbox
     let extraMod = 0;
     const bonusParts: string[] = [];
 
-    if (this.modInspire() && (isAtk || isDmg)) {
-      extraMod += 2;
-      bonusParts.push('+2 Ispirare');
+    // Sfida (+7 a Livello 7): solo se danno e NON elementale (fuoco)
+    if (this.modChallenge() && isDmg) {
+      if (!action.isElemental) {
+        const challBonus = this.charRecord()?.level || 7;
+        extraMod += challBonus;
+        bonusParts.push(`+${challBonus} Sfida`);
+      }
     }
-    if (this.modDivineFavor() && (isAtk || isDmg)) {
-      extraMod += 2;
-      bonusParts.push('+2 Favore');
+
+    // Ispirare coraggio (+2): attacchi e danni fisici
+    if (this.modInspire()) {
+      if (isAtk || (isDmg && !action.isElemental)) {
+        extraMod += 2;
+        bonusParts.push('+2 Ispirare');
+      }
     }
+
+    // Favore divino (+2): attacchi e danni fisici
+    if (this.modDivineFavor()) {
+      if (isAtk || (isDmg && !action.isElemental)) {
+        extraMod += 2;
+        bonusParts.push('+2 Favore');
+      }
+    }
+
+    // Preghiera (+1): attacchi, danni fisici e tiri salvezza
     if (this.modPrayer()) {
-      extraMod += 1;
-      bonusParts.push('+1 Preghiera');
+      if (isAtk || (isDmg && !action.isElemental) || isSave) {
+        extraMod += 1;
+        bonusParts.push('+1 Preghiera');
+      }
     }
+
+    // Fiancheggiamento (+2 TxC)
     if (this.modFlank() && isAtk) {
       extraMod += 2;
       bonusParts.push('+2 Fiancheggio');
     }
+
+    // Stendardo (+1 TxC)
     if (this.modBanner() && isAtk) {
       extraMod += 1;
       bonusParts.push('+1 Stendardo');
@@ -232,22 +254,20 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
-  // Lanciatore rapido generico (es. 1d20 secco o 1d6)
   quickRoll(faces: number): void {
     const r = Math.floor(Math.random() * faces) + 1;
     this.lastResult.set({
-      title: `Tiro Secco 1d${faces}`,
+      title: `Tiro 1d${faces}`,
       d20: faces === 20 ? r : 0,
       rolls: [r],
       formula: `1d${faces}`,
       total: r,
       isCrit: r === 20,
       isFumble: r === 1,
-      breakdown: `Lancio puro: ${r}`
+      breakdown: `Dado: ${r}`
     });
   }
 
-  // Metodi scheda
   modifyHp(target: 'main' | 'companion', amount: number): void {
     const rec = this.charRecord();
     if (!rec) return;

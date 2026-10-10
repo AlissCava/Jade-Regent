@@ -116,32 +116,95 @@
         </div>
       </div>
 
+      <!-- ARMI & AZIONI DI ATTACCO (1° E 2° ATTACCO ITERATIVO) -->
       <div class="section-card">
-        <h2 class="section-title">🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }})</h2>
+        <h2 class="section-title">
+          🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }}/+{{ rec.data.character.bab - 5 }})
+        </h2>
+        
         <div class="weapons-grid">
+          <!-- 1. SUISHEN -->
           <div class="weapon-card legendary">
             <div class="wpn-top">
-              <div><span class="wpn-badge">Lama Leggendaria Intelligente</span><h3 class="wpn-name">Suishen (+2 Fiammeggiante Difensiva)</h3></div>
+              <div>
+                <span class="wpn-badge">Lama Leggendaria Intelligente</span>
+                <h3 class="wpn-name">Suishen (+2 Fiammeggiante Difensiva)</h3>
+              </div>
               <div class="wpn-crit">Critico: 18-20 / x2</div>
             </div>
             <div class="wpn-stats-row">
-              <div class="stat-calc"><span class="lbl">Tiro per Colpire</span><span class="val highlight">+{{ rec.data.character.bab + 6 + 2 + attackMod() }}</span></div>
-              <div class="stat-calc"><span class="lbl">Danno Katana (Due Mani)</span><span class="val highlight">1d8 + {{ 9 + 2 + damageMod() }} + 1d6 fuoco</span></div>
+              <div class="stat-calc">
+                <span class="lbl">1° e 2° TxC (Mischia)</span>
+                <span class="val highlight">
+                  +{{ rec.data.character.bab + 6 + 2 + attackMod() }} / +{{ rec.data.character.bab - 5 + 6 + 2 + attackMod() }}
+                </span>
+              </div>
+              <div class="stat-calc">
+                <span class="lbl">Danno Katana (Due Mani)</span>
+                <span class="val highlight">
+                  1d8 + {{ 9 + 2 + damageMod() }} + 1d6 fuoco
+                </span>
+              </div>
+            </div>
+            <div class="wpn-special-powers">
+              <span>✨ <strong>Poteri attivi di Suishen:</strong> Resistenza Freddo 3v/g • Vedere Invisibilità • Luce Diurna • Camminare sul Fuoco</span>
             </div>
           </div>
+
+          <!-- 2. KATANA DEADLY +1 -->
           <div class="weapon-card">
             <div class="wpn-top">
-              <div><span class="wpn-badge">Arma Perfetta</span><h3 class="wpn-name">Katana Deadly +1 (Due Mani)</h3></div>
+              <div>
+                <span class="wpn-badge">Arma Perfetta</span>
+                <h3 class="wpn-name">Katana Deadly +1 (Due Mani)</h3>
+              </div>
               <div class="wpn-crit">Critico: 18-20 / x2 (+2 conferma)</div>
             </div>
             <div class="wpn-stats-row">
-              <div class="stat-calc"><span class="lbl">Tiro per Colpire</span><span class="val highlight">+{{ rec.data.character.bab + 6 + 1 + attackMod() }}</span></div>
-              <div class="stat-calc"><span class="lbl">Danno Katana</span><span class="val highlight">1d8 + {{ 9 + 1 + damageMod() }}</span></div>
+              <div class="stat-calc">
+                <span class="lbl">1° e 2° TxC (Mischia)</span>
+                <span class="val highlight">
+                  +{{ rec.data.character.bab + 6 + 1 + attackMod() }} / +{{ rec.data.character.bab - 5 + 6 + 1 + attackMod() }}
+                </span>
+              </div>
+              <div class="stat-calc">
+                <span class="lbl">Danno Katana</span>
+                <span class="val highlight">
+                  1d8 + {{ 9 + 1 + damageMod() }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. ARCO LUNGO COMPOSITO (+2 FOR) +1 -->
+          <div class="weapon-card">
+            <div class="wpn-top">
+              <div>
+                <span class="wpn-badge">Distanza (Gittata 33 m / 22 caselle)</span>
+                <h3 class="wpn-name">Arco Lungo Composito (+2 FOR) +1</h3>
+              </div>
+              <div class="wpn-crit">Critico: 20 / x3</div>
+            </div>
+            <div class="wpn-stats-row">
+              <div class="stat-calc">
+                <span class="lbl">1° e 2° TxC (Distanza)</span>
+                <span class="val highlight">
+                  +{{ rec.data.character.bab + 2 + 1 + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }} / +{{ rec.data.character.bab - 5 + 2 + 1 + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}
+                </span>
+              </div>
+              <div class="stat-calc">
+                <span class="lbl">Danno Freccia</span>
+                <span class="val highlight">
+                  1d8 + {{ 3 + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}
+                </span>
+              </div>
+            </div>
+            <div class="wpn-special-powers">
+              <span>🏹 <strong>Talento:</strong> Tiratore in Sella (Mounted Archer) dimezza le penalità al tiro in movimento su Hisui • Frecce speciali nell'inventario</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
     <!-- ==================== VISTA 2: SCHEDA HISUI ==================== -->
     <div *ngIf="activeTab() === 'companion' && rec.data.companion as comp" class="char-sheet hisui-theme">
@@ -192,9 +255,9 @@
       </div>
     </div>
 
-    <!-- ==================== VISTA 3: LANCIATORE DADI COMPLETO ==================== -->
+<!-- ==================== VISTA 3: LANCIATORE DADI COMPLETO ==================== -->
     <div *ngIf="activeTab() === 'roller'" class="roller-container">
-      <!-- 1. SELETTORE PG LANCIANTE -->
+      <!-- 1. SELETTORE PERSONAGGIO -->
       <div class="roller-top-nav">
         <button 
           type="button" 
@@ -212,7 +275,7 @@
         </button>
       </div>
 
-      <!-- 2. CARTELLE SEZIONI (STILE APP FOTO) -->
+      <!-- 2. CARTELLE SEZIONI (COMBATTIMENTO / DANNI / SALVEZZA / ABILITÀ) -->
       <div class="roller-folders-bar">
         <button type="button" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">
           🗡️ Attacchi
@@ -228,12 +291,12 @@
         </button>
       </div>
 
-      <!-- 3. BOX MODIFICATORI ATTIVI CON CHECKBOX (STILE FOTO) -->
+      <!-- 3. ROLL MODIFIERS (CON CHECKBOX COME NELLO SCREENSHOT) -->
       <div class="roll-modifiers-box">
         <div class="mod-box-header">
           <span>ROLL MODIFIERS</span>
-          <button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modDivineFavor.set(false); modPrayer.set(false); modFlank.set(false); modBanner.set(false)">
-            Reset
+          <button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modDivineFavor.set(false); modPrayer.set(false); modChallenge.set(false); modFlank.set(false); modBanner.set(false)">
+            Clear
           </button>
         </div>
         <div class="mod-checkboxes-grid">
@@ -242,7 +305,7 @@
             <span>Ispirare coraggio (+2)</span>
           </label>
 
-          <label *ngIf="rollerChar() === 'ryoujin'" class="mod-check-label" [class.checked]="modDivineFavor()">
+          <label class="mod-check-label" [class.checked]="modDivineFavor()">
             <input type="checkbox" [ngModel]="modDivineFavor()" (ngModelChange)="modDivineFavor.set($event)" />
             <span>Favore divino (+2)</span>
           </label>
@@ -252,19 +315,25 @@
             <span>Preghiera (+1)</span>
           </label>
 
+          <!-- SFIDA (+7): NON SI APPLICA A SUISHEN FIAMMEGGIANTI -->
+          <label class="mod-check-label" [class.checked]="modChallenge()">
+            <input type="checkbox" [ngModel]="modChallenge()" (ngModelChange)="modChallenge.set($event)" />
+            <span>Sfida (+{{ rec.level }})</span>
+          </label>
+
           <label class="mod-check-label" [class.checked]="modFlank()">
             <input type="checkbox" [ngModel]="modFlank()" (ngModelChange)="modFlank.set($event)" />
-            <span>Fiancheggiamento (+2 TxC)</span>
+            <span>Fiancheggiamento (+2)</span>
           </label>
 
           <label class="mod-check-label" [class.checked]="modBanner()">
             <input type="checkbox" [ngModel]="modBanner()" (ngModelChange)="modBanner.set($event)" />
-            <span>Stendardo (+1 TxC)</span>
+            <span>Stendardo (+1)</span>
           </label>
         </div>
       </div>
 
-      <!-- 4. BANNER RISULTATO ULTIMO TIRO -->
+      <!-- 4. BANNER RISULTATO TIRO -->
       <div class="roll-result-banner" *ngIf="lastResult() as res">
         <div class="res-head">
           <span class="res-title">{{ res.title }}</span>
@@ -281,7 +350,7 @@
           </div>
         </div>
         <div class="crit-warning" *ngIf="res.isCrit">
-          ✨ MINACCIA DI CRITICO (18-20)! Tira per confermare!
+          ✨ MINACCIA DI CRITICO (18-20)! Clicca sul tiro di conferma critico!
         </div>
         <div class="fumble-warning" *ngIf="res.isFumble">
           💀 FALLIMENTO AUTOMATICO (1 Naturale)!
@@ -289,138 +358,152 @@
         <div class="res-breakdown">{{ res.breakdown }}</div>
       </div>
 
-      <!-- 5. LISTA RIGHE DI TIRO (TOUCH LIST STILE APP FOTO) -->
+      <!-- 5. LISTA RIGHE DI TIRO ESATTE DEGLI SCREENSHOT -->
       <div class="dice-rolls-list">
-        <!-- SEZIONE ATTACCHI RYOUJIN -->
+        <!-- ===== RYOUJIN: ATTACCHI (SCREENSHOT 1) ===== -->
         <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'combat'">
-          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Katana Suishen', sub: 'd20 + 15', diceCount: 1, diceFaces: 20, baseMod: 15, type: 'atk', critMin: 18 })">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Katana pod 1', sub: 'd20+14', diceCount: 1, diceFaces: 20, baseMod: 14, type: 'atk', critMin: 18 })">
             <div class="item-info">
-              <span class="item-name">TxC Katana Suishen (+2)</span>
-              <span class="item-sub">d20 + 15 • Critico 18-20</span>
+              <span class="item-name">Katana pod 1</span>
+              <span class="item-sub">d20+14</span>
             </div>
             <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
 
-          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Katana Deadly', sub: 'd20 + 14', diceCount: 1, diceFaces: 20, baseMod: 14, type: 'atk', critMin: 18 })">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Katana pod 1 crit', sub: 'd20+14+2', diceCount: 1, diceFaces: 20, baseMod: 16, type: 'atk' })">
             <div class="item-info">
-              <span class="item-name">TxC Katana Deadly (+1)</span>
-              <span class="item-sub">d20 + 14 • Critico 18-20 (+2 conf)</span>
+              <span class="item-name">Katana pod 1 crit</span>
+              <span class="item-sub">d20+14+2 (Conferma)</span>
             </div>
             <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
 
-          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Katana Poderoso', sub: 'd20 + 12', diceCount: 1, diceFaces: 20, baseMod: 12, type: 'atk', critMin: 18 })">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Katana pod 2', sub: 'd20+7', diceCount: 1, diceFaces: 20, baseMod: 7, type: 'atk', critMin: 18 })">
             <div class="item-info">
-              <span class="item-name">TxC Katana con Poderoso</span>
-              <span class="item-sub">d20 + 12 • (-2 TxC)</span>
+              <span class="item-name">Katana pod 2</span>
+              <span class="item-sub">d20+7 (2° attacco iterativo)</span>
             </div>
             <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
 
-          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Arco Lungo', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'atk', critMin: 20 })">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Katana pod 2 crit', sub: 'd20+7+2', diceCount: 1, diceFaces: 20, baseMod: 9, type: 'atk' })">
             <div class="item-info">
-              <span class="item-name">TxC Arco Lungo (+2 For)</span>
-              <span class="item-sub">d20 + 10 • Gittata 33 m</span>
+              <span class="item-name">Katana pod 2 crit</span>
+              <span class="item-sub">d20+7+2 (Conferma)</span>
             </div>
             <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
 
-          <div class="dice-item-row" (click)="rollAction({ name: 'Conferma Critico Katana', sub: 'd20 + 16', diceCount: 1, diceFaces: 20, baseMod: 16, type: 'atk' })">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Suishen 1', sub: 'd20+15', diceCount: 1, diceFaces: 20, baseMod: 15, type: 'atk', critMin: 18 })">
             <div class="item-info">
-              <span class="item-name">Tiro Conferma Critico</span>
-              <span class="item-sub">d20 + 14 + 2 (Weapon Expertise)</span>
+              <span class="item-name">Suishen 1</span>
+              <span class="item-sub">d20+15</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Suishen crit 1', sub: 'd20+15+2', diceCount: 1, diceFaces: 20, baseMod: 17, type: 'atk' })">
+            <div class="item-info">
+              <span class="item-name">Suishen crit 1</span>
+              <span class="item-sub">d20+15+2 (Conferma)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Suishen 2', sub: 'd20+8', diceCount: 1, diceFaces: 20, baseMod: 8, type: 'atk', critMin: 18 })">
+            <div class="item-info">
+              <span class="item-name">Suishen 2</span>
+              <span class="item-sub">d20+8 (2° attacco iterativo)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Suishen 2 crit', sub: 'd20+8+2', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'atk' })">
+            <div class="item-info">
+              <span class="item-name">Suishen 2 crit</span>
+              <span class="item-sub">d20+8+2 (Conferma)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Arco', sub: 'd20+10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'atk', critMin: 20 })">
+            <div class="item-info">
+              <span class="item-name">Arco</span>
+              <span class="item-sub">d20+10</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Arco 2', sub: 'd20+5', diceCount: 1, diceFaces: 20, baseMod: 5, type: 'atk', critMin: 20 })">
+            <div class="item-info">
+              <span class="item-name">Arco 2</span>
+              <span class="item-sub">d20+5 (2° attacco iterativo)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'BMC', sub: 'd20+14', diceCount: 1, diceFaces: 20, baseMod: 14, type: 'atk' })">
+            <div class="item-info">
+              <span class="item-name">BMC</span>
+              <span class="item-sub">d20+14</span>
             </div>
             <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
         </ng-container>
 
-        <!-- SEZIONE DANNI RYOUJIN -->
+        <!-- ===== RYOUJIN: DANNI (SCREENSHOT 2) ===== -->
         <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'damage'">
-          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Katana Poderoso', sub: 'd8 + 16', diceCount: 1, diceFaces: 8, baseMod: 16, type: 'dmg' })">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danni katana pod', sub: 'd8+16', diceCount: 1, diceFaces: 8, baseMod: 16, type: 'dmg', isElemental: false })">
             <div class="item-info">
-              <span class="item-name">Danni Katana Pod</span>
-              <span class="item-sub">d8 + 16 (Due mani + Poderoso)</span>
+              <span class="item-name">Danni katana pod</span>
+              <span class="item-sub">d8+16</span>
             </div>
             <button type="button" class="roll-btn dmg">Danno 💥</button>
           </div>
 
-          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Katana Pod in Sfida', sub: 'd8 + 23', diceCount: 1, diceFaces: 8, baseMod: 23, type: 'dmg' })">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danno suishen', sub: 'd8+17', diceCount: 1, diceFaces: 8, baseMod: 17, type: 'dmg', isElemental: false })">
             <div class="item-info">
-              <span class="item-name">Danni Katana Pod in Sfida</span>
-              <span class="item-sub">d8 + 16 + 7 (Ronin Lv 7)</span>
+              <span class="item-name">Danno suishen</span>
+              <span class="item-sub">d8+17</span>
             </div>
             <button type="button" class="roll-btn dmg">Danno 💥</button>
           </div>
 
-          <div class="dice-item-row" (click)="rollAction({ name: 'Danno Suishen', sub: 'd8 + 17', diceCount: 1, diceFaces: 8, baseMod: 17, type: 'dmg' })">
+          <!-- FIAMMEGGIANTE: isElemental: true (LA SFIDA NON HA EFFETTO) -->
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danno suishen fiammeggianti', sub: 'd6', diceCount: 1, diceFaces: 6, baseMod: 0, type: 'dmg', isElemental: true })">
             <div class="item-info">
-              <span class="item-name">Danno Suishen (Fisico)</span>
-              <span class="item-sub">d8 + 17 (+2 arma + POD)</span>
-            </div>
-            <button type="button" class="roll-btn dmg">Danno 💥</button>
-          </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Danno Suishen Fiammeggiante', sub: 'd6', diceCount: 1, diceFaces: 6, baseMod: 0, type: 'dmg' })">
-            <div class="item-info">
-              <span class="item-name">Danno Suishen Fiammeggiante</span>
-              <span class="item-sub">d6 Fuoco</span>
+              <span class="item-name">Danno suishen fiammeggianti</span>
+              <span class="item-sub">d6 (Nessun effetto da Sfida)</span>
             </div>
             <button type="button" class="roll-btn fire">Fuoco 🔥</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Danno Arco Lungo', sub: 'd8 + 3', diceCount: 1, diceFaces: 8, baseMod: 3, type: 'dmg' })">
-            <div class="item-info">
-              <span class="item-name">Danno Arco Lungo (+2 For)</span>
-              <span class="item-sub">d8 + 3</span>
-            </div>
-            <button type="button" class="roll-btn dmg">Danno 💥</button>
-          </div>
         </ng-container>
 
-        <!-- SEZIONE TIRI SALVEZZA RYOUJIN -->
+        <!-- ===== RYOUJIN: TIRI SALVEZZA ===== -->
         <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'saves'">
-          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra Ryoujin', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Tempra</span>
-              <span class="item-sub">d20 + 10</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra', sub: 'd20+10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
+            <div class="item-info"><span class="item-name">Tempra</span><span class="item-sub">d20+10</span></div>
             <button type="button" class="roll-btn save">Salvezza 🛡️</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra (2° Tiro Risoluto)', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Tempra 2 (Ritiro Risoluto)</span>
-              <span class="item-sub">d20 + 10 • Tieni il migliore!</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra 2', sub: 'd20+10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
+            <div class="item-info"><span class="item-name">Tempra 2 (Ritiro Risoluto)</span><span class="item-sub">d20+10</span></div>
             <button type="button" class="roll-btn save">Ritiro 🔄</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Riflessi Ryoujin', sub: 'd20 + 5', diceCount: 1, diceFaces: 20, baseMod: 5, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Riflessi</span>
-              <span class="item-sub">d20 + 5</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Riflessi', sub: 'd20+5', diceCount: 1, diceFaces: 20, baseMod: 5, type: 'save' })">
+            <div class="item-info"><span class="item-name">Riflessi</span><span class="item-sub">d20+5</span></div>
             <button type="button" class="roll-btn save">Salvezza 🛡️</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà Ryoujin', sub: 'd20 + 6', diceCount: 1, diceFaces: 20, baseMod: 6, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Volontà</span>
-              <span class="item-sub">d20 + 6 (+2 vs Paura)</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà', sub: 'd20+6', diceCount: 1, diceFaces: 20, baseMod: 6, type: 'save' })">
+            <div class="item-info"><span class="item-name">Volontà</span><span class="item-sub">d20+6</span></div>
             <button type="button" class="roll-btn save">Salvezza 🛡️</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà (2° Tiro Fermezza)', sub: 'd20 + 6', diceCount: 1, diceFaces: 20, baseMod: 6, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Volontà 2 (Ritiro Fermezza)</span>
-              <span class="item-sub">d20 + 6 • Secondo tiro</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà 2', sub: 'd20+6', diceCount: 1, diceFaces: 20, baseMod: 6, type: 'save' })">
+            <div class="item-info"><span class="item-name">Volontà 2 (Ritiro Fermezza)</span><span class="item-sub">d20+6</span></div>
             <button type="button" class="roll-btn save">Ritiro 🔄</button>
           </div>
         </ng-container>
 
-        <!-- SEZIONE ABILITÀ RYOUJIN -->
+        <!-- ===== RYOUJIN: ABILITÀ ===== -->
         <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'skills'">
           <div 
             class="dice-item-row" 
@@ -428,86 +511,46 @@
             (click)="rollAction({ name: sk.name, sub: 'd20' + (sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus), diceCount: 1, diceFaces: 20, baseMod: sk.bonus, type: 'skill' })">
             <div class="item-info">
               <span class="item-name">{{ sk.name }}</span>
-              <span class="item-sub">d20{{ sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus }} ({{ sk.stat }})</span>
+              <span class="item-sub">d20{{ sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus }}</span>
             </div>
             <button type="button" class="roll-btn skill">Prova 📊</button>
           </div>
         </ng-container>
 
-        <!-- SEZIONE ATTACCHI HISUI -->
+        <!-- ===== HISUI: COMBAT & DANNI ===== -->
         <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'combat'">
-          <div class="dice-item-row" (click)="rollAction({ name: 'Morso Hisui (TxC)', sub: 'd20 + 11', diceCount: 1, diceFaces: 20, baseMod: 11, type: 'atk', critMin: 20 })">
-            <div class="item-info">
-              <span class="item-name">Morso (TxC)</span>
-              <span class="item-sub">d20 + 11 • Attacco Naturale</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Morso Hisui', sub: 'd20+11', diceCount: 1, diceFaces: 20, baseMod: 11, type: 'atk', critMin: 20 })">
+            <div class="item-info"><span class="item-name">Morso</span><span class="item-sub">d20+11</span></div>
             <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Morso con Attacco Poderoso', sub: 'd20 + 9', diceCount: 1, diceFaces: 20, baseMod: 9, type: 'atk', critMin: 20 })">
-            <div class="item-info">
-              <span class="item-name">Morso Poderoso (TxC)</span>
-              <span class="item-sub">d20 + 9 (-2 TxC / +6 Danni)</span>
-            </div>
-            <button type="button" class="roll-btn">Tira 🎲</button>
-          </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Sbilanciare Gratuito (BMC)', sub: 'd20 + 11', diceCount: 1, diceFaces: 20, baseMod: 11, type: 'atk' })">
-            <div class="item-info">
-              <span class="item-name">BMC Sbilanciare (Trip)</span>
-              <span class="item-sub">d20 + 11 • Gratuito a segno</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'BMC Sbilanciare', sub: 'd20+11', diceCount: 1, diceFaces: 20, baseMod: 11, type: 'atk' })">
+            <div class="item-info"><span class="item-name">BMC Sbilanciare</span><span class="item-sub">d20+11</span></div>
             <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
         </ng-container>
 
-        <!-- SEZIONE DANNI HISUI -->
         <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'damage'">
-          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Morso Poderoso', sub: 'd8 + 16', diceCount: 1, diceFaces: 8, baseMod: 16, type: 'dmg' })">
-            <div class="item-info">
-              <span class="item-name">Danni Morso Pod</span>
-              <span class="item-sub">d8 + 16 (+6 Poderoso)</span>
-            </div>
-            <button type="button" class="roll-btn dmg">Danno 💥</button>
-          </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Morso Standard', sub: 'd8 + 10', diceCount: 1, diceFaces: 8, baseMod: 10, type: 'dmg' })">
-            <div class="item-info">
-              <span class="item-name">Danno Morso Base</span>
-              <span class="item-sub">d8 + 10</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danni morso pod', sub: 'd8+16', diceCount: 1, diceFaces: 8, baseMod: 16, type: 'dmg', isElemental: false })">
+            <div class="item-info"><span class="item-name">Danni morso pod</span><span class="item-sub">d8+16</span></div>
             <button type="button" class="roll-btn dmg">Danno 💥</button>
           </div>
         </ng-container>
 
-        <!-- SEZIONE TIRI SALVEZZA HISUI -->
         <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'saves'">
-          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra Hisui', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Tempra</span>
-              <span class="item-sub">d20 + 10</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra Hisui', sub: 'd20+10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
+            <div class="item-info"><span class="item-name">Tempra</span><span class="item-sub">d20+10</span></div>
             <button type="button" class="roll-btn save">Salvezza 🛡️</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Riflessi Hisui (Eludere)', sub: 'd20 + 8', diceCount: 1, diceFaces: 20, baseMod: 8, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Riflessi (Eludere)</span>
-              <span class="item-sub">d20 + 8 (0 danni se superato!)</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Riflessi Hisui', sub: 'd20+8', diceCount: 1, diceFaces: 20, baseMod: 8, type: 'save' })">
+            <div class="item-info"><span class="item-name">Riflessi (Eludere)</span><span class="item-sub">d20+8</span></div>
             <button type="button" class="roll-btn save">Salvezza 🛡️</button>
           </div>
-
-          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà Hisui (Devozione)', sub: 'd20 + 3', diceCount: 1, diceFaces: 20, baseMod: 3, type: 'save' })">
-            <div class="item-info">
-              <span class="item-name">Volontà</span>
-              <span class="item-sub">d20 + 3 (+4 morale vs Ammaliamento)</span>
-            </div>
+          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà Hisui', sub: 'd20+3', diceCount: 1, diceFaces: 20, baseMod: 3, type: 'save' })">
+            <div class="item-info"><span class="item-name">Volontà</span><span class="item-sub">d20+3</span></div>
             <button type="button" class="roll-btn save">Salvezza 🛡️</button>
           </div>
         </ng-container>
 
-        <!-- SEZIONE ABILITÀ HISUI -->
         <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'skills'">
           <div 
             class="dice-item-row" 
@@ -522,9 +565,9 @@
         </ng-container>
       </div>
 
-      <!-- 6. BARRA LANCI RAPIDI LIBERI -->
+      <!-- 6. PULSANTI RAPIDI DI EMERGENZA IN BASSO -->
       <div class="quick-dice-bar">
-        <span class="qd-lbl">LANCI RAPIDI:</span>
+        <span class="qd-lbl">RAPIDI:</span>
         <button type="button" (click)="quickRoll(20)">d20</button>
         <button type="button" (click)="quickRoll(8)">d8</button>
         <button type="button" (click)="quickRoll(6)">d6</button>
@@ -532,7 +575,6 @@
         <button type="button" (click)="quickRoll(100)">d%</button>
       </div>
     </div>
-  </ng-container>
 
   <!-- MODALE LEVEL UP (Invariata) -->
   <div class="modal-backdrop" *ngIf="showLevelUpModal()" (click)="showLevelUpModal.set(false)">
