@@ -44,8 +44,8 @@ $text-muted: #94a3b8;
 
 .control-panel {
   position: sticky;
-  top: 4.5rem;
-  z-index: 100;
+  top: calc(3.8rem + env(safe-area-inset-top, 0px)); // <-- Aggiornato qui
+  z-index: 90;
   background: rgba(19, 28, 46, 0.94);
   backdrop-filter: blur(14px);
   border: 1px solid $border-card;
