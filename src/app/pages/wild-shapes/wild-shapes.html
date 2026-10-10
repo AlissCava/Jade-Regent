@@ -1,0 +1,93 @@
+<div class="page-container">
+  <header class="page-header">
+    <div class="header-badge">Druid Codex • PF 1E</div>
+    <h1 class="header-title">🌿 Forma Selvatica</h1>
+    <p class="header-sub">Codex per Airyn — Jade Regent</p>
+  </header>
+
+  <div class="control-panel">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="search" 
+        [ngModel]="searchTerm()" 
+        (ngModelChange)="searchTerm.set($event)" 
+        placeholder="Cerca creatura (es. Leone, Tigre, Aquila)..."
+      />
+      <button *ngIf="searchTerm()" class="clear-search" (click)="searchTerm.set('')">✕</button>
+    </div>
+
+    <div class="selectors-grid">
+      <div class="select-wrapper">
+        <label>Forma Bestia</label>
+        <select [ngModel]="selectedBsLevel()" (ngModelChange)="selectedBsLevel.set($event)">
+          <option value="Tutti">Tutti i Livelli</option>
+          <option value="1">Forma Bestia I (Lv 4)</option>
+          <option value="2">Forma Bestia II (Lv 6)</option>
+        </select>
+      </div>
+
+      <div class="select-wrapper">
+        <label>Taglia</label>
+        <select [ngModel]="selectedSize()" (ngModelChange)="selectedSize.set($event)">
+          <option value="Tutte">Tutte le taglie</option>
+          <option value="Minuscola">Minuscola</option>
+          <option value="Piccola">Piccola</option>
+          <option value="Media">Media</option>
+          <option value="Grande">Grande</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="chips-container">
+      <button type="button" class="chip" [class.active]="onlyPounce()" (click)="onlyPounce.set(!onlyPounce())">🐾 Balzare</button>
+      <button type="button" class="chip" [class.active]="onlyGrab()" (click)="onlyGrab.set(!onlyGrab())">🪢 Afferrare</button>
+      <button type="button" class="chip" [class.active]="onlyTrip()" (click)="onlyTrip.set(!onlyTrip())">🦵 Sbilanciare</button>
+      <button type="button" class="chip" [class.active]="onlyFly()" (click)="onlyFly.set(!onlyFly())">🦅 Volo</button>
+      <button type="button" class="chip" [class.active]="onlySwim()" (click)="onlySwim.set(!onlySwim())">🌊 Nuoto</button>
+      <button type="button" class="chip" [class.active]="onlyClimb()" (click)="onlyClimb.set(!onlyClimb())">🧗 Scalata</button>
+      <button *ngIf="hasActiveShapeFilters()" type="button" class="chip reset-chip" (click)="resetShapeFilters()">↺ Azzera</button>
+    </div>
+  </div>
+
+  <div class="results-info">
+    <span *ngIf="loadingShapes()" class="loading-text"><span class="spinner"></span> Caricamento creature...</span>
+    <span *ngIf="!loadingShapes()">Visualizzate <strong>{{ filteredShapes().length }}</strong> di {{ shapes().length }} forme</span>
+  </div>
+
+  <main class="creatures-grid">
+    <article class="creature-card" *ngFor="let s of filteredShapes()">
+      <div class="card-top">
+        <div class="card-titles">
+          <h2 class="card-name">{{ s.name }}</h2>
+          <div class="badges-row">
+            <span class="badge size-badge" [attr.data-size]="s.size">{{ s.size }}</span>
+            <span class="badge bs-badge" [class.bs2]="s.bs_level === 2">BS {{ s.bs_level }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-speeds" *ngIf="s.fly_speed || s.swim_speed || s.climb_speed">
+        <div class="speed-pill fly" *ngIf="s.fly_speed">🦅 {{ s.fly_speed }} ({{ s.fly_maneuverability }})</div>
+        <div class="speed-pill swim" *ngIf="s.swim_speed">🌊 {{ s.swim_speed }}</div>
+        <div class="speed-pill climb" *ngIf="s.climb_speed">🧗 {{ s.climb_speed }}</div>
+      </div>
+
+      <div class="card-abilities">
+        <span class="ability-tag pounce" *ngIf="s.has_pounce">🐾 Balzare</span>
+        <span class="ability-tag grab" *ngIf="s.has_grab">🪢 Afferrare</span>
+        <span class="ability-tag trip" *ngIf="s.has_trip">🦵 Sbilanciare</span>
+        <span class="ability-tag scent" *ngIf="s.has_scent">👃 Fiuto</span>
+        <span class="ability-tag sense" *ngIf="s.darkvision">👁️ Scurovisione</span>
+        <span class="ability-tag sense" *ngIf="s.low_light_vision">🌒 Crepuscolare</span>
+      </div>
+
+      <footer class="card-footer">
+        <a [href]="s.golarion_url" target="_blank" rel="noopener noreferrer" class="wiki-btn">
+          <span>Regole su Golarion Wiki</span>
+          <span>↗</span>
+        </a>
+      </footer>
+    </article>
+  </main>
+</div>

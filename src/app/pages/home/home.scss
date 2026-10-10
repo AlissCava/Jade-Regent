@@ -1,0 +1,137 @@
+$emerald: #10b981;
+$gold: #f59e0b;
+$card-bg: #141e33;
+$border: #233352;
+
+.home-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 0.75rem 4rem;
+}
+
+.home-hero {
+  text-align: center;
+  margin-bottom: 2.5rem;
+
+  .campaign-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: $gold;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 0.3rem 0.85rem;
+    border-radius: 9999px;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-desc {
+    font-size: 1rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+
+  @media (min-width: 680px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.module-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 18px;
+  padding: 1.5rem;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    color: #fff;
+    margin-bottom: 0.6rem;
+  }
+
+  .card-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+    &.muted {
+      color: #64748b;
+    }
+  }
+
+  &.druid-card {
+    .card-tag { color: $emerald; }
+    .card-action { color: $emerald; }
+    &:hover {
+      border-color: $emerald;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.2);
+    }
+  }
+
+  &.spells-card {
+    .card-tag { color: $gold; }
+    .card-action { color: $gold; }
+    &:hover {
+      border-color: $gold;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.2);
+    }
+  }
+
+  &.disabled-card {
+    opacity: 0.55;
+    cursor: not-allowed;
+    border-style: dashed;
+    .card-tag { color: #64748b; }
+    .card-title { color: #cbd5e1; }
+  }
+}

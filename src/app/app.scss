@@ -1,6 +1,5 @@
 $bg-dark: #0b0f19;
 $surface-dark: #131c2e;
-$surface-card: #182238;
 $border-card: #22324f;
 $emerald-glow: #10b981;
 $gold-accent: #f59e0b;
@@ -8,704 +7,76 @@ $text-light: #f8fafc;
 $text-muted: #94a3b8;
 
 .app-layout {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 0.75rem 0.75rem 4rem;
-
-  @media (min-width: 768px) {
-    padding: 1.5rem 1.5rem 5rem;
-  }
-}
-
-/* Navigazione Tabs */
-.nav-tabs {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 1.25rem;
-
-  .nav-tab {
-    background: #111a2d;
-    border: 1px solid $border-card;
-    color: $text-muted;
-    font-family: 'Cinzel', serif;
-    font-size: 0.92rem;
-    font-weight: 700;
-    padding: 0.6rem 1.15rem;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:active { transform: scale(0.97); }
-
-    &.active {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: $emerald-glow;
-      color: #fff;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
-    }
-  }
-}
-
-/* Header */
-.app-header {
-  text-align: center;
-  margin-bottom: 1.25rem;
-
-  .header-badge {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: $emerald-glow;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    margin-bottom: 0.4rem;
-
-    &.gold {
-      color: $gold-accent;
-      background: rgba(245, 158, 11, 0.12);
-      border-color: rgba(245, 158, 11, 0.35);
-    }
-  }
-
-  .header-title {
-    font-family: 'Cinzel', serif;
-    font-size: 1.9rem;
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
-    margin-bottom: 0.2rem;
-  }
-
-  .header-sub {
-    font-size: 0.88rem;
-    color: $text-muted;
-  }
-}
-
-/* Control Panel */
-.control-panel {
-  position: sticky;
-  top: 0.5rem;
-  z-index: 100;
-  background: rgba(19, 28, 46, 0.94);
-  backdrop-filter: blur(14px);
-  border: 1px solid $border-card;
-  border-radius: 16px;
-  padding: 0.85rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-
-  .class-selector {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.4rem;
-    margin-bottom: 0.65rem;
-
-    .class-btn {
-      background: #0d1424;
-      border: 1px solid #283958;
-      color: $text-muted;
-      padding: 0.5rem 0.3rem;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-
-      &.active {
-        background: rgba(245, 158, 11, 0.18);
-        border-color: $gold-accent;
-        color: #fef08a;
-      }
-    }
-  }
-
-  .search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.65rem;
-
-    .search-icon {
-      position: absolute;
-      left: 0.85rem;
-      color: $text-muted;
-      font-size: 0.9rem;
-    }
-
-    input {
-      width: 100%;
-      height: 44px;
-      padding: 0 2.2rem 0 2.6rem;
-      background: #0d1424;
-      border: 1px solid #283958;
-      border-radius: 10px;
-      color: $text-light;
-      font-size: 0.92rem;
-      outline: none;
-
-      &:focus { border-color: $emerald-glow; }
-    }
-
-    .clear-search {
-      position: absolute;
-      right: 0.75rem;
-      background: #22324f;
-      border: none;
-      color: $text-muted;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-  }
-
-  .selectors-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-bottom: 0.65rem;
-
-    .select-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-
-      label {
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: $text-muted;
-      }
-
-      select {
-        height: 38px;
-        background: #0d1424;
-        border: 1px solid #283958;
-        border-radius: 8px;
-        color: #fff;
-        padding: 0 0.5rem;
-        font-size: 0.82rem;
-        outline: none;
-      }
-    }
-  }
-
-  .chips-container {
-    display: flex;
-    overflow-x: auto;
-    gap: 0.45rem;
-    padding-bottom: 0.2rem;
-    -webkit-overflow-scrolling: touch;
-    &::-webkit-scrollbar { display: none; }
-
-    .chip {
-      flex-shrink: 0;
-      background: #0d1424;
-      border: 1px solid #2a3c5d;
-      color: #cbd5e1;
-      padding: 0.4rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-
-      &.active {
-        background: $emerald-glow;
-        border-color: #34d399;
-        color: #064e3b;
-      }
-
-      &.touch-chip.active {
-        background: $gold-accent;
-        border-color: #fbbf24;
-        color: #451a03;
-      }
-    }
-
-    .reset-chip {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.4);
-      color: #fca5a5;
-    }
-  }
-}
-
-/* Info */
-.results-info {
-  margin-bottom: 0.85rem;
-  font-size: 0.85rem;
-  color: $text-muted;
-
-  strong { color: $emerald-glow; }
-  .spinner {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border: 2px solid rgba(16, 185, 129, 0.3);
-    border-top-color: $emerald-glow;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Griglia Schede */
-.creatures-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.85rem;
-
-  @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
-}
-
-.creature-card {
-  background: $surface-card;
-  border: 1px solid $border-card;
-  border-radius: 14px;
-  padding: 1.1rem;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-
-  &.spell-card {
-    cursor: pointer;
-    transition: transform 0.2s, border-color 0.2s;
-    &:active { transform: scale(0.98); }
-    &:hover { border-color: $gold-accent; }
-  }
-
-  .card-top .card-titles {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-
-    .card-name {
-      font-family: 'Cinzel', serif;
-      font-size: 1.2rem;
-      color: #fff;
-      line-height: 1.2;
-    }
-
-    .card-en-name {
-      font-size: 0.82rem;
-      font-style: italic;
-      color: #94a3b8;
-      margin-top: -0.15rem;
-      margin-bottom: 0.2rem;
-    }
-
-    .modal-en-name {
-      font-size: 0.95rem;
-      font-style: italic;
-      color: #cbd5e1;
-      margin-top: 0.1rem;
-    }
-
-    .badges-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-  }
-
-  .badge {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
-  }
-
-  .size-badge {
-    background: #25334d;
-    &[data-size='Minuscola'] { color: #f472b6; }
-    &[data-size='Piccola'] { color: #38bdf8; }
-    &[data-size='Media'] { color: #a3e635; }
-    &[data-size='Grande'] { color: #fb923c; }
-  }
-
-  .bs-badge {
-    background: rgba(59, 130, 246, 0.2);
-    color: #93c5fd;
-    &.bs2 { background: rgba(245, 158, 11, 0.18); color: #fde68a; }
-  }
-
-  .class-level-badge {
-    &.druid { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35); }
-    &.magus { background: rgba(245, 158, 11, 0.18); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.35); }
-  }
-
-  .school-badge {
-    background: #1e293b;
-    color: #94a3b8;
-  }
-
-  .card-speeds {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin: 0.65rem 0;
-
-    .speed-pill {
-      background: #0e1626;
-      border: 1px solid #1e293b;
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.76rem;
-      color: #cbd5e1;
-    }
-  }
-
-  .spell-summary {
-    font-size: 0.85rem;
-    color: #94a3b8;
-    line-height: 1.4;
-    margin-bottom: 0.85rem;
-  }
-
-  .card-abilities {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-bottom: 0.85rem;
-
-    .ability-tag {
-      font-size: 0.72rem;
-      padding: 0.2rem 0.45rem;
-      border-radius: 5px;
-      background: #0f192b;
-      color: #94a3b8;
-      &.pounce { color: #fca5a5; background: rgba(239, 68, 68, 0.15); }
-      &.grab, &.trip { color: #fcd34d; background: rgba(245, 158, 11, 0.15); }
-      &.scent, &.sense { color: #6ee7b7; background: rgba(16, 185, 129, 0.12); }
-    }
-  }
-
-  .card-footer {
-    border-top: 1px solid #22324f;
-    padding-top: 0.65rem;
-
-    .wiki-btn {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      height: 36px;
-      align-items: center;
-      padding: 0 0.8rem;
-      background: #111a2d;
-      border: 1px solid #2b3d60;
-      border-radius: 8px;
-      color: #93c5fd;
-      font-size: 0.78rem;
-      text-decoration: none;
-    }
-
-    .read-more-hint {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: $gold-accent;
-      font-weight: 600;
-    }
-  }
 }
 
-/* Modale Integrale (Bottom Sheet) */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
+/* Navbar Fissa Stile Pergamena */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid $border-card;
+  padding: 0.65rem 1rem;
   display: flex;
-  align-items: flex-end;
-
-  @media (min-width: 768px) {
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-  }
-
-  .modal-sheet {
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-    background: #101827;
-    border-top: 1px solid #334155;
-    border-radius: 20px 20px 0 0;
-    padding: 1.25rem 1.25rem 2.5rem;
-
-    @media (min-width: 768px) {
-      max-width: 700px;
-      max-height: 80vh;
-      border-radius: 20px;
-      border: 1px solid #334155;
-      padding: 1.75rem;
-    }
-
-    .modal-handle {
-      width: 40px;
-      height: 4px;
-      background: #334155;
-      border-radius: 9999px;
-      margin: 0 auto 1rem;
-      cursor: pointer;
-
-      @media (min-width: 768px) { display: none; }
-    }
-
-    .modal-header {
-      margin-bottom: 1.25rem;
-
-      .modal-title-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .modal-title {
-          font-family: 'Cinzel', serif;
-          font-size: 1.6rem;
-          color: #fff;
-        }
-
-        .modal-close-btn {
-          background: #1e293b;
-          border: none;
-          color: #fff;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          cursor: pointer;
-        }
-      }
-    }
-
-    .modal-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.65rem;
-      margin-bottom: 1.25rem;
-
-      @media (min-width: 640px) {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .stat-box {
-        background: #0b111e;
-        border: 1px solid #1e293b;
-        padding: 0.6rem 0.75rem;
-        border-radius: 8px;
-
-        .stat-lbl {
-          display: block;
-          font-size: 0.68rem;
-          text-transform: uppercase;
-          color: $text-muted;
-          margin-bottom: 0.2rem;
-        }
-
-        .stat-val {
-          font-size: 0.82rem;
-          font-weight: 600;
-          color: #e2e8f0;
-        }
-      }
-    }
-
-    .modal-description {
-      background: #0b111e;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1.25rem;
-
-      h3 {
-        font-family: 'Cinzel', serif;
-        font-size: 1rem;
-        color: $gold-accent;
-        margin-bottom: 0.65rem;
-      }
-
-      p {
-        font-size: 0.9rem;
-        line-height: 1.6;
-        color: #cbd5e1;
-        white-space: pre-line;
-      }
-    }
-
-    .modal-footer .wiki-btn {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 42px;
-      padding: 0 1rem;
-      background: #132238;
-      border: 1px solid #2563eb;
-      border-radius: 8px;
-      color: #93c5fd;
-      font-weight: 600;
-      text-decoration: none;
-    }
-  }
-}
-/* Stepper del Livello Incantatore */
-.cl-bar {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  background: rgba(13, 20, 36, 0.9);
-  border: 1px solid #283958;
-  border-radius: 12px;
-  padding: 0.5rem 0.85rem;
-  margin-bottom: 0.75rem;
+  justify-content: space-between;
 
-  .cl-title-wrap {
-    display: flex;
-    flex-direction: column;
-
-    .cl-tag {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: $gold-accent;
-      letter-spacing: 0.05em;
-    }
-
-    .cl-label {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: #fff;
-    }
-  }
-
-  .cl-stepper {
+  .nav-brand {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
+    text-decoration: none;
 
-    .cl-btn {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #1a263d;
-      border: 1px solid #334a75;
-      color: #fff;
+    .brand-icon {
+      font-size: 1.3rem;
+    }
+
+    .brand-name {
+      font-family: 'Cinzel', serif;
       font-size: 1.1rem;
       font-weight: 700;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-
-      &:active { transform: scale(0.92); }
-      &:hover { border-color: $gold-accent; color: $gold-accent; }
+      color: #fff;
+      letter-spacing: 0.04em;
     }
+  }
 
-    .cl-val {
-      min-width: 55px;
-      text-align: center;
+  .nav-links {
+    display: flex;
+    gap: 0.4rem;
+
+    .nav-item {
+      text-decoration: none;
       font-family: 'Cinzel', serif;
-      font-size: 1rem;
+      font-size: 0.84rem;
       font-weight: 700;
-      color: #fef08a;
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-    }
-  }
-}
+      color: $text-muted;
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
 
-/* Chips Tattici */
-.tactical-chips {
-  margin-top: 0.4rem;
-
-  .no-save-chip.active {
-    background: #3b82f6;
-    border-color: #60a5fa;
-    color: #eff6ff;
-  }
-
-  .no-sr-chip.active {
-    background: #8b5cf6;
-    border-color: #a78bfa;
-    color: #f5f3ff;
-  }
-
-  .swift-chip.active {
-    background: #ec4899;
-    border-color: #f472b6;
-    color: #fdf2f8;
-  }
-}
-
-/* Badge Danni & Parametri Scalati nella Card */
-.speed-pill.cl-scaled {
-  border-color: rgba(245, 158, 11, 0.35);
-  color: #fef08a;
-  background: rgba(245, 158, 11, 0.08);
-}
-
-.scaled-damage-tag {
-  font-size: 0.78rem;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #6ee7b7;
-  padding: 0.35rem 0.55rem;
-  border-radius: 6px;
-  margin-bottom: 0.65rem;
-
-  strong { color: #fff; }
-}
-
-/* Riquadro Oro nella Modale */
-.scaled-calc-card {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(16, 185, 129, 0.08));
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  border-radius: 12px;
-  padding: 0.85rem;
-  margin-bottom: 1.25rem;
-
-  .scaled-calc-header {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: $gold-accent;
-    margin-bottom: 0.65rem;
-    text-transform: uppercase;
-  }
-
-  .scaled-calc-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-
-    @media (min-width: 640px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .scaled-calc-item {
-      display: flex;
-      flex-direction: column;
-
-      .lbl {
-        font-size: 0.68rem;
-        text-transform: uppercase;
-        color: $text-muted;
+      &:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
       }
 
-      .val.highlight {
-        font-size: 0.92rem;
-        font-weight: 700;
-        color: #fef08a;
+      &.active {
+        color: #fff;
+        background: rgba(16, 185, 129, 0.15);
+        border-color: $emerald-glow;
       }
     }
+  }
+}
+
+.page-viewport {
+  flex: 1;
+  padding: 1rem 0.75rem 3rem;
+  @media (min-width: 768px) {
+    padding: 1.5rem 1.5rem 4rem;
   }
 }
