@@ -292,6 +292,21 @@ $text-muted: #94a3b8;
       line-height: 1.2;
     }
 
+    .card-en-name {
+      font-size: 0.82rem;
+      font-style: italic;
+      color: #94a3b8;
+      margin-top: -0.15rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .modal-en-name {
+      font-size: 0.95rem;
+      font-style: italic;
+      color: #cbd5e1;
+      margin-top: 0.1rem;
+    }
+
     .badges-row {
       display: flex;
       flex-wrap: wrap;

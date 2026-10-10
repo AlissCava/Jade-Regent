@@ -167,6 +167,7 @@
         <div class="card-top">
           <div class="card-titles">
             <h2 class="card-name">{{ sp.name }}</h2>
+            <div class="card-en-name" *ngIf="sp.english_name">({{ sp.english_name }})</div>
             <div class="badges-row">
               <span class="badge class-level-badge druid" *ngIf="sp.druid_level !== null">🌿 Dru {{ sp.druid_level }}</span>
               <span class="badge class-level-badge magus" *ngIf="sp.magus_level !== null">⚔️ Mag {{ sp.magus_level }}</span>
@@ -200,6 +201,7 @@
       <header class="modal-header">
         <div class="modal-title-row">
           <h2 class="modal-title">{{ selectedSpell()?.name }}</h2>
+          <div class="modal-en-name" *ngIf="selectedSpell()?.english_name">({{ selectedSpell()?.english_name }})</div>
           <button class="modal-close-btn" (click)="selectedSpell.set(null)">✕</button>
         </div>
 

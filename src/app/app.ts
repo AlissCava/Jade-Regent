@@ -110,9 +110,10 @@ export class App implements OnInit {
 
       if (term !== '') {
         const inName = s.name.toLowerCase().includes(term);
+        const inEnName = s.english_name ? s.english_name.toLowerCase().includes(term) : false;
         const inShort = s.short_description ? s.short_description.toLowerCase().includes(term) : false;
         const inSchool = s.school ? s.school.toLowerCase().includes(term) : false;
-        if (!inName && !inShort && !inSchool) return false;
+        if (!inName && !inEnName && !inShort && !inSchool) return false;
       }
 
       return true;

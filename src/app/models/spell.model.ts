@@ -1,6 +1,7 @@
 export interface Spell {
   id: number;
   name: string;
+  english_name?: string | null; // <-- Verifica che ci sia questa riga
   druid_level: number | null;
   magus_level: number | null;
   school: string | null;
