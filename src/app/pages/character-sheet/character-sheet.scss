@@ -1,0 +1,200 @@
+/* BARRA AZIONI SUPERIORE */
+.sheet-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+
+  .char-nav-tabs {
+    display: flex;
+    gap: 0.4rem;
+
+    .char-tab-btn {
+      padding: 0.6rem 0.95rem;
+      background: #0d1424;
+      border: 1px solid #243553;
+      border-radius: 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &.active {
+        background: rgba(239, 68, 68, 0.16);
+        border-color: #ef4444;
+        color: #fca5a5;
+      }
+
+      &.companion-btn.active {
+        background: rgba(56, 189, 248, 0.16);
+        border-color: #38bdf8;
+        color: #bae6fd;
+      }
+    }
+  }
+
+  .level-up-btn {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.2));
+    border: 1px solid #f59e0b;
+    color: #fef08a;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.6rem 0.95rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    &:active { transform: scale(0.96); }
+    &:hover { box-shadow: 0 0 12px rgba(245, 158, 11, 0.35); }
+  }
+}
+
+/* MODALE LEVEL UP ONLINE */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+
+  @media (min-width: 768px) {
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .modal-sheet {
+    width: 100%;
+    max-height: 88vh;
+    background: #0f172a;
+    border: 1px solid #283958;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    flex-direction: column;
+
+    @media (min-width: 768px) {
+      max-width: 680px;
+      border-radius: 18px;
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.25rem 0.85rem;
+      border-bottom: 1px solid #1e293b;
+
+      .modal-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.35rem;
+        color: #fff;
+      }
+      .modal-sub {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 0.2rem;
+      }
+    }
+
+    .modal-body-scroll {
+      padding: 1.25rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+
+      .form-section {
+        background: #080d1a;
+        border: 1px solid #1a283f;
+        border-radius: 12px;
+        padding: 0.85rem;
+
+        h3 {
+          font-size: 0.82rem;
+          font-weight: 700;
+          color: #f59e0b;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.65rem;
+        }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.65rem;
+        }
+        .form-grid-3 {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.5rem;
+        }
+        .form-grid-6 {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 0.35rem;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 600;
+          }
+
+          input {
+            height: 38px;
+            background: #0f172a;
+            border: 1px solid #283958;
+            border-radius: 8px;
+            color: #fff;
+            padding: 0 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            outline: none;
+
+            &:focus { border-color: #f59e0b; }
+          }
+        }
+      }
+    }
+
+    .modal-footer-actions {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.65rem;
+
+      button {
+        height: 42px;
+        padding: 0 1.25rem;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .btn-cancel {
+        background: #1e293b;
+        border: none;
+        color: #cbd5e1;
+      }
+
+      .btn-save {
+        background: #10b981;
+        border: none;
+        color: #064e3b;
+        font-weight: 800;
+
+        &:disabled { opacity: 0.6; cursor: not-allowed; }
+      }
+    }
+  }
+}
