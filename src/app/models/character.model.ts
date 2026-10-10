@@ -1,3 +1,9 @@
+export interface SkillItem {
+  name: string;
+  stat: string;
+  bonus: number;
+}
+
 export interface CharacterSheetData {
   character: {
     race: string;
@@ -24,6 +30,7 @@ export interface CharacterSheetData {
     resolve_current: number;
     challenge_max: number;
     challenge_current: number;
+    skills?: SkillItem[];
     notes?: string;
   };
   companion?: {
@@ -51,6 +58,7 @@ export interface CharacterSheetData {
     attack_bonus: number;
     damage_dice: string;
     trip_cmb: number;
+    skills?: SkillItem[];
   };
 }
 
