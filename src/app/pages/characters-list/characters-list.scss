@@ -1,0 +1,146 @@
+$bg-card: #141e33;
+$border-card: #233352;
+$gold: #f59e0b;
+$text-light: #f8fafc;
+$text-muted: #94a3b8;
+
+.party-page-container {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 0.5rem 0.5rem 3rem;
+}
+
+.party-hero {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  .campaign-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: $gold;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 9999px;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+
+  .hero-desc {
+    font-size: 0.92rem;
+    color: $text-muted;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 0;
+  color: $text-muted;
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(245, 158, 11, 0.3);
+    border-top-color: $gold;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.characters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.character-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: $bg-card;
+  border: 1px solid $border-card;
+  border-radius: 16px;
+  padding: 1.35rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: $gold;
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+  }
+
+  .card-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .card-tags-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+
+    .level-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fef08a;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .race-badge {
+      font-size: 0.7rem;
+      color: $text-muted;
+      background: #0d1424;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+    }
+  }
+
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.35rem;
+    color: #fff;
+    margin-bottom: 0.2rem;
+  }
+
+  .class-title {
+    font-size: 0.88rem;
+    color: #38bdf8;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: $gold;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}

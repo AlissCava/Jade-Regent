@@ -1,11 +1,12 @@
 <div class="char-page-container">
+  <!-- Stato di caricamento iniziale dal Database Neon -->
   <div *ngIf="loading()" class="loading-state">
     <div class="spinner"></div>
     <span>Caricamento scheda dal database...</span>
   </div>
 
   <ng-container *ngIf="!loading() && charRecord() as rec">
-    <!-- BARRA AZIONI: LEVEL UP & TABS -->
+    <!-- BARRA AZIONI: SWITCH TAB & BOTTONE LEVEL UP ONLINE -->
     <div class="sheet-action-bar">
       <div class="char-nav-tabs">
         <button 
@@ -25,13 +26,12 @@
         </button>
       </div>
 
-      <!-- BOTTONE LEVEL UP ONLINE -->
       <button type="button" class="level-up-btn" (click)="openLevelUp()">
         ⚙️ Level Up / Modifica Online
       </button>
     </div>
 
-    <!-- ==================== SCHEDA PRINCIPALE ==================== -->
+    <!-- ==================== VISTA 1: SCHEDA RYOUJIN ==================== -->
     <div *ngIf="activeTab() === 'main'" class="char-sheet">
       <header class="sheet-hero">
         <div class="hero-top">
@@ -42,7 +42,7 @@
         <p class="char-quote">«Nessun signore a cui piegare il capo, nessun passo indietro di fronte alla lama.»</p>
       </header>
 
-      <!-- STATUS BAR COMBATTIMENTO -->
+      <!-- STATUS BAR COMBATTIMENTO (PF, CA, INIZIATIVA, TS) -->
       <div class="combat-status-grid">
         <!-- Punti Ferita -->
         <div class="status-card hp-card">
@@ -108,7 +108,7 @@
         </div>
       </div>
 
-      <!-- CARATTERISTICHE -->
+      <!-- CARATTERISTICHE PRINCIPALI -->
       <div class="attributes-strip">
         <div class="attr-cell primary">
           <span class="attr-name">FOR</span>
@@ -142,7 +142,7 @@
         </div>
       </div>
 
-      <!-- PANNELLO MODIFICATORI TATTICI -->
+      <!-- MODIFICATORI TATTICI (BUFF AL VOLO) -->
       <div class="tactical-buffs-panel">
         <div class="buffs-header">
           <span>⚡ MODIFICATORI DI CIRCOSTANZA ATTIVI</span>
@@ -170,7 +170,7 @@
         </div>
       </div>
 
-      <!-- ARMI DINAMICHE -->
+      <!-- ARMI & ATTACCHI -->
       <div class="section-card">
         <h2 class="section-title">🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }})</h2>
         <div class="weapons-grid">
@@ -181,7 +181,7 @@
                 <span class="wpn-badge">Lama Leggendaria Intelligente</span>
                 <h3 class="wpn-name">Suishen (+2 Fiammeggiante Difensiva)</h3>
               </div>
-              <div class="wpn-crit">18-20 / x2</div>
+              <div class="wpn-crit">Critico: 18-20 / x2</div>
             </div>
             <div class="wpn-stats-row">
               <div class="stat-calc">
@@ -189,12 +189,12 @@
                 <span class="val highlight">+{{ rec.data.character.bab + 6 + 2 + attackMod() }}</span>
               </div>
               <div class="stat-calc">
-                <span class="lbl">Danno Katana (2 Mani)</span>
+                <span class="lbl">Danno Katana (Due Mani)</span>
                 <span class="val highlight">1d8 + {{ 9 + 2 + damageMod() }} + 1d6 fuoco</span>
               </div>
             </div>
             <div class="wpn-special-powers">
-              <span>✨ <strong>Poteri attivi:</strong> Resistenza Elementi (Freddo) • Vedere Invisibilità • Luce Diurna • Camminare sul Fuoco</span>
+              <span>✨ <strong>Poteri attivi di Suishen:</strong> Resistenza Freddo 3v/g • Vedere Invisibilità • Luce Diurna • Camminare sul Fuoco</span>
             </div>
           </div>
 
@@ -205,7 +205,7 @@
                 <span class="wpn-badge">Arma Perfetta</span>
                 <h3 class="wpn-name">Katana Deadly +1 (Due Mani)</h3>
               </div>
-              <div class="wpn-crit">18-20 / x2 (+2 conferma)</div>
+              <div class="wpn-crit">Critico: 18-20 / x2 (+2 conferma)</div>
             </div>
             <div class="wpn-stats-row">
               <div class="stat-calc">
@@ -218,21 +218,110 @@
               </div>
             </div>
           </div>
+
+          <!-- ARCO LUNGO COMPOSITO -->
+          <div class="weapon-card">
+            <div class="wpn-top">
+              <div>
+                <span class="wpn-badge">Distanza (Gittata 33 m / 22 caselle)</span>
+                <h3 class="wpn-name">Arco Lungo Composito (+2 For) +1</h3>
+              </div>
+              <div class="wpn-crit">Critico: 20 / x3</div>
+            </div>
+            <div class="wpn-stats-row">
+              <div class="stat-calc">
+                <span class="lbl">Tiro per Colpire</span>
+                <span class="val highlight">+{{ rec.data.character.bab + 2 + 1 + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}</span>
+              </div>
+              <div class="stat-calc">
+                <span class="lbl">Danno Freccia</span>
+                <span class="val highlight">1d8 + {{ 3 + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FERMEZZA, SFIDE & RESISTENZE -->
+      <div class="section-card">
+        <h2 class="section-title">⛩️ Fermezza, Sfide & Tratti</h2>
+        <div class="resources-row">
+          <div class="resource-box">
+            <div class="res-head">
+              <span class="res-title">Fermezza (Ronin)</span>
+              <span class="res-val">{{ rec.data.character.resolve_current }} / {{ rec.data.character.resolve_max }}</span>
+            </div>
+            <p class="res-desc">Ritira TS Volontà dopo il 1° round • Tira 2 volte per stabilizzarti • Rimuovi scosso, infermo o affaticato.</p>
+            <div class="use-pips">
+              <span *ngFor="let i of [0, 1, 2, 3]" class="pip" [class.filled]="i < rec.data.character.resolve_current" (click)="toggleResolve(i)"></span>
+            </div>
+          </div>
+
+          <div class="resource-box">
+            <div class="res-head">
+              <span class="res-title">Sfida del Ronin</span>
+              <span class="res-val">{{ rec.data.character.challenge_current }} / {{ rec.data.character.challenge_max }}</span>
+            </div>
+            <p class="res-desc">+{{ rec.level }} danni, +2 TxC, +2 Schivare CA contro il bersaglio sfidato (-2 CA contro gli altri).</p>
+            <div class="use-pips">
+              <span *ngFor="let i of [0, 1, 2]" class="pip challenge-pip" [class.filled]="i < rec.data.character.challenge_current" (click)="toggleChallenge(i)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="traits-grid">
+          <div class="trait-badge fire">🔥 Resistenza Fuoco: 5</div>
+          <div class="trait-badge cold">❄️ Resistenza Freddo: 5</div>
+          <div class="trait-badge electric">⚡ Resistenza Elettricità: 5</div>
+          <div class="trait-badge darkvision">👁️ Scurovisione 18 m</div>
+          <div class="trait-badge banner">🎌 Stendardo (+1 morale alleati entro 18 m)</div>
+        </div>
+      </div>
+
+      <!-- TALENTI, ABILITÀ & EQUIPAGGIAMENTO -->
+      <div class="dual-columns-grid">
+        <div class="section-card">
+          <h2 class="section-title">🥋 Talenti & Manovre</h2>
+          <div class="feats-list">
+            <div class="feat-item"><strong>Undersized Mount</strong>: permette di cavalcare Hisui anche essendo entrambi di taglia Media.</div>
+            <div class="feat-item"><strong>Wolfrider</strong>: bonus e sinergie dedicate al combattimento in sella a lupi da guerra.</div>
+            <div class="feat-item"><strong>Attacco Poderoso</strong>: -2 ai tiri per colpire, +6 ai danni impugnando la katana a due mani.</div>
+            <div class="feat-item"><strong>Weapon Expertise (Katana)</strong>: estrai la katana come azione gratuita, +2 a confermare critici.</div>
+            <div class="feat-item"><strong>Volontà di Ferro</strong>: +2 bonus a tutti i tiri salvezza su Volontà.</div>
+            <div class="feat-item"><strong>Mounted Archer</strong>: penalità dimezzate tirando con l'arco in movimento su Hisui.</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">📊 Abilità Addestrate</h2>
+          <div class="skills-mini-table">
+            <div class="skill-row"><span>Cavalcare (DES)</span><strong>+12</strong></div>
+            <div class="skill-row"><span>Addestrare Animali (CAR)</span><strong>+10</strong></div>
+            <div class="skill-row"><span>Intimidire (CAR)</span><strong>+11</strong></div>
+            <div class="skill-row"><span>Percezione (SAG)</span><strong>+7</strong></div>
+            <div class="skill-row"><span>Percepire Intenzioni (SAG)</span><strong>+10</strong></div>
+            <div class="skill-row"><span>Sopravvivenza (SAG)</span><strong>+7</strong></div>
+            <div class="skill-row"><span>Conoscenze (Locali) (INT)</span><strong>+10</strong></div>
+            <div class="skill-row"><span>Conoscenze (Nobiltà) (INT)</span><strong>+6</strong></div>
+            <div class="skill-row"><span>Nuotare (FOR)</span><strong>+7</strong></div>
+            <div class="skill-row"><span>Scalare (FOR)</span><strong>+7</strong></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ==================== SOTTOSCHEDA HISUI ==================== -->
+    <!-- ==================== VISTA 2: SOTTOSCHEDA HISUI ==================== -->
     <div *ngIf="activeTab() === 'companion' && rec.data.companion as comp" class="char-sheet hisui-theme">
       <header class="sheet-hero wolf-hero">
         <div class="hero-top">
           <span class="race-tag wolf-tag">{{ comp.type }}</span>
-          <span class="class-tag">{{ comp.hd }} Dadi Vita</span>
+          <span class="class-tag">{{ comp.hd }} Dadi Vita (6d8)</span>
         </div>
         <h1 class="char-title">🐺 {{ comp.name }}</h1>
         <p class="char-quote">«Il lupo fedele della steppa, legato alla sella del samurai.»</p>
       </header>
 
+      <!-- STATUS BAR COMBATTIMENTO HISUI -->
       <div class="combat-status-grid">
         <div class="status-card hp-card">
           <span class="status-label">Punti Ferita</span>
@@ -283,44 +372,93 @@
         </div>
       </div>
 
+      <!-- CARATTERISTICHE HISUI -->
+      <div class="attributes-strip">
+        <div class="attr-cell primary"><span class="attr-name">FOR</span><span class="attr-val">{{ comp.str }}</span><span class="attr-mod">+7</span></div>
+        <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ comp.dex }}</span><span class="attr-mod">+3</span></div>
+        <div class="attr-cell"><span class="attr-name">COS</span><span class="attr-val">{{ comp.con }}</span><span class="attr-mod">+5</span></div>
+        <div class="attr-cell"><span class="attr-name">INT</span><span class="attr-val">{{ comp.int }}</span><span class="attr-mod">-4</span></div>
+        <div class="attr-cell"><span class="attr-name">SAG</span><span class="attr-val">{{ comp.wis }}</span><span class="attr-mod">+1</span></div>
+        <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">{{ comp.cha }}</span><span class="attr-mod">-2</span></div>
+      </div>
+
+      <!-- ATTACCO NATURALE HISUI -->
       <div class="section-card">
-        <h2 class="section-title">🐺 Attacco Naturale</h2>
-        <div class="weapon-card wolf-card">
-          <div class="wpn-top">
+        <h2 class="section-title">🐺 Attacco Naturale & Manovre</h2>
+        <div class="weapons-grid">
+          <div class="weapon-card wolf-card">
+            <div class="wpn-top">
+              <div>
+                <span class="wpn-badge wolf">Attacco Principale con Sbilanciare</span>
+                <h3 class="wpn-name">{{ comp.attack_name }}</h3>
+              </div>
+              <div class="wpn-crit">Critico: 20 / x2</div>
+            </div>
+            <div class="wpn-stats-row">
+              <div class="stat-calc">
+                <span class="lbl">Tiro per Colpire</span>
+                <span class="val highlight">+{{ comp.attack_bonus + attackModHisui() }}</span>
+              </div>
+              <div class="stat-calc">
+                <span class="lbl">Danno Morso</span>
+                <span class="val highlight">{{ comp.damage_dice }} + {{ damageModHisui() }}</span>
+              </div>
+            </div>
+            <div class="trip-free-box">
+              <span>🦵 <strong>Sbilanciare (Trip) Automatico:</strong> Se il colpo va a segno, Hisui tenta immediatamente una manovra di Sbilanciare con BMC <strong>+{{ comp.trip_cmb }}</strong>!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRATTI, TRUCCHI E BMC/DMC -->
+      <div class="dual-columns-grid">
+        <div class="section-card">
+          <h2 class="section-title">🐾 Tratti & Difese</h2>
+          <div class="feats-list">
+            <div class="feat-item"><strong>Eludere (Evasion)</strong>: non subisce danni se supera un TS sui Riflessi che dimezza i danni.</div>
+            <div class="feat-item"><strong>Fiuto (Scent)</strong>: individua nemici entro 9 metri (18 m controvento).</div>
+            <div class="feat-item"><strong>Visione Crepuscolare</strong>: raddoppia la vista in condizioni di scarsa illuminazione.</div>
+            <div class="feat-item"><strong>Devozione</strong>: +4 bonus morale ai TS su Volontà contro effetti di charme e compulsione.</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">🍖 Comandi Addestrati & Manovre</h2>
+          <div class="tricks-cloud">
+            <span class="trick-tag">⚔️ Attacca</span>
+            <span class="trick-tag">✋ Fermo</span>
+            <span class="trick-tag">🛡️ Difendi</span>
+            <span class="trick-tag">🔙 Indietro</span>
+            <span class="trick-tag">👃 Annusa / Tracce</span>
+            <span class="trick-tag">🔍 Cerca</span>
+            <span class="trick-tag">🎾 Riporta</span>
+          </div>
+          <div class="bmc-box" style="margin-top: 1rem;">
             <div>
-              <span class="wpn-badge wolf">Attacco Naturale con Sbilanciare</span>
-              <h3 class="wpn-name">{{ comp.attack_name }}</h3>
+              <span class="lbl">Bonus Manovra (BMC)</span>
+              <div class="val">+{{ comp.trip_cmb }}</div>
             </div>
-            <div class="wpn-crit">Critico: 20 / x2</div>
-          </div>
-          <div class="wpn-stats-row">
-            <div class="stat-calc">
-              <span class="lbl">Tiro per Colpire</span>
-              <span class="val highlight">+{{ comp.attack_bonus + attackModHisui() }}</span>
+            <div>
+              <span class="lbl">Difesa Manovra (DMC)</span>
+              <div class="val">25</div>
             </div>
-            <div class="stat-calc">
-              <span class="lbl">Danno Morso</span>
-              <span class="val highlight">{{ comp.damage_dice }} + {{ damageModHisui() }}</span>
-            </div>
-          </div>
-          <div class="trip-free-box">
-            <span>🦵 <strong>Sbilanciare Gratuito:</strong> Se il colpo va a segno, effettua una manovra di Sbilanciare con BMC <strong>+{{ comp.trip_cmb }}</strong>!</span>
           </div>
         </div>
       </div>
     </div>
   </ng-container>
 
-  <!-- ==================== MODALE LEVEL UP / MODIFICA ONLINE ==================== -->
+  <!-- ==================== MODALE LEVEL UP ONLINE ==================== -->
   <div class="modal-backdrop" *ngIf="showLevelUpModal()" (click)="showLevelUpModal.set(false)">
     <div class="modal-sheet" (click)="$event.stopPropagation()">
       <header class="modal-header">
         <h2 class="modal-title">⚙️ Level Up & Modifica Scheda Online</h2>
-        <p class="modal-sub">I dati salvati saranno aggiornati su Neon per tutti in tempo reale.</p>
+        <p class="modal-sub">I valori modificati vengono salvati direttamente nel database Neon per tutti.</p>
       </header>
 
       <div class="modal-body-scroll" *ngIf="editData">
-        <!-- Riquadro Livello PG -->
+        <!-- Livello & BAB -->
         <div class="form-section">
           <h3>🎖️ Livello & Progressione</h3>
           <div class="form-grid">
@@ -335,16 +473,16 @@
           </div>
         </div>
 
-        <!-- Riquadro Salute & Difesa Ryoujin -->
+        <!-- Salute & CA Ryoujin -->
         <div class="form-section">
-          <h3>🛡️ Salute & Difese Ryoujin</h3>
+          <h3>🛡️ Salute & Difesa Ryoujin</h3>
           <div class="form-grid">
             <div class="form-group">
-              <label>Punti Ferita Massimi</label>
+              <label>PF Massimi</label>
               <input type="number" [(ngModel)]="editData.character.hp_max" />
             </div>
             <div class="form-group">
-              <label>Punti Ferita Attuali</label>
+              <label>PF Attuali</label>
               <input type="number" [(ngModel)]="editData.character.hp_current" />
             </div>
             <div class="form-group">
@@ -358,9 +496,9 @@
           </div>
         </div>
 
-        <!-- Tiri Salvezza Ryoujin -->
+        <!-- Tiri Salvezza -->
         <div class="form-section">
-          <h3>🎲 Tiri Salvezza Ryoujin</h3>
+          <h3>🎲 Tiri Salvezza</h3>
           <div class="form-grid-3">
             <div class="form-group">
               <label>Tempra</label>
@@ -377,51 +515,33 @@
           </div>
         </div>
 
-        <!-- Caratteristiche Ryoujin -->
+        <!-- Caratteristiche -->
         <div class="form-section">
-          <h3>💪 Punteggi Caratteristica Ryoujin</h3>
+          <h3>💪 Punteggi Caratteristica</h3>
           <div class="form-grid-6">
-            <div class="form-group">
-              <label>FOR</label>
-              <input type="number" [(ngModel)]="editData.character.str" />
-            </div>
-            <div class="form-group">
-              <label>DES</label>
-              <input type="number" [(ngModel)]="editData.character.dex" />
-            </div>
-            <div class="form-group">
-              <label>COS</label>
-              <input type="number" [(ngModel)]="editData.character.con" />
-            </div>
-            <div class="form-group">
-              <label>INT</label>
-              <input type="number" [(ngModel)]="editData.character.int" />
-            </div>
-            <div class="form-group">
-              <label>SAG</label>
-              <input type="number" [(ngModel)]="editData.character.wis" />
-            </div>
-            <div class="form-group">
-              <label>CAR</label>
-              <input type="number" [(ngModel)]="editData.character.cha" />
-            </div>
+            <div class="form-group"><label>FOR</label><input type="number" [(ngModel)]="editData.character.str" /></div>
+            <div class="form-group"><label>DES</label><input type="number" [(ngModel)]="editData.character.dex" /></div>
+            <div class="form-group"><label>COS</label><input type="number" [(ngModel)]="editData.character.con" /></div>
+            <div class="form-group"><label>INT</label><input type="number" [(ngModel)]="editData.character.int" /></div>
+            <div class="form-group"><label>SAG</label><input type="number" [(ngModel)]="editData.character.wis" /></div>
+            <div class="form-group"><label>CAR</label><input type="number" [(ngModel)]="editData.character.cha" /></div>
           </div>
         </div>
 
-        <!-- Statistiche Hisui -->
+        <!-- Hisui Level Up -->
         <div class="form-section" *ngIf="editData.companion">
-          <h3>🐺 Progressione Hisui (Lupo)</h3>
+          <h3>🐺 Progressione Hisui</h3>
           <div class="form-grid">
             <div class="form-group">
-              <label>Dadi Vita Hisui (HD)</label>
+              <label>Dadi Vita (HD)</label>
               <input type="number" [(ngModel)]="editData.companion.hd" />
             </div>
             <div class="form-group">
-              <label>PF Massimi Hisui</label>
+              <label>PF Massimi</label>
               <input type="number" [(ngModel)]="editData.companion.hp_max" />
             </div>
             <div class="form-group">
-              <label>CA Hisui</label>
+              <label>CA Totale</label>
               <input type="number" [(ngModel)]="editData.companion.ac_total" />
             </div>
             <div class="form-group">

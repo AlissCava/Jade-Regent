@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
 import { CharacterRecord, CharacterSheetData } from '../../models/character.model';
 
@@ -13,19 +14,16 @@ import { CharacterRecord, CharacterSheetData } from '../../models/character.mode
 })
 export class CharacterSheetComponent implements OnInit {
   private charService = inject(CharacterService);
+  private route = inject(ActivatedRoute);
 
   characterSlug = 'ryoujin';
   loading = signal<boolean>(true);
   saving = signal<boolean>(false);
   saveSuccess = signal<boolean>(false);
 
-  // Dati completi dal DB
   charRecord = signal<CharacterRecord | null>(null);
-
-  // Switcher Tab Personaggio / Compagno
   activeTab = signal<'main' | 'companion'>('main');
 
-  // Modale Level Up
   showLevelUpModal = signal<boolean>(false);
   editLevel = signal<number>(7);
   editData!: CharacterSheetData;
@@ -37,11 +35,8 @@ export class CharacterSheetComponent implements OnInit {
   flanking = signal<boolean>(false);
   divineFavorActive = signal<boolean>(false);
   powerAttack = signal<boolean>(false);
-
-  // Buff Hisui
   powerAttackHisui = signal<boolean>(false);
 
-  // Modificatori Dinamici
   attackMod = computed(() => {
     let mod = 0;
     if (this.inspireCourage()) mod += 2;
@@ -80,6 +75,10 @@ export class CharacterSheetComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const paramSlug = this.route.snapshot.paramMap.get('slug');
+    if (paramSlug) {
+      this.characterSlug = paramSlug;
+    }
     this.loadCharacter();
   }
 
@@ -96,7 +95,6 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
-  // Modifica rapida PF con salvataggio immediato su DB
   modifyHp(target: 'main' | 'companion', amount: number): void {
     const rec = this.charRecord();
     if (!rec) return;
@@ -111,6 +109,24 @@ export class CharacterSheetComponent implements OnInit {
       rec.data.companion.hp_current = Math.max(0, Math.min(max, cur + amount));
     }
 
+    this.charRecord.set({ ...rec });
+    this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
+  }
+
+  toggleResolve(index: number): void {
+    const rec = this.charRecord();
+    if (!rec) return;
+    const cur = rec.data.character.resolve_current;
+    rec.data.character.resolve_current = cur > index ? index : index + 1;
+    this.charRecord.set({ ...rec });
+    this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
+  }
+
+  toggleChallenge(index: number): void {
+    const rec = this.charRecord();
+    if (!rec) return;
+    const cur = rec.data.character.challenge_current;
+    rec.data.character.challenge_current = cur > index ? index : index + 1;
     this.charRecord.set({ ...rec });
     this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
   }

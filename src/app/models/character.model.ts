@@ -63,3 +63,13 @@ export interface CharacterRecord {
   data: CharacterSheetData;
   updated_at: string;
 }
+
+export interface CharacterSummary {
+  id: number;
+  slug: string;
+  name: string;
+  class_name: string;
+  level: number;
+  race?: string;
+  updated_at: string;
+}

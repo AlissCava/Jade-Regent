@@ -13,9 +13,21 @@ export default async function handler(req, res) {
   const sql = neon(process.env.DATABASE_URL);
 
   try {
-    // 1. LETTURA SCHEDA
+    // 1. LETTURA (LISTA COMPLETA O SINGOLO PG)
     if (req.method === 'GET') {
-      const slug = req.query.slug || 'ryoujin';
+      const slug = req.query.slug;
+
+      // Se non c'è slug, restituisci tutti i PG per la lista del party
+      if (!slug) {
+        const rows = await sql`
+          SELECT id, slug, name, class_name, level, data->'character'->>'race' as race, updated_at 
+          FROM characters 
+          ORDER BY id ASC;
+        `;
+        return res.status(200).json(rows);
+      }
+
+      // Se c'è lo slug, restituisci la scheda completa di quel singolo PG
       const rows = await sql`
         SELECT id, slug, name, class_name, level, data, updated_at 
         FROM characters 
@@ -30,7 +42,7 @@ export default async function handler(req, res) {
       return res.status(200).json(rows[0]);
     }
 
-    // 2. SALVATAGGIO / AGGIORNAMENTO SCHEDA (LEVEL UP O MODIFICHE)
+    // 2. SALVATAGGIO / LEVEL UP
     if (req.method === 'PUT' || req.method === 'POST') {
       const { slug, level, data } = req.body;
 
@@ -58,6 +70,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Metodo non consentito' });
   } catch (err) {
     console.error('Database Error:', err);
-    return res.status(500).json({ error: 'Errore interno del server', details: err.message });
+    return res.status(500).json({ error: 'Errore server', details: err.message });
   }
 }
