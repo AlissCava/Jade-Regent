@@ -5,24 +5,53 @@ import { ActivatedRoute } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
 import { CharacterRecord, CharacterSheetData, SkillItem } from '../../models/character.model';
 
+export interface DiceAction {
+  name: string;
+  sub: string;
+  diceCount: number;
+  diceFaces: number;
+  baseMod: number;
+  type: 'atk' | 'dmg' | 'save' | 'skill';
+  critMin?: number;
+  damageDiceExtra?: { count: number; faces: number; name: string };
+}
+
+export interface RollResult {
+  title: string;
+  d20: number;
+  rolls: number[];
+  formula: string;
+  total: number;
+  isCrit: boolean;
+  isFumble: boolean;
+  breakdown: string;
+}
+
 const DEFAULT_RYOUJIN_SKILLS: SkillItem[] = [
-  { name: 'Cavalcare', stat: 'DES', bonus: 12 },
-  { name: 'Addestrare Animali', stat: 'CAR', bonus: 10 },
+  { name: 'Acrobazia', stat: 'DES', bonus: -3 },
+  { name: 'Addestrare animali', stat: 'CAR', bonus: 10 },
+  { name: 'Artista della fuga', stat: 'DES', bonus: -3 },
+  { name: 'Camuffare', stat: 'CAR', bonus: 3 },
+  { name: 'Cavalcare', stat: 'DES', bonus: 13 },
+  { name: 'Diplomazia', stat: 'CAR', bonus: 5 },
+  { name: 'Furtività', stat: 'DES', bonus: -3 },
+  { name: 'Guarire', stat: 'SAG', bonus: 1 },
   { name: 'Intimidire', stat: 'CAR', bonus: 11 },
+  { name: 'Percepire intenzioni', stat: 'SAG', bonus: 10 },
   { name: 'Percezione', stat: 'SAG', bonus: 7 },
-  { name: 'Percepire Intenzioni', stat: 'SAG', bonus: 10 },
-  { name: 'Sopravvivenza', stat: 'SAG', bonus: 7 },
-  { name: 'Conoscenze (Locali)', stat: 'INT', bonus: 10 },
-  { name: 'Conoscenze (Nobiltà)', stat: 'INT', bonus: 6 },
-  { name: 'Nuotare', stat: 'FOR', bonus: 7 },
-  { name: 'Scalare', stat: 'FOR', bonus: 7 }
+  { name: 'Raggirare', stat: 'CAR', bonus: 5 },
+  { name: 'Scalare', stat: 'FOR', bonus: 7 },
+  { name: 'Valutare', stat: 'INT', bonus: 5 },
+  { name: 'Conoscenze locali', stat: 'INT', bonus: 10 },
+  { name: 'Conoscenze nobiltà', stat: 'INT', bonus: 6 },
+  { name: 'Nuotare', stat: 'FOR', bonus: 7 }
 ];
 
 const DEFAULT_HISUI_SKILLS: SkillItem[] = [
   { name: 'Acrobazia', stat: 'DES', bonus: 8 },
   { name: 'Furtività', stat: 'DES', bonus: 8 },
-  { name: 'Percezione', stat: 'SAG', bonus: 4 },
-  { name: 'Sopravvivenza', stat: 'SAG', bonus: 2 },
+  { name: 'Percezione', stat: 'SAG', bonus: 7 },
+  { name: 'Sopravvivenza', stat: 'SAG', bonus: 6 },
   { name: 'Intimidire', stat: 'CAR', bonus: 5 }
 ];
 
@@ -43,19 +72,33 @@ export class CharacterSheetComponent implements OnInit {
   saveSuccess = signal<boolean>(false);
 
   charRecord = signal<CharacterRecord | null>(null);
-  activeTab = signal<'main' | 'companion'>('main');
 
-  // Gestione Modale Level Up Mobile
+  // Tab Principale: Scheda Ryoujin, Scheda Hisui, oppure Lanciatore Dadi
+  activeTab = signal<'main' | 'companion' | 'roller'>('main');
+
+  // --- STATO LANCIATORE DADI ---
+  rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
+  rollerSection = signal<'combat' | 'damage' | 'saves' | 'skills'>('combat');
+
+  // Modificatori di Lancio (Checkbox come nelle foto)
+  modInspire = signal<boolean>(false);     // +2 TxC / +2 Danni
+  modDivineFavor = signal<boolean>(false); // +2 TxC / +2 Danni
+  modPrayer = signal<boolean>(false);      // +1 TxC / +1 Danni / +1 TS
+  modFlank = signal<boolean>(false);       // +2 TxC
+  modBanner = signal<boolean>(false);      // +1 TxC
+
+  // Ultimo risultato tiro
+  lastResult = signal<RollResult | null>(null);
+
+  // Modale Level Up
   showLevelUpModal = signal<boolean>(false);
   modalTab = signal<'general' | 'stats' | 'skills' | 'companion'>('general');
   editLevel = signal<number>(7);
   editData!: CharacterSheetData;
-
-  // Nuova abilità temporanea
   newSkillName = '';
   newSkillStat = 'DES';
 
-  // Buff Tattici Ryoujin
+  // Buff Tattici Scheda
   inspireCourage = signal<boolean>(false);
   bannerActive = signal<boolean>(false);
   challengeActive = signal<boolean>(false);
@@ -103,9 +146,7 @@ export class CharacterSheetComponent implements OnInit {
 
   ngOnInit(): void {
     const paramSlug = this.route.snapshot.paramMap.get('slug');
-    if (paramSlug) {
-      this.characterSlug = paramSlug;
-    }
+    if (paramSlug) this.characterSlug = paramSlug;
     this.loadCharacter();
   }
 
@@ -113,7 +154,6 @@ export class CharacterSheetComponent implements OnInit {
     this.loading.set(true);
     this.charService.getCharacter(this.characterSlug).subscribe({
       next: (rec) => {
-        // Garantisce che l'elenco delle abilità sia sempre presente
         if (!rec.data.character.skills || rec.data.character.skills.length === 0) {
           rec.data.character.skills = [...DEFAULT_RYOUJIN_SKILLS];
         }
@@ -130,6 +170,84 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
+  // --- MOTORE LANCIO DADI ---
+  rollAction(action: DiceAction): void {
+    const isAtk = action.type === 'atk';
+    const isDmg = action.type === 'dmg';
+    const isSave = action.type === 'save';
+
+    // Calcolo bonus addizionali da checkbox
+    let extraMod = 0;
+    const bonusParts: string[] = [];
+
+    if (this.modInspire() && (isAtk || isDmg)) {
+      extraMod += 2;
+      bonusParts.push('+2 Ispirare');
+    }
+    if (this.modDivineFavor() && (isAtk || isDmg)) {
+      extraMod += 2;
+      bonusParts.push('+2 Favore');
+    }
+    if (this.modPrayer()) {
+      extraMod += 1;
+      bonusParts.push('+1 Preghiera');
+    }
+    if (this.modFlank() && isAtk) {
+      extraMod += 2;
+      bonusParts.push('+2 Fiancheggio');
+    }
+    if (this.modBanner() && isAtk) {
+      extraMod += 1;
+      bonusParts.push('+1 Stendardo');
+    }
+
+    const rolls: number[] = [];
+    let diceSum = 0;
+
+    for (let i = 0; i < action.diceCount; i++) {
+      const r = Math.floor(Math.random() * action.diceFaces) + 1;
+      rolls.push(r);
+      diceSum += r;
+    }
+
+    const total = diceSum + action.baseMod + extraMod;
+    const d20 = action.diceFaces === 20 ? rolls[0] : 0;
+    const isCrit = d20 >= (action.critMin || 20);
+    const isFumble = d20 === 1;
+
+    let breakdown = `Dado: [${rolls.join(', ')}] + Base: ${action.baseMod}`;
+    if (bonusParts.length > 0) {
+      breakdown += ' ' + bonusParts.join(' ');
+    }
+
+    this.lastResult.set({
+      title: action.name,
+      d20,
+      rolls,
+      formula: action.sub,
+      total,
+      isCrit,
+      isFumble,
+      breakdown
+    });
+  }
+
+  // Lanciatore rapido generico (es. 1d20 secco o 1d6)
+  quickRoll(faces: number): void {
+    const r = Math.floor(Math.random() * faces) + 1;
+    this.lastResult.set({
+      title: `Tiro Secco 1d${faces}`,
+      d20: faces === 20 ? r : 0,
+      rolls: [r],
+      formula: `1d${faces}`,
+      total: r,
+      isCrit: r === 20,
+      isFumble: r === 1,
+      breakdown: `Lancio puro: ${r}`
+    });
+  }
+
+  // Metodi scheda
   modifyHp(target: 'main' | 'companion', amount: number): void {
     const rec = this.charRecord();
     if (!rec) return;
@@ -175,29 +293,18 @@ export class CharacterSheetComponent implements OnInit {
     this.showLevelUpModal.set(true);
   }
 
-  // Stepper per Abilità
-  adjustSkill(skill: SkillItem, delta: number): void {
-    skill.bonus += delta;
-  }
-
+  adjustSkill(skill: SkillItem, delta: number): void { skill.bonus += delta; }
   addCustomSkill(target: 'main' | 'companion'): void {
     if (!this.newSkillName.trim()) return;
     const list = target === 'main' ? this.editData.character.skills : this.editData.companion?.skills;
     if (list) {
-      list.push({
-        name: this.newSkillName.trim(),
-        stat: this.newSkillStat,
-        bonus: 1
-      });
+      list.push({ name: this.newSkillName.trim(), stat: this.newSkillStat, bonus: 1 });
       this.newSkillName = '';
     }
   }
-
   removeSkill(target: 'main' | 'companion', index: number): void {
     const list = target === 'main' ? this.editData.character.skills : this.editData.companion?.skills;
-    if (list) {
-      list.splice(index, 1);
-    }
+    if (list) list.splice(index, 1);
   }
 
   saveLevelUp(): void {

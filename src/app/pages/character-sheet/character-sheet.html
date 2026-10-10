@@ -5,7 +5,7 @@
   </div>
 
   <ng-container *ngIf="!loading() && charRecord() as rec">
-    <!-- BARRA AZIONI SUPERIORE -->
+    <!-- BARRA AZIONI SUPERIORE (SCHEDA RYOUJIN / HISUI / LANCIA DADI) -->
     <div class="sheet-action-bar">
       <div class="char-nav-tabs">
         <button 
@@ -23,14 +23,21 @@
           (click)="activeTab.set('companion')">
           🐺 {{ rec.data.companion.name }}
         </button>
+        <button 
+          type="button" 
+          class="char-tab-btn dice-tab-btn" 
+          [class.active]="activeTab() === 'roller'" 
+          (click)="activeTab.set('roller')">
+          🎲 Lancia Dadi
+        </button>
       </div>
 
       <button type="button" class="level-up-btn" (click)="openLevelUp()">
-        ⚙️ Level Up / Modifica Online
+        ⚙️ Level Up Online
       </button>
     </div>
 
-    <!-- ==================== VISTA RYOUJIN ==================== -->
+    <!-- ==================== VISTA 1: SCHEDA RYOUJIN ==================== -->
     <div *ngIf="activeTab() === 'main'" class="char-sheet">
       <header class="sheet-hero">
         <div class="hero-top">
@@ -41,14 +48,11 @@
         <p class="char-quote">«Nessun signore a cui piegare il capo, nessun passo indietro di fronte alla lama.»</p>
       </header>
 
-      <!-- STATUS BAR (HP, CA, INIZIATIVA, TS) -->
       <div class="combat-status-grid">
         <div class="status-card hp-card">
           <span class="status-label">Punti Ferita</span>
           <div class="hp-display">
-            <span class="hp-current" [class.low-hp]="rec.data.character.hp_current < 30">
-              {{ rec.data.character.hp_current }}
-            </span>
+            <span class="hp-current" [class.low-hp]="rec.data.character.hp_current < 30">{{ rec.data.character.hp_current }}</span>
             <span class="hp-divider">/</span>
             <span class="hp-max">{{ rec.data.character.hp_max }} PF</span>
           </div>
@@ -72,14 +76,8 @@
         <div class="status-card init-card">
           <span class="status-label">Iniziativa & Moto</span>
           <div class="stat-dual-row">
-            <div>
-              <span class="sub-lbl">Iniziativa</span>
-              <div class="highlight-val">+{{ rec.data.character.initiative }}</div>
-            </div>
-            <div>
-              <span class="sub-lbl">Velocità</span>
-              <div class="highlight-val">{{ rec.data.character.speed_meters }} m <small>({{ rec.data.character.speed_squares }} cas.)</small></div>
-            </div>
+            <div><span class="sub-lbl">Iniziativa</span><div class="highlight-val">+{{ rec.data.character.initiative }}</div></div>
+            <div><span class="sub-lbl">Velocità</span><div class="highlight-val">{{ rec.data.character.speed_meters }} m <small>({{ rec.data.character.speed_squares }} cas.)</small></div></div>
           </div>
         </div>
 
@@ -94,7 +92,6 @@
         </div>
       </div>
 
-      <!-- CARATTERISTICHE -->
       <div class="attributes-strip">
         <div class="attr-cell primary"><span class="attr-name">FOR</span><span class="attr-val">{{ rec.data.character.str }}</span><span class="attr-mod">+{{ (rec.data.character.str - 10) / 2 | number:'1.0-0' }}</span></div>
         <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ rec.data.character.dex }}</span><span class="attr-mod">+{{ (rec.data.character.dex - 10) / 2 | number:'1.0-0' }}</span></div>
@@ -104,7 +101,6 @@
         <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">{{ rec.data.character.cha }}</span><span class="attr-mod">+{{ (rec.data.character.cha - 10) / 2 | number:'1.0-0' }}</span></div>
       </div>
 
-      <!-- MODIFICATORI TATTICI -->
       <div class="tactical-buffs-panel">
         <div class="buffs-header">
           <span>⚡ MODIFICATORI DI CIRCOSTANZA ATTIVI</span>
@@ -120,123 +116,40 @@
         </div>
       </div>
 
-      <!-- ARMI & ATTACCHI -->
       <div class="section-card">
         <h2 class="section-title">🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }})</h2>
         <div class="weapons-grid">
           <div class="weapon-card legendary">
             <div class="wpn-top">
-              <div>
-                <span class="wpn-badge">Lama Leggendaria Intelligente</span>
-                <h3 class="wpn-name">Suishen (+2 Fiammeggiante Difensiva)</h3>
-              </div>
+              <div><span class="wpn-badge">Lama Leggendaria Intelligente</span><h3 class="wpn-name">Suishen (+2 Fiammeggiante Difensiva)</h3></div>
               <div class="wpn-crit">Critico: 18-20 / x2</div>
             </div>
             <div class="wpn-stats-row">
-              <div class="stat-calc">
-                <span class="lbl">Tiro per Colpire</span>
-                <span class="val highlight">+{{ rec.data.character.bab + 6 + 2 + attackMod() }}</span>
-              </div>
-              <div class="stat-calc">
-                <span class="lbl">Danno Katana (Due Mani)</span>
-                <span class="val highlight">1d8 + {{ 9 + 2 + damageMod() }} + 1d6 fuoco</span>
-              </div>
+              <div class="stat-calc"><span class="lbl">Tiro per Colpire</span><span class="val highlight">+{{ rec.data.character.bab + 6 + 2 + attackMod() }}</span></div>
+              <div class="stat-calc"><span class="lbl">Danno Katana (Due Mani)</span><span class="val highlight">1d8 + {{ 9 + 2 + damageMod() }} + 1d6 fuoco</span></div>
             </div>
           </div>
-
           <div class="weapon-card">
             <div class="wpn-top">
-              <div>
-                <span class="wpn-badge">Arma Perfetta</span>
-                <h3 class="wpn-name">Katana Deadly +1 (Due Mani)</h3>
-              </div>
+              <div><span class="wpn-badge">Arma Perfetta</span><h3 class="wpn-name">Katana Deadly +1 (Due Mani)</h3></div>
               <div class="wpn-crit">Critico: 18-20 / x2 (+2 conferma)</div>
             </div>
             <div class="wpn-stats-row">
-              <div class="stat-calc">
-                <span class="lbl">Tiro per Colpire</span>
-                <span class="val highlight">+{{ rec.data.character.bab + 6 + 1 + attackMod() }}</span>
-              </div>
-              <div class="stat-calc">
-                <span class="lbl">Danno Katana</span>
-                <span class="val highlight">1d8 + {{ 9 + 1 + damageMod() }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- FERMEZZA, SFIDE & TRATTI -->
-      <div class="section-card">
-        <h2 class="section-title">⛩️ Fermezza & Sfide</h2>
-        <div class="resources-row">
-          <div class="resource-box">
-            <div class="res-head">
-              <span class="res-title">Fermezza (Ronin)</span>
-              <span class="res-val">{{ rec.data.character.resolve_current }} / {{ rec.data.character.resolve_max }}</span>
-            </div>
-            <div class="use-pips">
-              <span *ngFor="let i of [0, 1, 2, 3]" class="pip" [class.filled]="i < rec.data.character.resolve_current" (click)="toggleResolve(i)"></span>
-            </div>
-          </div>
-
-          <div class="resource-box">
-            <div class="res-head">
-              <span class="res-title">Sfida del Ronin</span>
-              <span class="res-val">{{ rec.data.character.challenge_current }} / {{ rec.data.character.challenge_max }}</span>
-            </div>
-            <div class="use-pips">
-              <span *ngFor="let i of [0, 1, 2]" class="pip challenge-pip" [class.filled]="i < rec.data.character.challenge_current" (click)="toggleChallenge(i)"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="traits-grid">
-          <div class="trait-badge fire">🔥 Fuoco 5</div>
-          <div class="trait-badge cold">❄️ Freddo 5</div>
-          <div class="trait-badge electric">⚡ Elettricità 5</div>
-          <div class="trait-badge darkvision">👁️ Scurovisione 18 m</div>
-          <div class="trait-badge banner">🎌 Stendardo (+1 morale alleati)</div>
-        </div>
-      </div>
-
-      <!-- GRIGLIA TALENTI & ABILITÀ DINAMICHE -->
-      <div class="dual-columns-grid">
-        <div class="section-card">
-          <h2 class="section-title">🥋 Talenti & Manovre</h2>
-          <div class="feats-list">
-            <div class="feat-item"><strong>Undersized Mount</strong>: permette di cavalcare Hisui anche essendo entrambi di taglia Media.</div>
-            <div class="feat-item"><strong>Wolfrider</strong>: bonus dedicati al combattimento in sella a lupi da guerra.</div>
-            <div class="feat-item"><strong>Attacco Poderoso</strong>: -2 TxC, +6 danni a due mani.</div>
-            <div class="feat-item"><strong>Weapon Expertise (Katana)</strong>: estrai gratis, +2 a confermare critici.</div>
-            <div class="feat-item"><strong>Volontà di Ferro</strong>: +2 bonus a TS Volontà.</div>
-          </div>
-        </div>
-
-        <!-- ABILITÀ DINAMICHE DAL DATABASE -->
-        <div class="section-card">
-          <h2 class="section-title">📊 Abilità Addestrate (Aggiornate al Lv {{ rec.level }})</h2>
-          <div class="skills-mini-table">
-            <div class="skill-row" *ngFor="let sk of rec.data.character.skills">
-              <span>{{ sk.name }} ({{ sk.stat }})</span>
-              <strong>+{{ sk.bonus }}</strong>
+              <div class="stat-calc"><span class="lbl">Tiro per Colpire</span><span class="val highlight">+{{ rec.data.character.bab + 6 + 1 + attackMod() }}</span></div>
+              <div class="stat-calc"><span class="lbl">Danno Katana</span><span class="val highlight">1d8 + {{ 9 + 1 + damageMod() }}</span></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ==================== VISTA HISUI ==================== -->
+    <!-- ==================== VISTA 2: SCHEDA HISUI ==================== -->
     <div *ngIf="activeTab() === 'companion' && rec.data.companion as comp" class="char-sheet hisui-theme">
       <header class="sheet-hero wolf-hero">
-        <div class="hero-top">
-          <span class="race-tag wolf-tag">{{ comp.type }}</span>
-          <span class="class-tag">{{ comp.hd }} Dadi Vita</span>
-        </div>
+        <div class="hero-top"><span class="race-tag wolf-tag">{{ comp.type }}</span><span class="class-tag">{{ comp.hd }} Dadi Vita</span></div>
         <h1 class="char-title">🐺 {{ comp.name }}</h1>
         <p class="char-quote">«Il lupo fedele della steppa, legato alla sella del samurai.»</p>
       </header>
-
       <div class="combat-status-grid">
         <div class="status-card hp-card">
           <span class="status-label">Punti Ferita</span>
@@ -252,7 +165,6 @@
             <button type="button" class="hp-btn heal" (click)="modifyHp('companion', 5)">+5</button>
           </div>
         </div>
-
         <div class="status-card ca-card">
           <span class="status-label">Classe Armatura</span>
           <div class="ca-main-val">{{ comp.ac_total }}</div>
@@ -261,7 +173,6 @@
             <span class="ca-pill">Impreparato: <strong>{{ comp.ac_flat_footed }}</strong></span>
           </div>
         </div>
-
         <div class="status-card init-card">
           <span class="status-label">Iniziativa & Corsa</span>
           <div class="stat-dual-row">
@@ -269,7 +180,6 @@
             <div><span class="sub-lbl">Velocità</span><div class="highlight-val wolf-spd">{{ comp.speed_meters }} m <small>({{ comp.speed_squares }} cas.)</small></div></div>
           </div>
         </div>
-
         <div class="status-card saves-card">
           <span class="status-label">Tiri Salvezza</span>
           <div class="saves-grid">
@@ -280,72 +190,358 @@
           <div class="save-note">Eludere attivo • Devozione (+4 vs Ammaliamento)</div>
         </div>
       </div>
+    </div>
 
-      <div class="section-card">
-        <h2 class="section-title">🐺 Attacco Naturale</h2>
-        <div class="weapon-card wolf-card">
-          <div class="wpn-top">
-            <div>
-              <span class="wpn-badge wolf">Attacco Principale con Sbilanciare</span>
-              <h3 class="wpn-name">{{ comp.attack_name }}</h3>
-            </div>
-            <div class="wpn-crit">Critico: 20 / x2</div>
-          </div>
-          <div class="wpn-stats-row">
-            <div class="stat-calc">
-              <span class="lbl">Tiro per Colpire</span>
-              <span class="val highlight">+{{ comp.attack_bonus + attackModHisui() }}</span>
-            </div>
-            <div class="stat-calc">
-              <span class="lbl">Danno Morso</span>
-              <span class="val highlight">{{ comp.damage_dice }} + {{ damageModHisui() }}</span>
-            </div>
-          </div>
-          <div class="trip-free-box">
-            <span>🦵 <strong>Sbilanciare Gratuito:</strong> Prova con BMC <strong>+{{ comp.trip_cmb }}</strong> a ogni morso a segno!</span>
-          </div>
+    <!-- ==================== VISTA 3: LANCIATORE DADI COMPLETO ==================== -->
+    <div *ngIf="activeTab() === 'roller'" class="roller-container">
+      <!-- 1. SELETTORE PG LANCIANTE -->
+      <div class="roller-top-nav">
+        <button 
+          type="button" 
+          class="roller-char-btn" 
+          [class.active]="rollerChar() === 'ryoujin'" 
+          (click)="rollerChar.set('ryoujin')">
+          ⚔️ Ryoujin
+        </button>
+        <button 
+          type="button" 
+          class="roller-char-btn wolf" 
+          [class.active]="rollerChar() === 'hisui'" 
+          (click)="rollerChar.set('hisui')">
+          🐺 Hisui
+        </button>
+      </div>
+
+      <!-- 2. CARTELLE SEZIONI (STILE APP FOTO) -->
+      <div class="roller-folders-bar">
+        <button type="button" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">
+          🗡️ Attacchi
+        </button>
+        <button type="button" class="folder-chip" [class.active]="rollerSection() === 'damage'" (click)="rollerSection.set('damage')">
+          💥 Danni
+        </button>
+        <button type="button" class="folder-chip" [class.active]="rollerSection() === 'saves'" (click)="rollerSection.set('saves')">
+          🛡️ Tiri Salvezza
+        </button>
+        <button type="button" class="folder-chip" [class.active]="rollerSection() === 'skills'" (click)="rollerSection.set('skills')">
+          📊 Abilità
+        </button>
+      </div>
+
+      <!-- 3. BOX MODIFICATORI ATTIVI CON CHECKBOX (STILE FOTO) -->
+      <div class="roll-modifiers-box">
+        <div class="mod-box-header">
+          <span>ROLL MODIFIERS</span>
+          <button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modDivineFavor.set(false); modPrayer.set(false); modFlank.set(false); modBanner.set(false)">
+            Reset
+          </button>
+        </div>
+        <div class="mod-checkboxes-grid">
+          <label class="mod-check-label" [class.checked]="modInspire()">
+            <input type="checkbox" [ngModel]="modInspire()" (ngModelChange)="modInspire.set($event)" />
+            <span>Ispirare coraggio (+2)</span>
+          </label>
+
+          <label *ngIf="rollerChar() === 'ryoujin'" class="mod-check-label" [class.checked]="modDivineFavor()">
+            <input type="checkbox" [ngModel]="modDivineFavor()" (ngModelChange)="modDivineFavor.set($event)" />
+            <span>Favore divino (+2)</span>
+          </label>
+
+          <label class="mod-check-label" [class.checked]="modPrayer()">
+            <input type="checkbox" [ngModel]="modPrayer()" (ngModelChange)="modPrayer.set($event)" />
+            <span>Preghiera (+1)</span>
+          </label>
+
+          <label class="mod-check-label" [class.checked]="modFlank()">
+            <input type="checkbox" [ngModel]="modFlank()" (ngModelChange)="modFlank.set($event)" />
+            <span>Fiancheggiamento (+2 TxC)</span>
+          </label>
+
+          <label class="mod-check-label" [class.checked]="modBanner()">
+            <input type="checkbox" [ngModel]="modBanner()" (ngModelChange)="modBanner.set($event)" />
+            <span>Stendardo (+1 TxC)</span>
+          </label>
         </div>
       </div>
 
-      <div class="dual-columns-grid">
-        <div class="section-card">
-          <h2 class="section-title">🐾 Abilità di Hisui</h2>
-          <div class="skills-mini-table">
-            <div class="skill-row" *ngFor="let sk of comp.skills">
-              <span>{{ sk.name }} ({{ sk.stat }})</span>
-              <strong>+{{ sk.bonus }}</strong>
-            </div>
+      <!-- 4. BANNER RISULTATO ULTIMO TIRO -->
+      <div class="roll-result-banner" *ngIf="lastResult() as res">
+        <div class="res-head">
+          <span class="res-title">{{ res.title }}</span>
+          <span class="res-formula">{{ res.formula }}</span>
+        </div>
+        <div class="res-main-row">
+          <div class="dice-badge" [class.crit]="res.isCrit" [class.fumble]="res.isFumble">
+            <span class="dice-label">DADO</span>
+            <span class="dice-num">{{ res.rolls.join(', ') }}</span>
+          </div>
+          <div class="total-badge">
+            <span class="total-label">TOTALE</span>
+            <span class="total-num">{{ res.total }}</span>
           </div>
         </div>
+        <div class="crit-warning" *ngIf="res.isCrit">
+          ✨ MINACCIA DI CRITICO (18-20)! Tira per confermare!
+        </div>
+        <div class="fumble-warning" *ngIf="res.isFumble">
+          💀 FALLIMENTO AUTOMATICO (1 Naturale)!
+        </div>
+        <div class="res-breakdown">{{ res.breakdown }}</div>
+      </div>
 
-        <div class="section-card">
-          <h2 class="section-title">🍖 Comandi Addestrati</h2>
-          <div class="tricks-cloud">
-            <span class="trick-tag">⚔️ Attacca</span>
-            <span class="trick-tag">✋ Fermo</span>
-            <span class="trick-tag">🛡️ Difendi</span>
-            <span class="trick-tag">🔙 Indietro</span>
-            <span class="trick-tag">👃 Annusa / Tracce</span>
-            <span class="trick-tag">🔍 Cerca</span>
+      <!-- 5. LISTA RIGHE DI TIRO (TOUCH LIST STILE APP FOTO) -->
+      <div class="dice-rolls-list">
+        <!-- SEZIONE ATTACCHI RYOUJIN -->
+        <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'combat'">
+          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Katana Suishen', sub: 'd20 + 15', diceCount: 1, diceFaces: 20, baseMod: 15, type: 'atk', critMin: 18 })">
+            <div class="item-info">
+              <span class="item-name">TxC Katana Suishen (+2)</span>
+              <span class="item-sub">d20 + 15 • Critico 18-20</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
           </div>
-        </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Katana Deadly', sub: 'd20 + 14', diceCount: 1, diceFaces: 20, baseMod: 14, type: 'atk', critMin: 18 })">
+            <div class="item-info">
+              <span class="item-name">TxC Katana Deadly (+1)</span>
+              <span class="item-sub">d20 + 14 • Critico 18-20 (+2 conf)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Katana Poderoso', sub: 'd20 + 12', diceCount: 1, diceFaces: 20, baseMod: 12, type: 'atk', critMin: 18 })">
+            <div class="item-info">
+              <span class="item-name">TxC Katana con Poderoso</span>
+              <span class="item-sub">d20 + 12 • (-2 TxC)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'TxC Arco Lungo', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'atk', critMin: 20 })">
+            <div class="item-info">
+              <span class="item-name">TxC Arco Lungo (+2 For)</span>
+              <span class="item-sub">d20 + 10 • Gittata 33 m</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Conferma Critico Katana', sub: 'd20 + 16', diceCount: 1, diceFaces: 20, baseMod: 16, type: 'atk' })">
+            <div class="item-info">
+              <span class="item-name">Tiro Conferma Critico</span>
+              <span class="item-sub">d20 + 14 + 2 (Weapon Expertise)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+        </ng-container>
+
+        <!-- SEZIONE DANNI RYOUJIN -->
+        <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'damage'">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Katana Poderoso', sub: 'd8 + 16', diceCount: 1, diceFaces: 8, baseMod: 16, type: 'dmg' })">
+            <div class="item-info">
+              <span class="item-name">Danni Katana Pod</span>
+              <span class="item-sub">d8 + 16 (Due mani + Poderoso)</span>
+            </div>
+            <button type="button" class="roll-btn dmg">Danno 💥</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Katana Pod in Sfida', sub: 'd8 + 23', diceCount: 1, diceFaces: 8, baseMod: 23, type: 'dmg' })">
+            <div class="item-info">
+              <span class="item-name">Danni Katana Pod in Sfida</span>
+              <span class="item-sub">d8 + 16 + 7 (Ronin Lv 7)</span>
+            </div>
+            <button type="button" class="roll-btn dmg">Danno 💥</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danno Suishen', sub: 'd8 + 17', diceCount: 1, diceFaces: 8, baseMod: 17, type: 'dmg' })">
+            <div class="item-info">
+              <span class="item-name">Danno Suishen (Fisico)</span>
+              <span class="item-sub">d8 + 17 (+2 arma + POD)</span>
+            </div>
+            <button type="button" class="roll-btn dmg">Danno 💥</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danno Suishen Fiammeggiante', sub: 'd6', diceCount: 1, diceFaces: 6, baseMod: 0, type: 'dmg' })">
+            <div class="item-info">
+              <span class="item-name">Danno Suishen Fiammeggiante</span>
+              <span class="item-sub">d6 Fuoco</span>
+            </div>
+            <button type="button" class="roll-btn fire">Fuoco 🔥</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danno Arco Lungo', sub: 'd8 + 3', diceCount: 1, diceFaces: 8, baseMod: 3, type: 'dmg' })">
+            <div class="item-info">
+              <span class="item-name">Danno Arco Lungo (+2 For)</span>
+              <span class="item-sub">d8 + 3</span>
+            </div>
+            <button type="button" class="roll-btn dmg">Danno 💥</button>
+          </div>
+        </ng-container>
+
+        <!-- SEZIONE TIRI SALVEZZA RYOUJIN -->
+        <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'saves'">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra Ryoujin', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Tempra</span>
+              <span class="item-sub">d20 + 10</span>
+            </div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra (2° Tiro Risoluto)', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Tempra 2 (Ritiro Risoluto)</span>
+              <span class="item-sub">d20 + 10 • Tieni il migliore!</span>
+            </div>
+            <button type="button" class="roll-btn save">Ritiro 🔄</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Riflessi Ryoujin', sub: 'd20 + 5', diceCount: 1, diceFaces: 20, baseMod: 5, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Riflessi</span>
+              <span class="item-sub">d20 + 5</span>
+            </div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà Ryoujin', sub: 'd20 + 6', diceCount: 1, diceFaces: 20, baseMod: 6, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Volontà</span>
+              <span class="item-sub">d20 + 6 (+2 vs Paura)</span>
+            </div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà (2° Tiro Fermezza)', sub: 'd20 + 6', diceCount: 1, diceFaces: 20, baseMod: 6, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Volontà 2 (Ritiro Fermezza)</span>
+              <span class="item-sub">d20 + 6 • Secondo tiro</span>
+            </div>
+            <button type="button" class="roll-btn save">Ritiro 🔄</button>
+          </div>
+        </ng-container>
+
+        <!-- SEZIONE ABILITÀ RYOUJIN -->
+        <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'skills'">
+          <div 
+            class="dice-item-row" 
+            *ngFor="let sk of rec.data.character.skills" 
+            (click)="rollAction({ name: sk.name, sub: 'd20' + (sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus), diceCount: 1, diceFaces: 20, baseMod: sk.bonus, type: 'skill' })">
+            <div class="item-info">
+              <span class="item-name">{{ sk.name }}</span>
+              <span class="item-sub">d20{{ sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus }} ({{ sk.stat }})</span>
+            </div>
+            <button type="button" class="roll-btn skill">Prova 📊</button>
+          </div>
+        </ng-container>
+
+        <!-- SEZIONE ATTACCHI HISUI -->
+        <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'combat'">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Morso Hisui (TxC)', sub: 'd20 + 11', diceCount: 1, diceFaces: 20, baseMod: 11, type: 'atk', critMin: 20 })">
+            <div class="item-info">
+              <span class="item-name">Morso (TxC)</span>
+              <span class="item-sub">d20 + 11 • Attacco Naturale</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Morso con Attacco Poderoso', sub: 'd20 + 9', diceCount: 1, diceFaces: 20, baseMod: 9, type: 'atk', critMin: 20 })">
+            <div class="item-info">
+              <span class="item-name">Morso Poderoso (TxC)</span>
+              <span class="item-sub">d20 + 9 (-2 TxC / +6 Danni)</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Sbilanciare Gratuito (BMC)', sub: 'd20 + 11', diceCount: 1, diceFaces: 20, baseMod: 11, type: 'atk' })">
+            <div class="item-info">
+              <span class="item-name">BMC Sbilanciare (Trip)</span>
+              <span class="item-sub">d20 + 11 • Gratuito a segno</span>
+            </div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+        </ng-container>
+
+        <!-- SEZIONE DANNI HISUI -->
+        <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'damage'">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Morso Poderoso', sub: 'd8 + 16', diceCount: 1, diceFaces: 8, baseMod: 16, type: 'dmg' })">
+            <div class="item-info">
+              <span class="item-name">Danni Morso Pod</span>
+              <span class="item-sub">d8 + 16 (+6 Poderoso)</span>
+            </div>
+            <button type="button" class="roll-btn dmg">Danno 💥</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Danni Morso Standard', sub: 'd8 + 10', diceCount: 1, diceFaces: 8, baseMod: 10, type: 'dmg' })">
+            <div class="item-info">
+              <span class="item-name">Danno Morso Base</span>
+              <span class="item-sub">d8 + 10</span>
+            </div>
+            <button type="button" class="roll-btn dmg">Danno 💥</button>
+          </div>
+        </ng-container>
+
+        <!-- SEZIONE TIRI SALVEZZA HISUI -->
+        <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'saves'">
+          <div class="dice-item-row" (click)="rollAction({ name: 'Tempra Hisui', sub: 'd20 + 10', diceCount: 1, diceFaces: 20, baseMod: 10, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Tempra</span>
+              <span class="item-sub">d20 + 10</span>
+            </div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Riflessi Hisui (Eludere)', sub: 'd20 + 8', diceCount: 1, diceFaces: 20, baseMod: 8, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Riflessi (Eludere)</span>
+              <span class="item-sub">d20 + 8 (0 danni se superato!)</span>
+            </div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+
+          <div class="dice-item-row" (click)="rollAction({ name: 'Volontà Hisui (Devozione)', sub: 'd20 + 3', diceCount: 1, diceFaces: 20, baseMod: 3, type: 'save' })">
+            <div class="item-info">
+              <span class="item-name">Volontà</span>
+              <span class="item-sub">d20 + 3 (+4 morale vs Ammaliamento)</span>
+            </div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+        </ng-container>
+
+        <!-- SEZIONE ABILITÀ HISUI -->
+        <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'skills'">
+          <div 
+            class="dice-item-row" 
+            *ngFor="let sk of rec.data.companion?.skills" 
+            (click)="rollAction({ name: sk.name, sub: 'd20' + (sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus), diceCount: 1, diceFaces: 20, baseMod: sk.bonus, type: 'skill' })">
+            <div class="item-info">
+              <span class="item-name">{{ sk.name }}</span>
+              <span class="item-sub">d20{{ sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus }}</span>
+            </div>
+            <button type="button" class="roll-btn skill">Prova 📊</button>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- 6. BARRA LANCI RAPIDI LIBERI -->
+      <div class="quick-dice-bar">
+        <span class="qd-lbl">LANCI RAPIDI:</span>
+        <button type="button" (click)="quickRoll(20)">d20</button>
+        <button type="button" (click)="quickRoll(8)">d8</button>
+        <button type="button" (click)="quickRoll(6)">d6</button>
+        <button type="button" (click)="quickRoll(4)">d4</button>
+        <button type="button" (click)="quickRoll(100)">d%</button>
       </div>
     </div>
   </ng-container>
 
-  <!-- ==================== MODALE LEVEL UP MOBILE-FIRST ==================== -->
+  <!-- MODALE LEVEL UP (Invariata) -->
   <div class="modal-backdrop" *ngIf="showLevelUpModal()" (click)="showLevelUpModal.set(false)">
     <div class="modal-sheet" (click)="$event.stopPropagation()">
       <header class="modal-header">
         <div class="modal-title-row">
-          <div>
-            <h2 class="modal-title">⚙️ Level Up Online</h2>
-            <p class="modal-sub">Salva su Neon per tutti in tempo reale</p>
-          </div>
+          <div><h2 class="modal-title">⚙️ Level Up Online</h2><p class="modal-sub">Salva su Neon in tempo reale</p></div>
           <button type="button" class="close-x-btn" (click)="showLevelUpModal.set(false)">✕</button>
         </div>
-
-        <!-- TAB INTERNI TOUCH PER SMARTPHONE -->
         <div class="modal-tab-bar">
           <button type="button" class="tab-chip" [class.active]="modalTab() === 'general'" (click)="modalTab.set('general')">🎖️ Info</button>
           <button type="button" class="tab-chip" [class.active]="modalTab() === 'stats'" (click)="modalTab.set('stats')">💪 Stat & TS</button>
@@ -353,10 +549,7 @@
           <button type="button" class="tab-chip" [class.active]="modalTab() === 'companion'" (click)="modalTab.set('companion')">🐺 Hisui</button>
         </div>
       </header>
-
-      <!-- CORPO SCROLLABILE A TAB -->
       <div class="modal-body-scroll" *ngIf="editData">
-        <!-- 1. TAB GENERALE & SALUTE -->
         <div *ngIf="modalTab() === 'general'" class="tab-content">
           <div class="form-section">
             <h3>Livello & Progressione</h3>
@@ -377,86 +570,29 @@
               </div>
             </div>
           </div>
-
           <div class="form-section">
             <h3>Salute & Difesa</h3>
             <div class="mobile-fields-grid">
-              <div class="form-group">
-                <label>PF Massimi</label>
-                <input type="number" [(ngModel)]="editData.character.hp_max" />
-              </div>
-              <div class="form-group">
-                <label>PF Attuali</label>
-                <input type="number" [(ngModel)]="editData.character.hp_current" />
-              </div>
-              <div class="form-group">
-                <label>CA Totale</label>
-                <input type="number" [(ngModel)]="editData.character.ac_total" />
-              </div>
-              <div class="form-group">
-                <label>CA Contatto</label>
-                <input type="number" [(ngModel)]="editData.character.ac_touch" />
-              </div>
+              <div class="form-group"><label>PF Massimi</label><input type="number" [(ngModel)]="editData.character.hp_max" /></div>
+              <div class="form-group"><label>PF Attuali</label><input type="number" [(ngModel)]="editData.character.hp_current" /></div>
+              <div class="form-group"><label>CA Totale</label><input type="number" [(ngModel)]="editData.character.ac_total" /></div>
+              <div class="form-group"><label>CA Contatto</label><input type="number" [(ngModel)]="editData.character.ac_touch" /></div>
             </div>
           </div>
         </div>
 
-        <!-- 2. TAB CARATTERISTICHE & TS -->
         <div *ngIf="modalTab() === 'stats'" class="tab-content">
           <div class="form-section">
             <h3>Punteggi Caratteristica</h3>
             <div class="mobile-stats-steppers">
-              <div class="stat-stepper-box">
-                <span class="st-lbl">FOR</span>
-                <div class="stepper-controls sm">
-                  <button type="button" (click)="editData.character.str = editData.character.str - 1">−</button>
-                  <span class="step-val">{{ editData.character.str }}</span>
-                  <button type="button" (click)="editData.character.str = editData.character.str + 1">+</button>
-                </div>
-              </div>
-              <div class="stat-stepper-box">
-                <span class="st-lbl">DES</span>
-                <div class="stepper-controls sm">
-                  <button type="button" (click)="editData.character.dex = editData.character.dex - 1">−</button>
-                  <span class="step-val">{{ editData.character.dex }}</span>
-                  <button type="button" (click)="editData.character.dex = editData.character.dex + 1">+</button>
-                </div>
-              </div>
-              <div class="stat-stepper-box">
-                <span class="st-lbl">COS</span>
-                <div class="stepper-controls sm">
-                  <button type="button" (click)="editData.character.con = editData.character.con - 1">−</button>
-                  <span class="step-val">{{ editData.character.con }}</span>
-                  <button type="button" (click)="editData.character.con = editData.character.con + 1">+</button>
-                </div>
-              </div>
-              <div class="stat-stepper-box">
-                <span class="st-lbl">INT</span>
-                <div class="stepper-controls sm">
-                  <button type="button" (click)="editData.character.int = editData.character.int - 1">−</button>
-                  <span class="step-val">{{ editData.character.int }}</span>
-                  <button type="button" (click)="editData.character.int = editData.character.int + 1">+</button>
-                </div>
-              </div>
-              <div class="stat-stepper-box">
-                <span class="st-lbl">SAG</span>
-                <div class="stepper-controls sm">
-                  <button type="button" (click)="editData.character.wis = editData.character.wis - 1">−</button>
-                  <span class="step-val">{{ editData.character.wis }}</span>
-                  <button type="button" (click)="editData.character.wis = editData.character.wis + 1">+</button>
-                </div>
-              </div>
-              <div class="stat-stepper-box">
-                <span class="st-lbl">CAR</span>
-                <div class="stepper-controls sm">
-                  <button type="button" (click)="editData.character.cha = editData.character.cha - 1">−</button>
-                  <span class="step-val">{{ editData.character.cha }}</span>
-                  <button type="button" (click)="editData.character.cha = editData.character.cha + 1">+</button>
-                </div>
-              </div>
+              <div class="stat-stepper-box"><span class="st-lbl">FOR</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.str = editData.character.str - 1">−</button><span class="step-val">{{ editData.character.str }}</span><button type="button" (click)="editData.character.str = editData.character.str + 1">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">DES</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.dex = editData.character.dex - 1">−</button><span class="step-val">{{ editData.character.dex }}</span><button type="button" (click)="editData.character.dex = editData.character.dex + 1">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">COS</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.con = editData.character.con - 1">−</button><span class="step-val">{{ editData.character.con }}</span><button type="button" (click)="editData.character.con = editData.character.con + 1">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">INT</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.int = editData.character.int - 1">−</button><span class="step-val">{{ editData.character.int }}</span><button type="button" (click)="editData.character.int = editData.character.int + 1">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">SAG</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.wis = editData.character.wis - 1">−</button><span class="step-val">{{ editData.character.wis }}</span><button type="button" (click)="editData.character.wis = editData.character.wis + 1">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">CAR</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.cha = editData.character.cha - 1">−</button><span class="step-val">{{ editData.character.cha }}</span><button type="button" (click)="editData.character.cha = editData.character.cha + 1">+</button></div></div>
             </div>
           </div>
-
           <div class="form-section">
             <h3>Tiri Salvezza Base</h3>
             <div class="mobile-fields-grid-3">
@@ -467,18 +603,12 @@
           </div>
         </div>
 
-        <!-- 3. TAB ABILITÀ CON STEPPER TOUCH -->
         <div *ngIf="modalTab() === 'skills'" class="tab-content">
           <div class="form-section">
             <h3>📊 Modifica Gradi / Bonus Abilità</h3>
-            <p class="section-hint">Tocca + o − per scalare i bonus ottenuti con il passaggio di livello.</p>
-            
             <div class="skills-steppers-list" *ngIf="editData.character.skills">
               <div class="skill-stepper-row" *ngFor="let sk of editData.character.skills; let i = index">
-                <div class="skill-name-col">
-                  <strong>{{ sk.name }}</strong>
-                  <small>({{ sk.stat }})</small>
-                </div>
+                <div class="skill-name-col"><strong>{{ sk.name }}</strong><small>({{ sk.stat }})</small></div>
                 <div class="stepper-controls">
                   <button type="button" class="step-btn" (click)="adjustSkill(sk, -1)">−</button>
                   <span class="step-val">+{{ sk.bonus }}</span>
@@ -487,44 +617,32 @@
                 </div>
               </div>
             </div>
-
-            <!-- AGGIUNGI NUOVA ABILITÀ -->
             <div class="add-skill-box">
-              <input type="text" [(ngModel)]="newSkillName" placeholder="Nuova abilità (es. Furtività)..." />
+              <input type="text" [(ngModel)]="newSkillName" placeholder="Nuova abilità..." />
               <select [(ngModel)]="newSkillStat">
-                <option value="FOR">FOR</option>
-                <option value="DES">DES</option>
-                <option value="COS">COS</option>
-                <option value="INT">INT</option>
-                <option value="SAG">SAG</option>
-                <option value="CAR">CAR</option>
+                <option value="FOR">FOR</option><option value="DES">DES</option><option value="COS">COS</option><option value="INT">INT</option><option value="SAG">SAG</option><option value="CAR">CAR</option>
               </select>
               <button type="button" class="add-btn" (click)="addCustomSkill('main')">+ Aggiungi</button>
             </div>
           </div>
         </div>
 
-        <!-- 4. TAB HISUI -->
         <div *ngIf="modalTab() === 'companion' && editData.companion" class="tab-content">
           <div class="form-section">
             <h3>🐺 Progressione Lupo</h3>
             <div class="mobile-fields-grid">
-              <div class="form-group"><label>Dadi Vita (HD)</label><input type="number" [(ngModel)]="editData.companion.hd" /></div>
-              <div class="form-group"><label>PF Massimi</label><input type="number" [(ngModel)]="editData.companion.hp_max" /></div>
+              <div class="form-group"><label>HD</label><input type="number" [(ngModel)]="editData.companion.hd" /></div>
+              <div class="form-group"><label>PF Max</label><input type="number" [(ngModel)]="editData.companion.hp_max" /></div>
               <div class="form-group"><label>CA Totale</label><input type="number" [(ngModel)]="editData.companion.ac_total" /></div>
               <div class="form-group"><label>Bonus Morso</label><input type="number" [(ngModel)]="editData.companion.attack_bonus" /></div>
-              <div class="form-group"><label>BMC Sbilanciare</label><input type="number" [(ngModel)]="editData.companion.trip_cmb" /></div>
+              <div class="form-group"><label>BMC</label><input type="number" [(ngModel)]="editData.companion.trip_cmb" /></div>
             </div>
           </div>
-
           <div class="form-section" *ngIf="editData.companion.skills">
             <h3>Abilità di Hisui</h3>
             <div class="skills-steppers-list">
               <div class="skill-stepper-row" *ngFor="let sk of editData.companion.skills; let i = index">
-                <div class="skill-name-col">
-                  <strong>{{ sk.name }}</strong>
-                  <small>({{ sk.stat }})</small>
-                </div>
+                <div class="skill-name-col"><strong>{{ sk.name }}</strong><small>({{ sk.stat }})</small></div>
                 <div class="stepper-controls">
                   <button type="button" class="step-btn" (click)="adjustSkill(sk, -1)">−</button>
                   <span class="step-val">+{{ sk.bonus }}</span>
@@ -537,7 +655,6 @@
         </div>
       </div>
 
-      <!-- FOOTER FISSO CON SALVATAGGIO -->
       <footer class="modal-footer-actions">
         <button type="button" class="btn-cancel" (click)="showLevelUpModal.set(false)">Annulla</button>
         <button type="button" class="btn-save" [disabled]="saving()" (click)="saveLevelUp()">
