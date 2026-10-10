@@ -13,7 +13,7 @@ export interface DiceAction {
   baseMod: number;
   type: 'atk' | 'dmg' | 'save' | 'skill';
   critMin?: number;
-  isElemental?: boolean; // Se true, esclude Sfida e modificatori fisici
+  isElemental?: boolean; // Se true, esclude Sfida e bonus fisici
 }
 
 export interface RollResult {
@@ -72,7 +72,7 @@ export class CharacterSheetComponent implements OnInit {
   saveSuccess = signal<boolean>(false);
 
   charRecord = signal<CharacterRecord | null>(null);
-  activeTab = signal<'main' | 'companion' | 'roller'>('roller'); // Apre direttamente il roller per comodità
+  activeTab = signal<'main' | 'companion' | 'roller'>('roller');
 
   // --- STATO LANCIATORE DADI ---
   rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
@@ -82,11 +82,10 @@ export class CharacterSheetComponent implements OnInit {
   modInspire = signal<boolean>(false);     // +2 TxC / +2 Danni
   modDivineFavor = signal<boolean>(false); // +2 TxC / +2 Danni
   modPrayer = signal<boolean>(false);      // +1 TxC / +1 Danni / +1 TS
-  modChallenge = signal<boolean>(false);   // +7 Danni (non su fiammeggianti!)
+  modChallenge = signal<boolean>(false);   // +Livello Danni (esclusa su fiammeggiante)
   modFlank = signal<boolean>(false);       // +2 TxC
   modBanner = signal<boolean>(false);      // +1 TxC
 
-  // Ultimo risultato tiro
   lastResult = signal<RollResult | null>(null);
 
   // Modale Level Up
@@ -106,6 +105,98 @@ export class CharacterSheetComponent implements OnInit {
   powerAttack = signal<boolean>(false);
   powerAttackHisui = signal<boolean>(false);
 
+  // ==================== CALCOLI DINAMICI STATISTICHE ====================
+  get ryoujinLevel(): number {
+    return this.charRecord()?.level ?? 7;
+  }
+  get ryoujinBab(): number {
+    return this.charRecord()?.data.character.bab ?? 7;
+  }
+  get ryoujinStrMod(): number {
+    const str = this.charRecord()?.data.character.str ?? 22;
+    return Math.floor((str - 10) / 2);
+  }
+  get ryoujinDexMod(): number {
+    const dex = this.charRecord()?.data.character.dex ?? 15;
+    return Math.floor((dex - 10) / 2);
+  }
+
+  // Progressione Attacco Poderoso (-2 al 7°, scala con il BAB)
+  get powerAtkPenalty(): number {
+    return 1 + Math.floor(this.ryoujinBab / 4);
+  }
+  get powerAtkDmgTwoHand(): number {
+    return this.powerAtkPenalty * 3;
+  }
+
+  // TxC Ryoujin dinamici
+  get katana1TxC(): number {
+    return this.ryoujinBab + this.ryoujinStrMod + 1; // 7 + 6 + 1 = 14
+  }
+  get katana1CritTxC(): number {
+    return this.katana1TxC + 2; // +2 Weapon Expertise
+  }
+  get katana2TxC(): number {
+    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty; // 2 + 6 + 1 - 2 = 7
+  }
+  get katana2CritTxC(): number {
+    return this.katana2TxC + 2;
+  }
+  get suishen1TxC(): number {
+    return this.ryoujinBab + this.ryoujinStrMod + 2; // 7 + 6 + 2 = 15
+  }
+  get suishen1CritTxC(): number {
+    return this.suishen1TxC + 2;
+  }
+  get suishen2TxC(): number {
+    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 2 - this.powerAtkPenalty; // 2 + 6 + 2 - 2 = 8
+  }
+  get suishen2CritTxC(): number {
+    return this.suishen2TxC + 2;
+  }
+  get bow1TxC(): number {
+    return this.ryoujinBab + this.ryoujinDexMod + 1; // 7 + 2 + 1 = 10
+  }
+  get bow2TxC(): number {
+    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinDexMod + 1; // 2 + 2 + 1 = 5
+  }
+  get bmcTxC(): number {
+    return this.ryoujinBab + this.ryoujinStrMod + 1; // 7 + 6 + 1 = 14
+  }
+
+  // Danni Ryoujin dinamici
+  get katanaPodDmg(): number {
+    return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand; // 9 + 1 + 6 = 16
+  }
+  get suishenDmg(): number {
+    return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand; // 9 + 2 + 6 = 17
+  }
+  get bowDmg(): number {
+    return Math.min(this.ryoujinStrMod, 2) + 1; // 2 + 1 = 3
+  }
+
+  // Statistiche Hisui dinamiche
+  get hisuiStrMod(): number {
+    const str = this.charRecord()?.data.companion?.str ?? 25;
+    return Math.floor((str - 10) / 2); // 7
+  }
+  get hisuiBiteTxC(): number {
+    return this.charRecord()?.data.companion?.attack_bonus ?? 11;
+  }
+  get hisuiBitePodTxC(): number {
+    return this.hisuiBiteTxC - 2;
+  }
+  get hisuiTripCmb(): number {
+    return this.charRecord()?.data.companion?.trip_cmb ?? 11;
+  }
+  get hisuiBitePodDmg(): number {
+    return Math.floor(this.hisuiStrMod * 1.5) + 6; // 10 + 6 = 16
+  }
+  get hisuiBiteBaseDmg(): number {
+    return Math.floor(this.hisuiStrMod * 1.5); // 10
+  }
+
+  // Modificatori Tattici della scheda visiva
   attackMod = computed(() => {
     let mod = 0;
     if (this.inspireCourage()) mod += 2;
@@ -169,7 +260,7 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
-  // --- MOTORE LANCIO DADI CON ESCLUSIONE SFIDA SU FIAMMEGGIANTE ---
+  // MOTORE DI LANCIO
   rollAction(action: DiceAction): void {
     const isAtk = action.type === 'atk';
     const isDmg = action.type === 'dmg';
@@ -178,7 +269,7 @@ export class CharacterSheetComponent implements OnInit {
     let extraMod = 0;
     const bonusParts: string[] = [];
 
-    // Sfida (+7 a Livello 7): solo se danno e NON elementale (fuoco)
+    // Sfida: si applica ai danni fisici, MAI sui fiammeggianti
     if (this.modChallenge() && isDmg) {
       if (!action.isElemental) {
         const challBonus = this.charRecord()?.level || 7;
@@ -187,7 +278,6 @@ export class CharacterSheetComponent implements OnInit {
       }
     }
 
-    // Ispirare coraggio (+2): attacchi e danni fisici
     if (this.modInspire()) {
       if (isAtk || (isDmg && !action.isElemental)) {
         extraMod += 2;
@@ -195,7 +285,6 @@ export class CharacterSheetComponent implements OnInit {
       }
     }
 
-    // Favore divino (+2): attacchi e danni fisici
     if (this.modDivineFavor()) {
       if (isAtk || (isDmg && !action.isElemental)) {
         extraMod += 2;
@@ -203,7 +292,6 @@ export class CharacterSheetComponent implements OnInit {
       }
     }
 
-    // Preghiera (+1): attacchi, danni fisici e tiri salvezza
     if (this.modPrayer()) {
       if (isAtk || (isDmg && !action.isElemental) || isSave) {
         extraMod += 1;
@@ -211,13 +299,11 @@ export class CharacterSheetComponent implements OnInit {
       }
     }
 
-    // Fiancheggiamento (+2 TxC)
     if (this.modFlank() && isAtk) {
       extraMod += 2;
       bonusParts.push('+2 Fiancheggio');
     }
 
-    // Stendardo (+1 TxC)
     if (this.modBanner() && isAtk) {
       extraMod += 1;
       bonusParts.push('+1 Stendardo');
