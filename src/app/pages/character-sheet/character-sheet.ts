@@ -13,7 +13,7 @@ export interface DiceAction {
   baseMod: number;
   type: 'atk' | 'dmg' | 'save' | 'skill';
   critMin?: number;
-  isElemental?: boolean; // Se true, esclude Sfida e bonus fisici
+  isElemental?: boolean;
 }
 
 export interface RollResult {
@@ -72,23 +72,20 @@ export class CharacterSheetComponent implements OnInit {
   saveSuccess = signal<boolean>(false);
 
   charRecord = signal<CharacterRecord | null>(null);
-  activeTab = signal<'main' | 'companion' | 'roller'>('roller');
+  activeTab = signal<'main' | 'companion' | 'roller'>('main');
 
-  // --- STATO LANCIATORE DADI ---
   rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
   rollerSection = signal<'combat' | 'damage' | 'saves' | 'skills'>('combat');
 
-  // Modificatori di Lancio Checkbox
-  modInspire = signal<boolean>(false);     // +2 TxC / +2 Danni
-  modDivineFavor = signal<boolean>(false); // +2 TxC / +2 Danni
-  modPrayer = signal<boolean>(false);      // +1 TxC / +1 Danni / +1 TS
-  modChallenge = signal<boolean>(false);   // +Livello Danni (esclusa su fiammeggiante)
-  modFlank = signal<boolean>(false);       // +2 TxC
-  modBanner = signal<boolean>(false);      // +1 TxC
+  modInspire = signal<boolean>(false);
+  modDivineFavor = signal<boolean>(false);
+  modPrayer = signal<boolean>(false);
+  modChallenge = signal<boolean>(false);
+  modFlank = signal<boolean>(false);
+  modBanner = signal<boolean>(false);
 
   lastResult = signal<RollResult | null>(null);
 
-  // Modale Level Up
   showLevelUpModal = signal<boolean>(false);
   modalTab = signal<'general' | 'stats' | 'skills' | 'companion'>('general');
   editLevel = signal<number>(7);
@@ -96,7 +93,6 @@ export class CharacterSheetComponent implements OnInit {
   newSkillName = '';
   newSkillStat = 'DES';
 
-  // Buff Tattici Scheda
   inspireCourage = signal<boolean>(false);
   bannerActive = signal<boolean>(false);
   challengeActive = signal<boolean>(false);
@@ -105,7 +101,6 @@ export class CharacterSheetComponent implements OnInit {
   powerAttack = signal<boolean>(false);
   powerAttackHisui = signal<boolean>(false);
 
-  // ==================== CALCOLI DINAMICI STATISTICHE ====================
   get ryoujinLevel(): number {
     return this.charRecord()?.level ?? 7;
   }
@@ -121,7 +116,6 @@ export class CharacterSheetComponent implements OnInit {
     return Math.floor((dex - 10) / 2);
   }
 
-  // Progressione Attacco Poderoso (-2 al 7°, scala con il BAB)
   get powerAtkPenalty(): number {
     return 1 + Math.floor(this.ryoujinBab / 4);
   }
@@ -129,56 +123,70 @@ export class CharacterSheetComponent implements OnInit {
     return this.powerAtkPenalty * 3;
   }
 
-  // TxC Ryoujin dinamici
+  get maxResolve(): number {
+    return Math.max(1, Math.floor(this.ryoujinLevel / 2));
+  }
+  get resolvePips(): number[] {
+    return Array.from({ length: this.maxResolve }, (_, i) => i);
+  }
+
+  get maxChallenge(): number {
+    return Math.max(1, Math.ceil(this.ryoujinLevel / 3));
+  }
+  get challengePips(): number[] {
+    return Array.from({ length: this.maxChallenge }, (_, i) => i);
+  }
+
   get katana1TxC(): number {
-    return this.ryoujinBab + this.ryoujinStrMod + 1; // 7 + 6 + 1 = 14
+    return this.ryoujinBab + this.ryoujinStrMod + 1;
   }
   get katana1CritTxC(): number {
-    return this.katana1TxC + 2; // +2 Weapon Expertise
+    return this.katana1TxC + 2;
   }
   get katana2TxC(): number {
-    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty; // 2 + 6 + 1 - 2 = 7
+    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty;
   }
   get katana2CritTxC(): number {
     return this.katana2TxC + 2;
   }
+
   get suishen1TxC(): number {
-    return this.ryoujinBab + this.ryoujinStrMod + 2; // 7 + 6 + 2 = 15
+    return this.ryoujinBab + this.ryoujinStrMod + 2;
   }
   get suishen1CritTxC(): number {
     return this.suishen1TxC + 2;
   }
   get suishen2TxC(): number {
-    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 2 - this.powerAtkPenalty; // 2 + 6 + 2 - 2 = 8
+    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 2 - this.powerAtkPenalty;
   }
   get suishen2CritTxC(): number {
     return this.suishen2TxC + 2;
   }
+
   get bow1TxC(): number {
-    return this.ryoujinBab + this.ryoujinDexMod + 1; // 7 + 2 + 1 = 10
+    return this.ryoujinBab + this.ryoujinDexMod + 1;
   }
   get bow2TxC(): number {
-    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinDexMod + 1; // 2 + 2 + 1 = 5
-  }
-  get bmcTxC(): number {
-    return this.ryoujinBab + this.ryoujinStrMod + 1; // 7 + 6 + 1 = 14
+    return Math.max(0, this.ryoujinBab - 5) + this.ryoujinDexMod + 1;
   }
 
-  // Danni Ryoujin dinamici
+  get bmcTxC(): number {
+    return this.ryoujinBab + this.ryoujinStrMod + 1;
+  }
+
   get katanaPodDmg(): number {
-    return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand; // 9 + 1 + 6 = 16
+    return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand;
   }
   get suishenDmg(): number {
-    return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand; // 9 + 2 + 6 = 17
+    return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand;
   }
   get bowDmg(): number {
-    return Math.min(this.ryoujinStrMod, 2) + 1; // 2 + 1 = 3
+    return Math.min(this.ryoujinStrMod, 2) + 1;
   }
 
-  // Statistiche Hisui dinamiche
   get hisuiStrMod(): number {
     const str = this.charRecord()?.data.companion?.str ?? 25;
-    return Math.floor((str - 10) / 2); // 7
+    return Math.floor((str - 10) / 2);
   }
   get hisuiBiteTxC(): number {
     return this.charRecord()?.data.companion?.attack_bonus ?? 11;
@@ -190,13 +198,12 @@ export class CharacterSheetComponent implements OnInit {
     return this.charRecord()?.data.companion?.trip_cmb ?? 11;
   }
   get hisuiBitePodDmg(): number {
-    return Math.floor(this.hisuiStrMod * 1.5) + 6; // 10 + 6 = 16
+    return Math.floor(this.hisuiStrMod * 1.5) + 6;
   }
   get hisuiBiteBaseDmg(): number {
-    return Math.floor(this.hisuiStrMod * 1.5); // 10
+    return Math.floor(this.hisuiStrMod * 1.5);
   }
 
-  // Modificatori Tattici della scheda visiva
   attackMod = computed(() => {
     let mod = 0;
     if (this.inspireCourage()) mod += 2;
@@ -260,7 +267,6 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
-  // MOTORE DI LANCIO
   rollAction(action: DiceAction): void {
     const isAtk = action.type === 'atk';
     const isDmg = action.type === 'dmg';
@@ -269,7 +275,6 @@ export class CharacterSheetComponent implements OnInit {
     let extraMod = 0;
     const bonusParts: string[] = [];
 
-    // Sfida: si applica ai danni fisici, MAI sui fiammeggianti
     if (this.modChallenge() && isDmg) {
       if (!action.isElemental) {
         const challBonus = this.charRecord()?.level || 7;
@@ -377,6 +382,7 @@ export class CharacterSheetComponent implements OnInit {
     if (!rec) return;
     const cur = rec.data.character.resolve_current;
     rec.data.character.resolve_current = cur > index ? index : index + 1;
+    rec.data.character.resolve_max = this.maxResolve;
     this.charRecord.set({ ...rec });
     this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
   }
@@ -386,6 +392,7 @@ export class CharacterSheetComponent implements OnInit {
     if (!rec) return;
     const cur = rec.data.character.challenge_current;
     rec.data.character.challenge_current = cur > index ? index : index + 1;
+    rec.data.character.challenge_max = this.maxChallenge;
     this.charRecord.set({ ...rec });
     this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
   }
@@ -399,7 +406,10 @@ export class CharacterSheetComponent implements OnInit {
     this.showLevelUpModal.set(true);
   }
 
-  adjustSkill(skill: SkillItem, delta: number): void { skill.bonus += delta; }
+  adjustSkill(skill: SkillItem, delta: number): void {
+    skill.bonus += delta;
+  }
+
   addCustomSkill(target: 'main' | 'companion'): void {
     if (!this.newSkillName.trim()) return;
     const list = target === 'main' ? this.editData.character.skills : this.editData.companion?.skills;
@@ -408,6 +418,7 @@ export class CharacterSheetComponent implements OnInit {
       this.newSkillName = '';
     }
   }
+
   removeSkill(target: 'main' | 'companion', index: number): void {
     const list = target === 'main' ? this.editData.character.skills : this.editData.companion?.skills;
     if (list) list.splice(index, 1);
@@ -415,6 +426,20 @@ export class CharacterSheetComponent implements OnInit {
 
   saveLevelUp(): void {
     this.saving.set(true);
+    const newMaxResolve = Math.max(1, Math.floor(this.editLevel() / 2));
+    const newMaxChallenge = Math.max(1, Math.ceil(this.editLevel() / 3));
+
+    this.editData.character.resolve_max = newMaxResolve;
+    this.editData.character.challenge_max = newMaxChallenge;
+    this.editData.character.resolve_current = Math.min(
+      this.editData.character.resolve_current ?? newMaxResolve,
+      newMaxResolve
+    );
+    this.editData.character.challenge_current = Math.min(
+      this.editData.character.challenge_current ?? newMaxChallenge,
+      newMaxChallenge
+    );
+
     this.charService.saveCharacter(this.characterSlug, this.editLevel(), this.editData).subscribe({
       next: (res) => {
         this.charRecord.set(res.character);

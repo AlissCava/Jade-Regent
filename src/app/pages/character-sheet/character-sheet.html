@@ -208,18 +208,18 @@
                 <span class="res-icon">🛡️</span>
                 <span class="res-title">Fermezza (Ronin)</span>
               </div>
-              <span class="res-val">{{ rec.data.character.resolve_current }} / {{ rec.data.character.resolve_max }}</span>
+              <span class="res-val">{{ rec.data.character.resolve_current }} / {{ maxResolve }}</span>
             </div>
             <p class="res-desc">
               Ritira un TS Volontà dopo il 1° round • Tira 2 volte per stabilizzarti • Rimuove scosso, infermo o affaticato.
             </p>
             <div class="use-pips">
               <span 
-                *ngFor="let i of [0, 1, 2, 3]" 
+                *ngFor="let i of resolvePips" 
                 class="pip" 
                 [class.filled]="i < rec.data.character.resolve_current" 
                 (click)="toggleResolve(i)"
-                title="Tocca per scalare/recuperare usi">
+                title="Tocca per scalare o recuperare usi">
               </span>
             </div>
           </div>
@@ -230,18 +230,18 @@
                 <span class="res-icon">⚔️</span>
                 <span class="res-title">Sfida del Ronin</span>
               </div>
-              <span class="res-val">{{ rec.data.character.challenge_current }} / {{ rec.data.character.challenge_max }}</span>
+              <span class="res-val">{{ rec.data.character.challenge_current }} / {{ maxChallenge }}</span>
             </div>
             <p class="res-desc">
               +{{ rec.level }} Danni fisici mischia • +2 TxC e +2 Schivare CA contro il bersaglio (-2 CA contro gli altri).
             </p>
             <div class="use-pips">
               <span 
-                *ngFor="let i of [0, 1, 2]" 
+                *ngFor="let i of challengePips" 
                 class="pip challenge-pip" 
                 [class.filled]="i < rec.data.character.challenge_current" 
                 (click)="toggleChallenge(i)"
-                title="Tocca per scalare/recuperare sfide">
+                title="Tocca per scalare o recuperare sfide">
               </span>
             </div>
           </div>

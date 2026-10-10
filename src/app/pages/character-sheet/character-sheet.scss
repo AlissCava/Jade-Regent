@@ -16,7 +16,6 @@ $text-muted: #94a3b8;
   padding: 0.25rem 0.5rem 3rem;
 }
 
-/* STATO CARICAMENTO */
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -36,7 +35,6 @@ $text-muted: #94a3b8;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* BARRA SUPERIORE AZIONI & NAVIGAZIONE SCHEDE */
 .sheet-action-bar {
   display: flex;
   justify-content: space-between;
@@ -97,7 +95,6 @@ $text-muted: #94a3b8;
   }
 }
 
-/* HEADER HERO SCHEDA */
 .sheet-hero {
   text-align: center;
   background: linear-gradient(180deg, rgba($crimson, 0.14), rgba($bg-card, 0.65));
@@ -149,7 +146,6 @@ $text-muted: #94a3b8;
   .char-quote { font-size: 0.82rem; font-style: italic; color: $text-muted; margin: 0; }
 }
 
-/* GRIGLIA STATUS COMBATTIMENTO (HP, CA, INIZIATIVA, TS) */
 .combat-status-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -273,7 +269,6 @@ $text-muted: #94a3b8;
   }
 }
 
-/* STRISCIA CARATTERISTICHE */
 .attributes-strip {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -296,7 +291,6 @@ $text-muted: #94a3b8;
   }
 }
 
-/* PANNELLO BUFF TATTICI */
 .tactical-buffs-panel {
   background: #0e172a;
   border: 1px solid rgba($gold, 0.35);
@@ -334,7 +328,6 @@ $text-muted: #94a3b8;
   }
 }
 
-/* SEZIONI SCHEDA E ARMI */
 .section-card {
   background: $bg-card;
   border: 1px solid $border-card;
