@@ -119,6 +119,19 @@
     </header>
 
     <div class="control-panel">
+      <!-- Stepper Livello Incantatore -->
+      <div class="cl-bar">
+        <div class="cl-title-wrap">
+          <span class="cl-tag">CALCOLA PER IL TUO LIVELLO</span>
+          <span class="cl-label">Livello Incantatore (LI):</span>
+        </div>
+        <div class="cl-stepper">
+          <button type="button" class="cl-btn" (click)="changeCl(-1)">−</button>
+          <span class="cl-val">LI {{ casterLevel() }}</span>
+          <button type="button" class="cl-btn" (click)="changeCl(1)">+</button>
+        </div>
+      </div>
+
       <!-- Selettore Classe -->
       <div class="class-selector">
         <button class="class-btn" [class.active]="selectedClass() === 'druid'" (click)="selectedClass.set('druid')">🌿 Druido (Airyn)</button>
@@ -126,18 +139,48 @@
         <button class="class-btn" [class.active]="selectedClass() === 'all'" (click)="selectedClass.set('all')">🌐 Entrambi</button>
       </div>
 
+      <!-- Ricerca bilingue -->
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input 
           type="search" 
           [ngModel]="spellSearch()" 
           (ngModelChange)="spellSearch.set($event)" 
-          placeholder="Cerca incantesimo (es. Stretta Folgorante, Nebbia, Palla di Fuoco)..."
+          placeholder="Cerca incantesimo in italiano o inglese (es. Haste, Palla di Fuoco, Shocking Grasp)..."
         />
         <button *ngIf="spellSearch()" class="clear-search" (click)="spellSearch.set('')">✕</button>
       </div>
 
-      <!-- Chip Livello Slot & Filtro Spellstrike -->
+      <!-- Selettori Dropdown per Scuola e TS -->
+      <div class="selectors-grid">
+        <div class="select-wrapper">
+          <label>Scuola di Magia</label>
+          <select [ngModel]="selectedSchool()" (ngModelChange)="selectedSchool.set($event)">
+            <option value="Tutte">Tutte le Scuole</option>
+            <option value="Abiurazione">Abiurazione</option>
+            <option value="Ammaliamento">Ammaliamento</option>
+            <option value="Divinazione">Divinazione</option>
+            <option value="Evocazione">Evocazione</option>
+            <option value="Illusione">Illusione</option>
+            <option value="Invocazione">Invocazione</option>
+            <option value="Necromanzia">Necromanzia</option>
+            <option value="Trasmutazione">Trasmutazione</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label>Tiro Salvezza</label>
+          <select [ngModel]="selectedSavingThrow()" (ngModelChange)="selectedSavingThrow.set($event)">
+            <option value="Tutti">Tutti i Tiri</option>
+            <option value="Nessun">Nessun TS (No Save)</option>
+            <option value="Tempra">Tempra</option>
+            <option value="Riflessi">Riflessi</option>
+            <option value="Volontà">Volontà</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Chip Livello Slot -->
       <div class="chips-container">
         <button type="button" class="chip" [class.active]="selectedSpellLevel() === 'all'" (click)="selectedSpellLevel.set('all')">Tutti i Livelli</button>
         <button type="button" class="chip" [class.active]="selectedSpellLevel() === '0'" (click)="selectedSpellLevel.set('0')">Liv. 0</button>
@@ -150,15 +193,22 @@
         <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '7'" (click)="selectedSpellLevel.set('7')">7°</button>
         <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '8'" (click)="selectedSpellLevel.set('8')">8°</button>
         <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '9'" (click)="selectedSpellLevel.set('9')">9°</button>
+      </div>
 
+      <!-- Chip Tattici Speciali -->
+      <div class="chips-container tactical-chips">
         <button type="button" class="chip touch-chip" [class.active]="onlyTouch()" (click)="onlyTouch.set(!onlyTouch())">⚡ A Contatto (Spellstrike)</button>
+        <button type="button" class="chip no-save-chip" [class.active]="onlyNoSave()" (click)="onlyNoSave.set(!onlyNoSave())">🛡️ No TS</button>
+        <button type="button" class="chip no-sr-chip" [class.active]="onlyNoSpellRes()" (click)="onlyNoSpellRes.set(!onlyNoSpellRes())">🚫 Ignora RI</button>
+        <button type="button" class="chip swift-chip" [class.active]="onlySwiftAction()" (click)="onlySwiftAction.set(!onlySwiftAction())">⏱️ Azione Veloce</button>
         <button *ngIf="hasActiveSpellFilters()" type="button" class="chip reset-chip" (click)="resetSpellFilters()">↺ Azzera</button>
       </div>
     </div>
 
+    <!-- Info conteggio -->
     <div class="results-info">
       <span *ngIf="loadingSpells()" class="loading-text"><span class="spinner"></span> Caricamento incantesimi...</span>
-      <span *ngIf="!loadingSpells()">Trovati <strong>{{ filteredSpells().length }}</strong> incantesimi</span>
+      <span *ngIf="!loadingSpells()">Trovati <strong>{{ filteredSpells().length }}</strong> incantesimi al <strong>LI {{ casterLevel() }}</strong></span>
     </div>
 
     <!-- Griglia Schede Incantesimi -->
@@ -177,8 +227,12 @@
         </div>
 
         <div class="card-speeds">
-          <div class="speed-pill" *ngIf="sp.casting_time">⏱️ {{ sp.casting_time }}</div>
-          <div class="speed-pill" *ngIf="sp.range">📏 {{ sp.range }}</div>
+          <div class="speed-pill cl-scaled" title="Raggio scalato al LI">📏 {{ getCalculatedRange(sp.range) }}</div>
+          <div class="speed-pill cl-scaled" title="Durata scalata al LI">⏳ {{ getCalculatedDuration(sp.duration) }}</div>
+        </div>
+
+        <div class="scaled-damage-tag" *ngIf="getCalculatedPower(sp.full_description || sp.short_description)">
+          💥 Effetto a LI {{ casterLevel() }}: <strong>{{ getCalculatedPower(sp.full_description || sp.short_description) }}</strong>
         </div>
 
         <p class="spell-summary">{{ sp.short_description || 'Tocca per aprire le regole complete.' }}</p>
@@ -193,37 +247,53 @@
     </main>
   </ng-container>
 
-  <!-- ==================== MODALE / BOTTOM SHEET DELLE REGOLE INTEGRALI ==================== -->
+  <!-- ==================== MODALE DELLE REGOLE INTEGRALI ==================== -->
   <div class="modal-backdrop" *ngIf="selectedSpell()" (click)="selectedSpell.set(null)">
     <div class="modal-sheet" (click)="$event.stopPropagation()">
       <div class="modal-handle" (click)="selectedSpell.set(null)"></div>
 
       <header class="modal-header">
         <div class="modal-title-row">
-          <h2 class="modal-title">{{ selectedSpell()?.name }}</h2>
-          <div class="modal-en-name" *ngIf="selectedSpell()?.english_name">({{ selectedSpell()?.english_name }})</div>
+          <div>
+            <h2 class="modal-title">{{ selectedSpell()?.name }}</h2>
+            <div class="modal-en-name" *ngIf="selectedSpell()?.english_name">({{ selectedSpell()?.english_name }})</div>
+          </div>
           <button class="modal-close-btn" (click)="selectedSpell.set(null)">✕</button>
         </div>
 
-        <div class="badges-row" style="margin-top: 0.5rem; display: flex; gap: 0.35rem;">
+        <div class="badges-row" style="margin-top: 0.5rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
           <span class="badge class-level-badge druid" *ngIf="selectedSpell()?.druid_level !== null">🌿 Druido {{ selectedSpell()?.druid_level }}</span>
           <span class="badge class-level-badge magus" *ngIf="selectedSpell()?.magus_level !== null">⚔️ Magus {{ selectedSpell()?.magus_level }}</span>
           <span class="badge school-badge" *ngIf="selectedSpell()?.school">{{ selectedSpell()?.school }}</span>
         </div>
       </header>
 
+      <!-- Riquadro Parametri al LI Attuale -->
+      <div class="scaled-calc-card">
+        <div class="scaled-calc-header">
+          <span>⚡ PARAMETRI AL TUO LIVELLO INCANTATORE (LI {{ casterLevel() }})</span>
+        </div>
+        <div class="scaled-calc-grid">
+          <div class="scaled-calc-item">
+            <span class="lbl">Raggio Effettivo</span>
+            <span class="val highlight">{{ getCalculatedRange(selectedSpell()?.range) }}</span>
+          </div>
+          <div class="scaled-calc-item">
+            <span class="lbl">Durata Effettiva</span>
+            <span class="val highlight">{{ getCalculatedDuration(selectedSpell()?.duration) }}</span>
+          </div>
+          <div class="scaled-calc-item" *ngIf="getCalculatedPower(selectedSpell()?.full_description || selectedSpell()?.short_description)">
+            <span class="lbl">Potenza / Danni</span>
+            <span class="val highlight">{{ getCalculatedPower(selectedSpell()?.full_description || selectedSpell()?.short_description) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiche Base da Manuale -->
       <div class="modal-stats-grid">
         <div class="stat-box" *ngIf="selectedSpell()?.casting_time">
           <span class="stat-lbl">Tempo di Lancio</span>
           <span class="stat-val">{{ selectedSpell()?.casting_time }}</span>
-        </div>
-        <div class="stat-box" *ngIf="selectedSpell()?.range">
-          <span class="stat-lbl">Raggio di Azione</span>
-          <span class="stat-val">{{ selectedSpell()?.range }}</span>
-        </div>
-        <div class="stat-box" *ngIf="selectedSpell()?.duration">
-          <span class="stat-lbl">Durata</span>
-          <span class="stat-val">{{ selectedSpell()?.duration }}</span>
         </div>
         <div class="stat-box" *ngIf="selectedSpell()?.saving_throw">
           <span class="stat-lbl">Tiro Salvezza</span>
@@ -235,6 +305,7 @@
         </div>
       </div>
 
+      <!-- Testo Integrale Regole -->
       <div class="modal-description">
         <h3>Descrizione delle Regole</h3>
         <p>{{ selectedSpell()?.full_description || selectedSpell()?.short_description }}</p>
@@ -242,7 +313,7 @@
 
       <footer class="modal-footer" *ngIf="selectedSpell()?.golarion_url">
         <a [href]="selectedSpell()?.golarion_url" target="_blank" rel="noopener noreferrer" class="wiki-btn">
-          <span>Consulta su Golarion Wiki</span>
+          <span>Consulta pagina su Golarion Wiki</span>
           <span>↗</span>
         </a>
       </footer>
