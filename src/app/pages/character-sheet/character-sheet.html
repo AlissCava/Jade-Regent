@@ -1,11 +1,12 @@
 <div class="char-page-container">
+  <!-- STATO CARICAMENTO DAL DATABASE -->
   <div *ngIf="loading()" class="loading-state">
     <div class="spinner"></div>
     <span>Caricamento scheda dal database...</span>
   </div>
 
   <ng-container *ngIf="!loading() && charRecord() as rec">
-    <!-- BARRA NAVIGAZIONE SCHEDE -->
+    <!-- ==================== BARRA NAVIGAZIONE SCHEDE ==================== -->
     <div class="sheet-action-bar">
       <div class="char-nav-tabs">
         <button 
@@ -48,6 +49,7 @@
         <p class="char-quote">«Nessun signore a cui piegare il capo, nessun passo indietro di fronte alla lama.»</p>
       </header>
 
+      <!-- STATUS BAR (HP, CA, INIZIATIVA, TS) -->
       <div class="combat-status-grid">
         <div class="status-card hp-card">
           <span class="status-label">Punti Ferita</span>
@@ -92,6 +94,7 @@
         </div>
       </div>
 
+      <!-- CARATTERISTICHE -->
       <div class="attributes-strip">
         <div class="attr-cell primary"><span class="attr-name">FOR</span><span class="attr-val">{{ rec.data.character.str }}</span><span class="attr-mod">+{{ ryoujinStrMod }}</span></div>
         <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ rec.data.character.dex }}</span><span class="attr-mod">+{{ ryoujinDexMod }}</span></div>
@@ -101,6 +104,7 @@
         <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">{{ rec.data.character.cha }}</span><span class="attr-mod">+{{ (rec.data.character.cha - 10) / 2 | number:'1.0-0' }}</span></div>
       </div>
 
+      <!-- MODIFICATORI TATTICI -->
       <div class="tactical-buffs-panel">
         <div class="buffs-header">
           <span>⚡ MODIFICATORI DI CIRCOSTANZA ATTIVI</span>
@@ -116,7 +120,7 @@
         </div>
       </div>
 
-      <!-- ARMI & ATTACCHI (1° E 2° ATTACCO ITERATIVO) -->
+      <!-- ARMI & AZIONI DI ATTACCO (1° E 2° ATTACCO ITERATIVO) -->
       <div class="section-card">
         <h2 class="section-title">
           🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }}/+{{ rec.data.character.bab - 5 }})
@@ -193,58 +197,137 @@
         </div>
       </div>
 
-      <!-- FERMEZZA & SFIDE -->
-      <div class="section-card">
-        <h2 class="section-title">⛩️ Fermezza, Sfide & Tratti</h2>
+      <!-- 1. FERMEZZA, SFIDE & TRATTI RAZZIALI -->
+      <div class="section-card powers-section">
+        <h2 class="section-title">⛩️ Risorse del Ronin & Tratti Razziali</h2>
+
         <div class="resources-row">
-          <div class="resource-box">
+          <div class="resource-box resolve-box">
             <div class="res-head">
-              <span class="res-title">Fermezza (Ronin)</span>
+              <div class="res-title-group">
+                <span class="res-icon">🛡️</span>
+                <span class="res-title">Fermezza (Ronin)</span>
+              </div>
               <span class="res-val">{{ rec.data.character.resolve_current }} / {{ rec.data.character.resolve_max }}</span>
             </div>
+            <p class="res-desc">
+              Ritira un TS Volontà dopo il 1° round • Tira 2 volte per stabilizzarti • Rimuove scosso, infermo o affaticato.
+            </p>
             <div class="use-pips">
-              <span *ngFor="let i of [0, 1, 2, 3]" class="pip" [class.filled]="i < rec.data.character.resolve_current" (click)="toggleResolve(i)"></span>
+              <span 
+                *ngFor="let i of [0, 1, 2, 3]" 
+                class="pip" 
+                [class.filled]="i < rec.data.character.resolve_current" 
+                (click)="toggleResolve(i)"
+                title="Tocca per scalare/recuperare usi">
+              </span>
             </div>
           </div>
 
-          <div class="resource-box">
+          <div class="resource-box challenge-box">
             <div class="res-head">
-              <span class="res-title">Sfida del Ronin</span>
+              <div class="res-title-group">
+                <span class="res-icon">⚔️</span>
+                <span class="res-title">Sfida del Ronin</span>
+              </div>
               <span class="res-val">{{ rec.data.character.challenge_current }} / {{ rec.data.character.challenge_max }}</span>
             </div>
+            <p class="res-desc">
+              +{{ rec.level }} Danni fisici mischia • +2 TxC e +2 Schivare CA contro il bersaglio (-2 CA contro gli altri).
+            </p>
             <div class="use-pips">
-              <span *ngFor="let i of [0, 1, 2]" class="pip challenge-pip" [class.filled]="i < rec.data.character.challenge_current" (click)="toggleChallenge(i)"></span>
+              <span 
+                *ngFor="let i of [0, 1, 2]" 
+                class="pip challenge-pip" 
+                [class.filled]="i < rec.data.character.challenge_current" 
+                (click)="toggleChallenge(i)"
+                title="Tocca per scalare/recuperare sfide">
+              </span>
             </div>
           </div>
         </div>
 
-        <div class="traits-grid">
-          <div class="trait-badge fire">🔥 Fuoco 5</div>
-          <div class="trait-badge cold">❄️ Freddo 5</div>
-          <div class="trait-badge electric">⚡ Elettricità 5</div>
-          <div class="trait-badge darkvision">👁️ Scurovisione 18 m</div>
-          <div class="trait-badge banner">🎌 Stendardo (+1 morale alleati)</div>
+        <div class="traits-container">
+          <span class="traits-label">TRATTI & RESISTENZE ATTIVE</span>
+          <div class="traits-grid">
+            <div class="trait-badge fire"><span class="badge-icon">🔥</span> Resistenza Fuoco <strong>5</strong></div>
+            <div class="trait-badge cold"><span class="badge-icon">❄️</span> Resistenza Freddo <strong>5</strong></div>
+            <div class="trait-badge electric"><span class="badge-icon">⚡</span> Resistenza Elettricità <strong>5</strong></div>
+            <div class="trait-badge darkvision"><span class="badge-icon">👁️</span> Scurovisione <strong>18 m</strong></div>
+            <div class="trait-badge banner"><span class="badge-icon">🎌</span> Stendardo <strong>+1 morale carica/paura</strong></div>
+            <div class="trait-badge spell"><span class="badge-icon">✨</span> Alterare se stesso <strong>1v/g (Oni)</strong></div>
+          </div>
         </div>
       </div>
 
-      <!-- ABILITÀ -->
-      <div class="dual-columns-grid">
-        <div class="section-card">
-          <h2 class="section-title">🥋 Talenti & Manovre</h2>
-          <div class="feats-list">
-            <div class="feat-item"><strong>Undersized Mount</strong>: cavalchi Hisui senza penalità di taglia.</div>
-            <div class="feat-item"><strong>Attacco Poderoso</strong>: -{{ powerAtkPenalty }} TxC, +{{ powerAtkDmgTwoHand }} danni a due mani.</div>
-            <div class="feat-item"><strong>Weapon Expertise (Katana)</strong>: estrai gratis, +2 a confermare critici.</div>
-            <div class="feat-item"><strong>Volontà di Ferro</strong>: +2 bonus a TS Volontà.</div>
+      <!-- 2. TALENTI & MAESTRIE -->
+      <div class="section-card">
+        <h2 class="section-title">🥋 Talenti & Maestrie Marziali</h2>
+        <div class="feats-grid">
+          <div class="feat-card">
+            <div class="feat-header">
+              <span class="feat-tag mount">Cavalcatura</span>
+              <h3 class="feat-title">Undersized Mount</h3>
+            </div>
+            <p class="feat-desc">Cavalchi Hisui senza alcuna penalità pur essendo entrambi di taglia Media.</p>
+          </div>
+
+          <div class="feat-card">
+            <div class="feat-header">
+              <span class="feat-tag combat">Combattimento</span>
+              <h3 class="feat-title">Attacco Poderoso</h3>
+            </div>
+            <p class="feat-desc">-{{ powerAtkPenalty }} TxC per ottenere +{{ powerAtkDmgTwoHand }} danni a due mani con la Katana.</p>
+          </div>
+
+          <div class="feat-card">
+            <div class="feat-header">
+              <span class="feat-tag weapon">Maestria</span>
+              <h3 class="feat-title">Weapon Expertise (Katana)</h3>
+            </div>
+            <p class="feat-desc">Estrai la katana come azione gratuita; +2 a tutti i tiri per confermare i colpi critici.</p>
+          </div>
+
+          <div class="feat-card">
+            <div class="feat-header">
+              <span class="feat-tag defense">Resistenza</span>
+              <h3 class="feat-title">Volontà di Ferro</h3>
+            </div>
+            <p class="feat-desc">+2 bonus permanente a tutti i tiri salvezza su Volontà.</p>
+          </div>
+
+          <div class="feat-card">
+            <div class="feat-header">
+              <span class="feat-tag archery">Tiro in Sella</span>
+              <h3 class="feat-title">Mounted Archer</h3>
+            </div>
+            <p class="feat-desc">Penalità al tiro con l'arco dimezzate quando Hisui si muove a passo o corsa.</p>
+          </div>
+
+          <div class="feat-card">
+            <div class="feat-header">
+              <span class="feat-tag mount">Sinergia</span>
+              <h3 class="feat-title">Wolfrider</h3>
+            </div>
+            <p class="feat-desc">Bonus tattici e manovre coordinate nel combattimento in sella a lupi da guerra.</p>
           </div>
         </div>
+      </div>
 
-        <div class="section-card">
-          <h2 class="section-title">📊 Abilità Addestrate (Lv {{ rec.level }})</h2>
-          <div class="skills-mini-table">
-            <div class="skill-row" *ngFor="let sk of rec.data.character.skills">
-              <span>{{ sk.name }} ({{ sk.stat }})</span>
-              <strong>+{{ sk.bonus }}</strong>
+      <!-- 3. ABILITÀ ADDESTRATE -->
+      <div class="section-card">
+        <div class="skills-card-header">
+          <h2 class="section-title">📊 Abilità Addestrate (Livello {{ rec.level }})</h2>
+          <span class="skills-count">{{ rec.data.character.skills?.length || 0 }} Abilità</span>
+        </div>
+        <div class="skills-grid-layout">
+          <div class="skill-tile" *ngFor="let sk of rec.data.character.skills">
+            <div class="skill-meta">
+              <span class="stat-badge" [ngClass]="sk.stat.toLowerCase()">{{ sk.stat }}</span>
+              <span class="skill-name">{{ sk.name }}</span>
+            </div>
+            <div class="skill-bonus-pill">
+              {{ sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus }}
             </div>
           </div>
         </div>
@@ -262,6 +345,7 @@
         <p class="char-quote">«Il lupo fedele della steppa, legato alla sella del samurai.»</p>
       </header>
 
+      <!-- STATUS BAR HISUI -->
       <div class="combat-status-grid">
         <div class="status-card hp-card">
           <span class="status-label">Punti Ferita</span>
@@ -306,6 +390,17 @@
         </div>
       </div>
 
+      <!-- CARATTERISTICHE HISUI -->
+      <div class="attributes-strip">
+        <div class="attr-cell primary"><span class="attr-name">FOR</span><span class="attr-val">{{ comp.str }}</span><span class="attr-mod">+7</span></div>
+        <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ comp.dex }}</span><span class="attr-mod">+3</span></div>
+        <div class="attr-cell"><span class="attr-name">COS</span><span class="attr-val">{{ comp.con }}</span><span class="attr-mod">+5</span></div>
+        <div class="attr-cell"><span class="attr-name">INT</span><span class="attr-val">{{ comp.int }}</span><span class="attr-mod">-4</span></div>
+        <div class="attr-cell"><span class="attr-name">SAG</span><span class="attr-val">{{ comp.wis }}</span><span class="attr-mod">+1</span></div>
+        <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">{{ comp.cha }}</span><span class="attr-mod">-2</span></div>
+      </div>
+
+      <!-- ATTACCO DEL LUPO -->
       <div class="section-card">
         <h2 class="section-title">🐺 Attacco Naturale & Manovre</h2>
         <div class="weapons-grid">
@@ -334,26 +429,86 @@
         </div>
       </div>
 
-      <div class="dual-columns-grid">
-        <div class="section-card">
-          <h2 class="section-title">🐾 Abilità di Hisui</h2>
-          <div class="skills-mini-table">
-            <div class="skill-row" *ngFor="let sk of comp.skills">
-              <span>{{ sk.name }} ({{ sk.stat }})</span>
-              <strong>+{{ sk.bonus }}</strong>
+      <!-- 1. TRATTI, SENSI & DIFESE SPECIALI -->
+      <div class="section-card wolf-theme-card">
+        <h2 class="section-title">🐾 Tratti, Sensi & Difese Speciali</h2>
+        <div class="feats-grid">
+          <div class="feat-card wolf-feat">
+            <div class="feat-header">
+              <span class="feat-tag evasion">Riflessi</span>
+              <h3 class="feat-title">Eludere (Evasion)</h3>
             </div>
+            <p class="feat-desc">Se supera un TS sui Riflessi che dimezza i danni, non subisce alcun danno.</p>
+          </div>
+
+          <div class="feat-card wolf-feat">
+            <div class="feat-header">
+              <span class="feat-tag senses">Sensi Acuti</span>
+              <h3 class="feat-title">Fiuto (Scent)</h3>
+            </div>
+            <p class="feat-desc">Individua nemici entro 9 metri (18 metri controvento); traccia bersagli con Sopravvivenza.</p>
+          </div>
+
+          <div class="feat-card wolf-feat">
+            <div class="feat-header">
+              <span class="feat-tag senses">Visione</span>
+              <h3 class="feat-title">Visione Crepuscolare</h3>
+            </div>
+            <p class="feat-desc">Vede al doppio della distanza rispetto a un umano in condizioni di luce fioca.</p>
+          </div>
+
+          <div class="feat-card wolf-feat">
+            <div class="feat-header">
+              <span class="feat-tag devotion">Lealtà</span>
+              <h3 class="feat-title">Devozione</h3>
+            </div>
+            <p class="feat-desc">+4 di bonus morale a tutti i TS su Volontà contro incantesimi ed effetti di ammaliamento.</p>
           </div>
         </div>
+      </div>
 
-        <div class="section-card">
-          <h2 class="section-title">🍖 Comandi Addestrati & Manovre</h2>
-          <div class="tricks-cloud">
-            <span class="trick-tag">⚔️ Attacca</span>
-            <span class="trick-tag">✋ Fermo</span>
-            <span class="trick-tag">🛡️ Difendi</span>
-            <span class="trick-tag">🔙 Indietro</span>
-            <span class="trick-tag">👃 Annusa / Tracce</span>
-            <span class="trick-tag">🔍 Cerca</span>
+      <!-- 2. COMANDI ADDESTRATI (TRICKS) & MANOVRE -->
+      <div class="section-card wolf-theme-card">
+        <h2 class="section-title">🍖 Comandi Addestrati & Manovre</h2>
+        <div class="tricks-showcase">
+          <span class="trick-pill">⚔️ Attacca (Tutti i nemici)</span>
+          <span class="trick-pill">🛡️ Difendi</span>
+          <span class="trick-pill">✋ Fermo</span>
+          <span class="trick-pill">🔙 Indietro</span>
+          <span class="trick-pill">👃 Annusa & Segui Tracce</span>
+          <span class="trick-pill">🔍 Cerca</span>
+          <span class="trick-pill">🎾 Riporta & Intrattieni</span>
+        </div>
+
+        <div class="maneuvers-summary-row">
+          <div class="maneuver-box">
+            <span class="m-lbl">Bonus Manovra in Combattimento (BMC)</span>
+            <span class="m-val">+{{ hisuiTripCmb }}</span>
+            <span class="m-hint">Sbilanciare gratuito a ogni morso a segno!</span>
+          </div>
+          <div class="maneuver-box">
+            <span class="m-lbl">Difesa Manovra in Combattimento (DMC)</span>
+            <span class="m-val">25</span>
+            <span class="m-hint">10 + BAB + FOR + DES + Taglia</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ABILITÀ DI HISUI -->
+      <div class="section-card wolf-theme-card">
+        <div class="skills-card-header">
+          <h2 class="section-title">🐺 Abilità del Lupo da Guerra</h2>
+          <span class="skills-count">{{ rec.data.companion?.skills?.length || 0 }} Abilità</span>
+        </div>
+        <div class="skills-grid-layout">
+          <div class="skill-tile" *ngFor="let sk of rec.data.companion?.skills">
+            <div class="skill-meta">
+              <span class="stat-badge" [ngClass]="sk.stat.toLowerCase()">{{ sk.stat }}</span>
+              <span class="skill-name">{{ sk.name }}</span>
+            </div>
+            <div class="skill-bonus-pill wolf-pill">
+              {{ sk.bonus >= 0 ? '+' + sk.bonus : sk.bonus }}
+            </div>
           </div>
         </div>
       </div>
@@ -464,7 +619,7 @@
 
       <!-- 5. LISTA RIGHE DI TIRO DINAMICHE -->
       <div class="dice-rolls-list">
-        <!-- ===== RYOUJIN: ATTACCHI DINAMICI (BAB + STR) ===== -->
+        <!-- ===== RYOUJIN: ATTACCHI DINAMICI ===== -->
         <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'combat'">
           <div class="dice-item-row" (click)="rollAction({ name: 'Katana pod 1', sub: 'd20+' + katana1TxC, diceCount: 1, diceFaces: 20, baseMod: katana1TxC, type: 'atk', critMin: 18 })">
             <div class="item-info"><span class="item-name">Katana pod 1</span><span class="item-sub">d20+{{ katana1TxC }}</span></div>
