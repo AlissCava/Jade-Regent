@@ -5,6 +5,45 @@
   padding: 0;
 }
 
+/* ==========================================================================
+   SCALA TIPOGRAFICA RESPONSIVE: iPhone -> iPad Mini -> iPad Pro
+   ========================================================================== */
+
+/* 1. iPhone e smartphone (default mobile fino a 767px) */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 2. iPad Mini e tablet compatti (da 768px a 1023px) */
+@media (min-width: 768px) {
+  html {
+    font-size: 18px; /* Scala proporzionalmente tutto ciò che usa rem (+12.5%) */
+  }
+}
+
+/* 3. iPad Pro e schermi grandi (da 1024px in su) */
+@media (min-width: 1024px) {
+  html {
+    font-size: 20px; /* Grandezza ideale da tavolo da gioco (+25%) */
+  }
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: 21px; /* iPad Pro 12.9" / 13" */
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0b0f19;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  touch-action: auto; /* Mantiene abilitato il pinch-to-zoom */
+}
+
 html, body {
   touch-action: auto; /* Consente pinch-to-zoom e scorrimento nativo */
   -webkit-text-size-adjust: 100%;
