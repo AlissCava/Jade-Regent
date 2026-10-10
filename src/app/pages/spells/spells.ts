@@ -4,6 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { SpellService } from '../../services/spell.service';
 import { Spell } from '../../models/spell.model';
 
+export interface CalculatedMetric {
+  icon: string;
+  label: string;
+  value: string;
+  highlight?: boolean;
+}
+
 @Component({
   selector: 'app-spells',
   standalone: true,
@@ -19,7 +26,7 @@ export class SpellsComponent implements OnInit {
   spellSearch = signal<string>('');
   selectedClass = signal<'druid' | 'magus' | 'all'>('druid');
   selectedSpellLevel = signal<string>('all');
-  
+
   // LIVELLO INCANTATORE
   casterLevel = signal<number>(7);
 
@@ -133,30 +140,43 @@ export class SpellsComponent implements OnInit {
     }
   }
 
+  // CALCOLO RAGGIO CON CONVERSIONE CASELLE
   getCalculatedRange(rangeStr: string | null | undefined): string {
     if (!rangeStr) return '—';
     const cl = this.casterLevel();
     const lower = rangeStr.toLowerCase();
 
-    if (lower.includes('contatto')) return 'Contatto (1,5 m)';
-    if (lower.includes('personale')) return 'Personale';
+    if (lower.includes('contatto')) return 'Contatto • 1 casella (1,5 m)';
+    if (lower.includes('personale')) return 'Personale (Incantatore)';
 
     if (lower.includes('vicino') || lower.includes('close')) {
       const dist = 7.5 + 1.5 * Math.floor(cl / 2);
-      return `${dist} metri (Vicino)`;
+      const squares = 5 + Math.floor(cl / 2);
+      return `${dist} m (${squares} caselle)`;
     }
     if (lower.includes('medio') || lower.includes('medium')) {
       const dist = 30 + 3 * cl;
-      return `${dist} metri (Medio)`;
+      const squares = 20 + 2 * cl;
+      return `${dist} m (${squares} caselle)`;
     }
     if (lower.includes('lungo') || lower.includes('long')) {
       const dist = 120 + 12 * cl;
-      return `${dist} metri (Lungo)`;
+      const squares = 80 + 8 * cl;
+      return `${dist} m (${squares} caselle)`;
+    }
+
+    // Distanze fisse in metri
+    const numMatch = lower.match(/(\d+(?:,\d+)?)\s*m/);
+    if (numMatch) {
+      const meters = parseFloat(numMatch[1].replace(',', '.'));
+      const squares = Math.round(meters / 1.5);
+      return `${meters} m (${squares} caselle)`;
     }
 
     return rangeStr;
   }
 
+  // CALCOLO DURATA CON TURNI DI COMBATTIMENTO
   getCalculatedDuration(durStr: string | null | undefined): string {
     if (!durStr) return '—';
     const cl = this.casterLevel();
@@ -167,55 +187,150 @@ export class SpellsComponent implements OnInit {
     if (lower.includes('concentrazione')) return durStr;
 
     if (lower.includes('round/livello') || lower.includes('round per livello')) {
-      return `${cl} round (${cl * 6}s)`;
+      return `${cl} round (${cl} turni • ${cl * 6}s)`;
     }
     if (lower.includes('10 min') || lower.includes('10 minuti')) {
       const totalMin = cl * 10;
       if (totalMin >= 60) {
         const h = Math.floor(totalMin / 60);
         const m = totalMin % 60;
-        return `${totalMin}m (${h}h ${m > 0 ? m + 'm' : ''})`;
+        return `${totalMin} min (${h}h ${m > 0 ? m + 'm' : ''})`;
       }
       return `${totalMin} minuti`;
     }
     if (lower.includes('min/livello') || lower.includes('minuto/livello') || lower.includes('minuti per livello')) {
-      return `${cl} minuti`;
+      return `${cl} minuti (${cl * 10} turni)`;
     }
     if (lower.includes('ora/livello') || lower.includes('ore/livello') || lower.includes('ora per livello')) {
       return `${cl} ore`;
+    }
+    if (lower.includes('giorn')) {
+      return `${cl} giorni`;
     }
 
     return durStr;
   }
 
-  getCalculatedPower(desc: string | null | undefined): string | null {
-    if (!desc) return null;
+  // CALCOLO COMPLETO TUTTI I PARAMETRI DINAMICI
+  getCalculatedMetrics(spell: Spell | null | undefined): CalculatedMetric[] {
+    if (!spell) return [];
     const cl = this.casterLevel();
+    const metrics: CalculatedMetric[] = [];
+    const text = ((spell.full_description || '') + ' ' + (spell.short_description || '')).toLowerCase();
+    const sName = spell.name.toLowerCase();
 
-    const matchMax = desc.match(/(\d+)d(\d+)[^.;\n]*?(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*(\d+)d\d+\)/i);
-    if (matchMax) {
-      const dicePerLvl = parseInt(matchMax[1], 10);
-      const dieFaces = matchMax[2];
-      const maxDice = parseInt(matchMax[3], 10);
-      const actualDice = Math.min(cl * dicePerLvl, maxDice);
-      return `${actualDice}d${dieFaces} (Cap: ${maxDice}d${dieFaces})`;
+    // 1. Raggio & Caselle
+    metrics.push({
+      icon: '📏',
+      label: 'Raggio Effettivo',
+      value: this.getCalculatedRange(spell.range),
+      highlight: true
+    });
+
+    // 2. Durata
+    metrics.push({
+      icon: '⏳',
+      label: 'Durata Effettiva',
+      value: this.getCalculatedDuration(spell.duration),
+      highlight: true
+    });
+
+    // 3. Prova Superamento RI (Spell Penetration)
+    if (spell.spell_res && spell.spell_res.toLowerCase().trim() !== 'no') {
+      metrics.push({
+        icon: '🎲',
+        label: 'Superamento RI',
+        value: `1d20 + ${cl} (LI)`,
+        highlight: false
+      });
     }
 
-    const matchNoMax = desc.match(/(\d+)d(\d+)\s*(?:danni|danno)?\s*(?:per|\/)\s*livello/i);
-    if (matchNoMax) {
-      const dicePerLvl = parseInt(matchNoMax[1], 10);
-      const dieFaces = matchNoMax[2];
-      const actualDice = cl * dicePerLvl;
-      return `${actualDice}d${dieFaces}`;
+    // 4. Incantesimi iconici / Meccaniche speciali
+    if (sName.includes('dardo incantato') || sName.includes('magic missile')) {
+      const missiles = Math.min(5, 1 + Math.floor((cl - 1) / 2));
+      metrics.push({
+        icon: '✨',
+        label: 'Dardi Creati',
+        value: `${missiles} Dardi (tot. ${missiles}d4 + ${missiles})`,
+        highlight: true
+      });
+    } else if (sName.includes('raggio rovente') || sName.includes('scorching ray')) {
+      const rays = Math.min(3, 1 + Math.floor(Math.max(0, cl - 3) / 4));
+      metrics.push({
+        icon: '🔥',
+        label: 'Raggi di Fuoco',
+        value: `${rays} Raggi (tot. ${rays * 4}d6 fuoco)`,
+        highlight: true
+      });
+    } else if (sName.includes('cura ferite leggere')) {
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `1d8 + ${Math.min(cl, 5)} PF`, highlight: true });
+    } else if (sName.includes('cura ferite moderate')) {
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `2d8 + ${Math.min(cl, 10)} PF`, highlight: true });
+    } else if (sName.includes('cura ferite gravi')) {
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `3d8 + ${Math.min(cl, 15)} PF`, highlight: true });
+    } else if (sName.includes('cura ferite critiche')) {
+      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `4d8 + ${Math.min(cl, 20)} PF`, highlight: true });
+    } else if (sName.includes('stretta folgorante') || sName.includes('shocking grasp')) {
+      const dice = Math.min(cl, 5);
+      metrics.push({ icon: '⚡', label: 'Danno Elettrico', value: `${dice}d6 (Cap a 5d6)`, highlight: true });
+    } else {
+      // Regex parsing generico per dadi di danno con massimo
+      const matchDiceMax = text.match(/(\d+)d(\d+)[^.;\n]*?(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*(\d+)d\d+\)/);
+      if (matchDiceMax) {
+        const dicePerLvl = parseInt(matchDiceMax[1], 10);
+        const faces = matchDiceMax[2];
+        const maxDice = parseInt(matchDiceMax[3], 10);
+        const actualDice = Math.min(cl * dicePerLvl, maxDice);
+        metrics.push({
+          icon: '💥',
+          label: 'Danno Scalato',
+          value: `${actualDice}d${faces} (Cap ${maxDice}d${faces})`,
+          highlight: true
+        });
+      } else {
+        const matchDiceSimple = text.match(/(\d+)d(\d+)\s*(?:danni|danno)?\s*(?:per|\/)\s*livello/);
+        if (matchDiceSimple) {
+          const actualDice = cl * parseInt(matchDiceSimple[1], 10);
+          metrics.push({
+            icon: '💥',
+            label: 'Danno Scalato',
+            value: `${actualDice}d${matchDiceSimple[2]}`,
+            highlight: true
+          });
+        }
+      }
+
+      // Bonus fisso +1 per livello (max +X)
+      const matchBonus = text.match(/\+\s*1\s*(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*\+(\d+)\)/);
+      if (matchBonus) {
+        const maxB = parseInt(matchBonus[1], 10);
+        metrics.push({
+          icon: '➕',
+          label: 'Bonus Numerico',
+          value: `+${Math.min(cl, maxB)} (Cap +${maxB})`,
+          highlight: true
+        });
+      }
     }
 
-    const matchBonus = desc.match(/\+\s*1\s*(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*\+(\d+)\)/i);
-    if (matchBonus) {
-      const maxBonus = parseInt(matchBonus[1], 10);
-      const actualBonus = Math.min(cl, maxBonus);
-      return `+${actualBonus} (Cap: +${maxBonus})`;
+    // Bersagli scalati (es. 1 creatura per livello)
+    if (text.includes('1 creatura/livello') || text.includes('un bersaglio per livello') || text.includes('una creatura per livello')) {
+      metrics.push({
+        icon: '👥',
+        label: 'Bersagli Massimi',
+        value: `${cl} creature (entro 9 m l'una dall'altra)`,
+        highlight: false
+      });
     }
 
+    return metrics;
+  }
+
+  // Ritorna la sintesi del calcolo principale per la card
+  getQuickCardMetric(spell: Spell): string | null {
+    const list = this.getCalculatedMetrics(spell);
+    const power = list.find(m => m.label.includes('Danno') || m.label.includes('Cura') || m.label.includes('Dardi') || m.label.includes('Raggi'));
+    if (power) return `${power.icon} ${power.label}: ${power.value}`;
     return null;
   }
 

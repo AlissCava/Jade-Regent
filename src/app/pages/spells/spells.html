@@ -9,8 +9,8 @@
     <!-- Stepper Livello Incantatore -->
     <div class="cl-bar">
       <div class="cl-title-wrap">
-        <span class="cl-tag">CALCOLA PER IL TUO LIVELLO</span>
-        <span class="cl-label">Livello Incantatore (LI):</span>
+        <span class="cl-tag">LIVELLO INCANTATORE ATTIVO</span>
+        <span class="cl-label">Calcola parametri a LI:</span>
       </div>
       <div class="cl-stepper">
         <button type="button" class="cl-btn" (click)="changeCl(-1)">−</button>
@@ -33,7 +33,7 @@
         type="search" 
         [ngModel]="spellSearch()" 
         (ngModelChange)="spellSearch.set($event)" 
-        placeholder="Cerca in italiano o inglese (es. Haste, Palla di Fuoco, Shocking Grasp)..."
+        placeholder="Cerca in italiano o inglese (es. Greater Invisibility, Stretta Folgorante)..."
       />
       <button *ngIf="spellSearch()" class="clear-search" (click)="spellSearch.set('')">✕</button>
     </div>
@@ -117,15 +117,15 @@
         <div class="speed-pill cl-scaled">⏳ {{ getCalculatedDuration(sp.duration) }}</div>
       </div>
 
-      <div class="scaled-damage-tag" *ngIf="getCalculatedPower(sp.full_description || sp.short_description)">
-        💥 A LI {{ casterLevel() }}: <strong>{{ getCalculatedPower(sp.full_description || sp.short_description) }}</strong>
+      <div class="scaled-damage-tag" *ngIf="getQuickCardMetric(sp)">
+        <strong>{{ getQuickCardMetric(sp) }}</strong>
       </div>
 
       <p class="spell-summary">{{ sp.short_description || 'Tocca per aprire le regole complete.' }}</p>
 
       <footer class="card-footer">
         <div class="read-more-hint">
-          <span>Leggi regole complete</span>
+          <span>Regole complete & Parametri LI</span>
           <span>📖</span>
         </div>
       </footer>
@@ -153,28 +153,20 @@
         </div>
       </header>
 
-      <!-- Parametri Scalati al LI Attuale -->
+      <!-- QUADRO RISULTATI CALCOLATI AL LI ATTUALE -->
       <div class="scaled-calc-card">
         <div class="scaled-calc-header">
-          <span>⚡ PARAMETRI AL TUO LIVELLO INCANTATORE (LI {{ casterLevel() }})</span>
+          <span>⚡ RISULTATI DIRETTI PER IL TUO LIVELLO (LI {{ casterLevel() }})</span>
         </div>
         <div class="scaled-calc-grid">
-          <div class="scaled-calc-item">
-            <span class="lbl">Raggio Effettivo</span>
-            <span class="val highlight">{{ getCalculatedRange(selectedSpell()?.range) }}</span>
-          </div>
-          <div class="scaled-calc-item">
-            <span class="lbl">Durata Effettiva</span>
-            <span class="val highlight">{{ getCalculatedDuration(selectedSpell()?.duration) }}</span>
-          </div>
-          <div class="scaled-calc-item" *ngIf="getCalculatedPower(selectedSpell()?.full_description || selectedSpell()?.short_description)">
-            <span class="lbl">Potenza / Danni</span>
-            <span class="val highlight">{{ getCalculatedPower(selectedSpell()?.full_description || selectedSpell()?.short_description) }}</span>
+          <div class="scaled-calc-item" *ngFor="let m of getCalculatedMetrics(selectedSpell())">
+            <span class="lbl">{{ m.icon }} {{ m.label }}</span>
+            <span class="val" [class.highlight]="m.highlight">{{ m.value }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Statistiche Base -->
+      <!-- Statistiche Base da Manuale -->
       <div class="modal-stats-grid">
         <div class="stat-box" *ngIf="selectedSpell()?.casting_time">
           <span class="stat-lbl">Tempo di Lancio</span>
