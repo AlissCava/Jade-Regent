@@ -367,3 +367,89 @@ $text-muted: #94a3b8;
   border-top: 1px solid #1a283f;
 }
 }
+/* ==================== BARRA RICERCA & TOGGLE FILTRI FORME ==================== */
+.search-bar-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  width: 100%;
+
+  .search-box {
+    flex: 1;
+    margin-bottom: 0 !important;
+  }
+
+  .filter-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    height: 46px;
+    padding: 0 1.1rem;
+    background: linear-gradient(135deg, #10212a 0%, #0a171d 100%);
+    border: 1px solid #1e3d36;
+    border-radius: 12px;
+    color: #cbd5e1;
+    font-family: 'Cinzel', serif, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .toggle-icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .toggle-label {
+      font-size: 0.86rem;
+      color: #e2e8f0;
+    }
+
+    .toggle-chevron {
+      font-size: 0.68rem;
+      color: #6ee7b7;
+      transition: transform 0.2s ease;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #142a35 0%, #0d1e26 100%);
+      border-color: #2b554b;
+      color: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+
+    /* STATO ATTIVO / APERTO (SMERALDO DRUIDO) */
+    &.open {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(10, 23, 29, 0.95) 100%);
+      border-color: #10b981;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.35), inset 0 0 8px rgba(16, 185, 129, 0.12);
+
+      .toggle-label {
+        color: #a7f3d0;
+      }
+
+      .toggle-chevron {
+        color: #10b981;
+      }
+    }
+  }
+}
+
+.filters-collapsible {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(30, 61, 54, 0.7);
+  animation: fadeInDown 0.2s ease-out;
+}

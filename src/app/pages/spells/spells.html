@@ -7,7 +7,7 @@
 
     <!-- Barra di Ricerca sempre visibile + Tasto Filtri -->
 <div class="control-panel">
-    <!-- Barra di Ricerca sempre visibile + Tasto Filtri -->
+   <!-- Barra di Ricerca sempre visibile + Tasto Filtri Stilizzato -->
     <div class="search-bar-row">
       <div class="search-box">
         <span class="search-icon">🔍</span>
@@ -20,8 +20,16 @@
         <button *ngIf="spellSearch()" class="clear-search" (click)="spellSearch.set('')">✕</button>
       </div>
 
-      <button type="button" class="filter-toggle-btn" [class.open]="filtersOpen()" (click)="toggleFilters()">
-        <span>{{ filtersOpen() ? 'Chiudi ▲' : 'Filtri ▼' }}</span>
+      <!-- BOTTONE FILTRI JADE REGENT -->
+      <button 
+        type="button" 
+        class="filter-toggle-btn" 
+        [class.open]="filtersOpen()" 
+        (click)="toggleFilters()"
+        aria-label="Apri o chiudi filtri incantesimi">
+        <span class="toggle-icon">🎛️</span>
+        <span class="toggle-label">{{ filtersOpen() ? 'Chiudi' : 'Filtri' }}</span>
+        <span class="toggle-chevron">{{ filtersOpen() ? '▲' : '▼' }}</span>
       </button>
     </div>
 
