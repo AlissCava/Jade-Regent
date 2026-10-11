@@ -1,10 +1,22 @@
-<!-- HEADER SUPERIORE COMPATTO -->
+<!-- HEADER SUPERIORE: LOGO + PULSANTE INGRANDIMENTO TESTO -->
 <header class="app-header">
   <div class="header-container">
     <a routerLink="/" class="app-logo">
       <span class="logo-icon">⛩️</span>
       <span class="logo-text">JADE REGENT</span>
     </a>
+
+    <!-- PULSANTE SINGOLO PER INGRANDIRE IL TESTO -->
+    <button 
+      type="button" 
+      class="text-scale-btn" 
+      [class.scaled]="textScale() > 100"
+      (click)="cycleTextScale()" 
+      [attr.aria-label]="'Dimensione testo attuale: ' + textScale() + ' percento. Clicca per ingrandire'"
+      title="Clicca per ingrandire le scritte (100% -> 120% -> 140%)">
+      <span class="scale-symbol">Aa</span>
+      <span class="scale-indicator">{{ textScale() }}%</span>
+    </button>
   </div>
 </header>
 
@@ -13,7 +25,7 @@
   <router-outlet></router-outlet>
 </main>
 
-<!-- MENU FISSO IN FONDO SOTTO (SEMPRE VISIBILE SU TELEFONO E IPAD MINI) -->
+<!-- BOTTOM NAVIGATION BAR (FISSA SOTTO SOPRA AL RESTO) -->
 <nav class="bottom-nav-bar" aria-label="Navigazione principale">
   <button 
     type="button" 
@@ -46,7 +58,7 @@
   </a>
 </nav>
 
-<!-- MENU A COMPARSA (DRAWER) -->
+<!-- MENU A CASSETTO (DRAWER) -->
 <div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
   <aside class="menu-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Menu completo">
     <div class="drawer-header">

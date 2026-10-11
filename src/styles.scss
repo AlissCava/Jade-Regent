@@ -1,4 +1,4 @@
-/* Reset & Dark Theme Globale */
+/* Reset Globale */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -6,56 +6,66 @@
 }
 
 /* ==========================================================================
-   SCALA TIPOGRAFICA RESPONSIVE: iPhone -> iPad Mini -> iPad Pro
+   SCALA DIMENSIONE TESTO (100% / 120% / 140%)
    ========================================================================== */
-
-/* 1. iPhone e smartphone (default mobile fino a 767px) */
-html {
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
+:root {
+  --text-scale-factor: 1;
+  --base-device-font: 16px; /* iPhone e mobile */
 }
 
-/* 2. iPad Mini e tablet compatti (da 768px a 1023px) */
 @media (min-width: 768px) {
-  html {
-    font-size: 18px; /* Scala proporzionalmente tutto ciò che usa rem (+12.5%) */
+  :root {
+    --base-device-font: 18px; /* iPad Mini e Tablet */
   }
 }
 
-/* 3. iPad Pro e schermi grandi (da 1024px in su) */
 @media (min-width: 1024px) {
-  html {
-    font-size: 20px; /* Grandezza ideale da tavolo da gioco (+25%) */
+  :root {
+    --base-device-font: 19.5px; /* Desktop e iPad Pro */
   }
 }
 
-@media (min-width: 1280px) {
-  html {
-    font-size: 21px; /* iPad Pro 12.9" / 13" */
-  }
+/* Moltiplicatori selezionati dal pulsante */
+html[data-text-scale="100"] { --text-scale-factor: 1; }
+html[data-text-scale="120"] { --text-scale-factor: 1.2; }
+html[data-text-scale="140"] { --text-scale-factor: 1.4; }
+
+html {
+  font-size: calc(var(--base-device-font) * var(--text-scale-factor));
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: #0b0f19;
-  color: #f8fafc;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  touch-action: auto; /* Mantiene abilitato il pinch-to-zoom */
-}
-
-html, body {
-  touch-action: auto; /* Consente pinch-to-zoom e scorrimento nativo */
-  -webkit-text-size-adjust: 100%;
   height: 100%;
   background-color: #0b0f19;
   color: #e2e8f0;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  touch-action: auto;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Scrollbar sottile ed elegante */
+/* ==========================================================================
+   REFLOW PROTETTIVO (IMPEDISCE CHE IL TESTO INGRANDITO ROMPA LA GRAFICA)
+   ========================================================================== */
+html[data-text-scale="120"],
+html[data-text-scale="140"] {
+  h1, h2, h3, .header-title, .char-title {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.25 !important;
+  }
+
+  /* I chip e le pillole possono andare a capo senza troncare il testo */
+  .chips-container,
+  .class-selector,
+  .selectors-grid {
+    flex-wrap: wrap !important;
+  }
+}
+
+/* Scrollbar sottile */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

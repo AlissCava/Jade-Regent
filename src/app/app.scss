@@ -18,6 +18,7 @@ $text-muted: #94a3b8;
     margin: 0 auto;
     padding: 0.65rem 1rem;
     display: flex;
+    justify-content: space-between;
     align-items: center;
 
     .app-logo {
@@ -33,21 +34,70 @@ $text-muted: #94a3b8;
       .logo-icon { font-size: 1.35rem; }
       .logo-text { letter-spacing: 0.05em; }
     }
+
+    /* PULSANTE INGRANDIMENTO TESTO */
+    .text-scale-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #0f172a;
+      border: 1px solid #283958;
+      border-radius: 10px;
+      padding: 0.35rem 0.65rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+
+      .scale-symbol {
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #e2e8f0;
+      }
+
+      .scale-indicator {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #94a3b8;
+        background: #1e293b;
+        padding: 0.1rem 0.35rem;
+        border-radius: 6px;
+      }
+
+      &:active {
+        transform: scale(0.93);
+      }
+
+      /* Quando il testo è ingrandito, si evidenzia in oro */
+      &.scaled {
+        border-color: rgba($gold, 0.6);
+        background: rgba($gold, 0.12);
+        box-shadow: 0 0 10px rgba($gold, 0.18);
+
+        .scale-symbol {
+          color: #fef08a;
+        }
+
+        .scale-indicator {
+          background: rgba($gold, 0.25);
+          color: #fef08a;
+        }
+      }
+    }
   }
 }
 
 .main-content {
   min-height: calc(100vh - 60px);
-  padding-bottom: 5.5rem; /* Margine per non coprire il fondo della pagina */
+  padding-bottom: 5.5rem;
 }
 
-/* BARRA MENU FISSA IN FONDO */
 .bottom-nav-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000; /* Sopra a tutto il resto */
+  z-index: 1000;
   background: rgba(9, 14, 26, 0.95);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -73,40 +123,21 @@ $text-muted: #94a3b8;
     cursor: pointer;
     transition: all 0.15s ease;
 
-    .btn-icon {
-      font-size: 1.25rem;
-      line-height: 1.1;
-    }
+    .btn-icon { font-size: 1.25rem; line-height: 1.1; }
+    .btn-label { font-size: 0.72rem; font-weight: 700; margin-top: 0.15rem; }
 
-    .btn-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      margin-top: 0.15rem;
-    }
-
-    &:active {
-      transform: scale(0.92);
-    }
-
-    &.active {
-      color: $gold;
-      .btn-icon { transform: translateY(-1px); }
-    }
+    &:active { transform: scale(0.92); }
+    &.active { color: $gold; }
 
     &.burger-bottom-btn {
       color: #cbd5e1;
       background: rgba(245, 158, 11, 0.08);
       border: 1px solid rgba(245, 158, 11, 0.25);
-
-      .btn-icon {
-        font-size: 1.2rem;
-        color: $gold;
-      }
+      .btn-icon { font-size: 1.2rem; color: $gold; }
     }
   }
 }
 
-/* OVERLAY DRAWER */
 .menu-overlay {
   position: fixed;
   inset: 0;
