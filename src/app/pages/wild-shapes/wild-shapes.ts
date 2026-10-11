@@ -14,6 +14,7 @@ import { WildShape } from '../../models/wild-shape.model';
 export class WildShapesComponent implements OnInit {
   private shapeService = inject(WildShapeService);
 
+  filtersOpen = signal<boolean>(false);
   shapes = signal<WildShape[]>([]);
   loadingShapes = signal<boolean>(true);
   searchTerm = signal<string>('');
@@ -25,6 +26,10 @@ export class WildShapesComponent implements OnInit {
   onlyClimb = signal<boolean>(false);
   onlyTrip = signal<boolean>(false);
   onlyGrab = signal<boolean>(false);
+
+  toggleFilters(): void {
+    this.filtersOpen.update(open => !open);
+  }
 
   hasActiveShapeFilters = computed(() => {
     return (

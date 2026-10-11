@@ -1,78 +1,83 @@
-<div class="app-layout">
-  <!-- Navbar Fissa in Alto -->
-  <header class="navbar">
-    <!-- TITOLO = HOME BUTTON -->
-    <a routerLink="/" class="nav-brand" (click)="closeMenu()" title="Torna alla Home">
-      <span class="brand-icon">🏯</span>
-      <span class="brand-name">Jade Regent</span>
+<!-- HEADER SUPERIORE COMPATTO -->
+<header class="app-header">
+  <div class="header-container">
+    <a routerLink="/" class="app-logo">
+      <span class="logo-icon">⛩️</span>
+      <span class="logo-text">JADE REGENT</span>
     </a>
+  </div>
+</header>
 
-    <!-- Menu Desktop (visibile su PC/Tablet) -->
-    <nav class="nav-links desktop-nav">
-      <a routerLink="/characters" routerLinkActive="active" class="nav-item">
-        ⚔️ Personaggi
+<!-- CONTENUTO PRINCIPALE -->
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- MENU FISSO IN FONDO SOTTO (SEMPRE VISIBILE SU TELEFONO E IPAD MINI) -->
+<nav class="bottom-nav-bar" aria-label="Navigazione principale">
+  <button 
+    type="button" 
+    class="bottom-nav-btn burger-bottom-btn" 
+    (click)="toggleMenu()" 
+    [attr.aria-expanded]="isMenuOpen()" 
+    aria-label="Apri menu">
+    <span class="btn-icon">☰</span>
+    <span class="btn-label">Menu</span>
+  </button>
+
+  <a routerLink="/characters" class="bottom-nav-btn" routerLinkActive="active" aria-label="Party">
+    <span class="btn-icon">👥</span>
+    <span class="btn-label">Party</span>
+  </a>
+
+  <a routerLink="/character" class="bottom-nav-btn" routerLinkActive="active" aria-label="Scheda">
+    <span class="btn-icon">⚔️</span>
+    <span class="btn-label">Scheda</span>
+  </a>
+
+  <a routerLink="/spells" class="bottom-nav-btn" routerLinkActive="active" aria-label="Grimorio">
+    <span class="btn-icon">📜</span>
+    <span class="btn-label">Grimorio</span>
+  </a>
+
+  <a routerLink="/wild-shapes" class="bottom-nav-btn" routerLinkActive="active" aria-label="Forme">
+    <span class="btn-icon">🐾</span>
+    <span class="btn-label">Forme</span>
+  </a>
+</nav>
+
+<!-- MENU A COMPARSA (DRAWER) -->
+<div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
+  <aside class="menu-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Menu completo">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <span class="icon">⛩️</span>
+        <span>Caravan Codex</span>
+      </div>
+      <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
+    </div>
+
+    <nav class="drawer-links">
+      <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <span class="link-icon">🏠</span>
+        <span class="link-text">Home / Accampamento</span>
       </a>
-      <a routerLink="/wild-shapes" routerLinkActive="active" class="nav-item">
-        🌿 Bestiario
+      <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">👥</span>
+        <span class="link-text">Eroi del Party</span>
       </a>
-      <a routerLink="/spells" routerLinkActive="active" class="nav-item">
-        📜 Grimorio
+      <a routerLink="/character" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">⚔️</span>
+        <span class="link-text">Scheda Ryoujin & Hisui</span>
+      </a>
+      <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">📜</span>
+        <span class="link-text">Grimorio Incantesimi</span>
+      </a>
+      <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">🐾</span>
+        <span class="link-text">Forme Selvatica • Airyn</span>
       </a>
     </nav>
-
-    <!-- Tasto Hamburger Mobile -->
-    <button 
-      type="button" 
-      class="burger-btn" 
-      [class.open]="isMenuOpen()" 
-      (click)="toggleMenu()" 
-      aria-label="Apri menu">
-      <span class="burger-line"></span>
-      <span class="burger-line"></span>
-      <span class="burger-line"></span>
-    </button>
-  </header>
-
-  <!-- Overlay sfondo per chiudere il menu mobile -->
-  <div class="mobile-backdrop" *ngIf="isMenuOpen()" (click)="closeMenu()"></div>
-
-  <!-- Menu Mobile a Scomparsa -->
-  <nav class="mobile-menu" [class.open]="isMenuOpen()">
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()" class="mobile-item">
-      <span class="item-icon">🏠</span>
-      <div class="item-text">
-        <span class="item-title">Home</span>
-        <span class="item-sub">Dashboard della carovana</span>
-      </div>
-    </a>
-
-    <a routerLink="/characters" routerLinkActive="active" (click)="closeMenu()" class="mobile-item">
-      <span class="item-icon">⚔️</span>
-      <div class="item-text">
-        <span class="item-title">Eroi del Party</span>
-        <span class="item-sub">Schede interattive e compagni</span>
-      </div>
-    </a>
-
-    <a routerLink="/wild-shapes" routerLinkActive="active" (click)="closeMenu()" class="mobile-item">
-      <span class="item-icon">🌿</span>
-      <div class="item-text">
-        <span class="item-title">Codex Bestiario</span>
-        <span class="item-sub">Forme Selvatiche per Airyn</span>
-      </div>
-    </a>
-
-    <a routerLink="/spells" routerLinkActive="active" (click)="closeMenu()" class="mobile-item">
-      <span class="item-icon">📜</span>
-      <div class="item-text">
-        <span class="item-title">Grimorio Incantesimi</span>
-        <span class="item-sub">Incantesimi Druido & Magus con calcolo LI</span>
-      </div>
-    </a>
-  </nav>
-
-  <!-- Contenuto della pagina corrente -->
-  <main class="page-viewport" (click)="closeMenu()">
-    <router-outlet></router-outlet>
-  </main>
-</div>  
+  </aside>
+</div>

@@ -5,48 +5,58 @@
     <p class="header-sub">Codex per Airyn — Jade Regent</p>
   </header>
 
-  <div class="control-panel">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input 
-        type="search" 
-        [ngModel]="searchTerm()" 
-        (ngModelChange)="searchTerm.set($event)" 
-        placeholder="Cerca creatura (es. Leone, Tigre, Aquila)..."
-      />
-      <button *ngIf="searchTerm()" class="clear-search" (click)="searchTerm.set('')">✕</button>
-    </div>
-
-    <div class="selectors-grid">
-      <div class="select-wrapper">
-        <label>Forma Bestia</label>
-        <select [ngModel]="selectedBsLevel()" (ngModelChange)="selectedBsLevel.set($event)">
-          <option value="Tutti">Tutti i Livelli</option>
-          <option value="1">Forma Bestia I (Lv 4)</option>
-          <option value="2">Forma Bestia II (Lv 6)</option>
-        </select>
+<div class="control-panel">
+    <!-- Barra Ricerca sempre visibile + Tasto Filtri -->
+    <div class="search-bar-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="search" 
+          [ngModel]="searchTerm()" 
+          (ngModelChange)="searchTerm.set($event)" 
+          placeholder="Cerca creatura (es. Leone, Tigre, Aquila)..."
+        />
+        <button *ngIf="searchTerm()" class="clear-search" (click)="searchTerm.set('')">✕</button>
       </div>
 
-      <div class="select-wrapper">
-        <label>Taglia</label>
-        <select [ngModel]="selectedSize()" (ngModelChange)="selectedSize.set($event)">
-          <option value="Tutte">Tutte le taglie</option>
-          <option value="Minuscola">Minuscola</option>
-          <option value="Piccola">Piccola</option>
-          <option value="Media">Media</option>
-          <option value="Grande">Grande</option>
-        </select>
-      </div>
+      <button type="button" class="filter-toggle-btn" [class.open]="filtersOpen()" (click)="toggleFilters()">
+        <span>{{ filtersOpen() ? 'Chiudi ▲' : 'Filtri ▼' }}</span>
+      </button>
     </div>
 
-    <div class="chips-container">
-      <button type="button" class="chip" [class.active]="onlyPounce()" (click)="onlyPounce.set(!onlyPounce())">🐾 Balzare</button>
-      <button type="button" class="chip" [class.active]="onlyGrab()" (click)="onlyGrab.set(!onlyGrab())">🪢 Afferrare</button>
-      <button type="button" class="chip" [class.active]="onlyTrip()" (click)="onlyTrip.set(!onlyTrip())">🦵 Sbilanciare</button>
-      <button type="button" class="chip" [class.active]="onlyFly()" (click)="onlyFly.set(!onlyFly())">🦅 Volo</button>
-      <button type="button" class="chip" [class.active]="onlySwim()" (click)="onlySwim.set(!onlySwim())">🌊 Nuoto</button>
-      <button type="button" class="chip" [class.active]="onlyClimb()" (click)="onlyClimb.set(!onlyClimb())">🧗 Scalata</button>
-      <button *ngIf="hasActiveShapeFilters()" type="button" class="chip reset-chip" (click)="resetShapeFilters()">↺ Azzera</button>
+    <!-- Sezione Filtri a comparsa (usa le tue variabili originali) -->
+    <div class="filters-collapsible" *ngIf="filtersOpen()">
+      <div class="selectors-grid">
+        <div class="select-wrapper">
+          <label>Forma Bestia</label>
+          <select [ngModel]="selectedBsLevel()" (ngModelChange)="selectedBsLevel.set($event)">
+            <option value="Tutti">Tutti i Livelli</option>
+            <option value="1">Forma Bestia I (Lv 4)</option>
+            <option value="2">Forma Bestia II (Lv 6)</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label>Taglia</label>
+          <select [ngModel]="selectedSize()" (ngModelChange)="selectedSize.set($event)">
+            <option value="Tutte">Tutte le taglie</option>
+            <option value="Minuscola">Minuscola</option>
+            <option value="Piccola">Piccola</option>
+            <option value="Media">Media</option>
+            <option value="Grande">Grande</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="chips-container">
+        <button type="button" class="chip" [class.active]="onlyPounce()" (click)="onlyPounce.set(!onlyPounce())">🐾 Balzare</button>
+        <button type="button" class="chip" [class.active]="onlyGrab()" (click)="onlyGrab.set(!onlyGrab())">🪢 Afferrare</button>
+        <button type="button" class="chip" [class.active]="onlyTrip()" (click)="onlyTrip.set(!onlyTrip())">🦵 Sbilanciare</button>
+        <button type="button" class="chip" [class.active]="onlyFly()" (click)="onlyFly.set(!onlyFly())">🦅 Volo</button>
+        <button type="button" class="chip" [class.active]="onlySwim()" (click)="onlySwim.set(!onlySwim())">🌊 Nuoto</button>
+        <button type="button" class="chip" [class.active]="onlyClimb()" (click)="onlyClimb.set(!onlyClimb())">🧗 Scalata</button>
+        <button *ngIf="hasActiveShapeFilters()" type="button" class="chip reset-chip" (click)="resetShapeFilters()">↺ Azzera</button>
+      </div>
     </div>
   </div>
 

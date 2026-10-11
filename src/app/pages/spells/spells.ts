@@ -31,6 +31,7 @@ export class SpellsComponent implements OnInit {
   casterLevel = signal<number>(7);
 
   // Filtri Tattici
+  filtersOpen = signal<boolean>(false);
   onlyTouch = signal<boolean>(false);
   onlyNoSave = signal<boolean>(false);
   onlyNoSpellRes = signal<boolean>(false);
@@ -52,7 +53,10 @@ export class SpellsComponent implements OnInit {
       this.selectedSavingThrow() !== 'Tutti'
     );
   });
-
+  toggleFilters(): void {
+    this.filtersOpen.update(v => !v);
+  }
+  
   filteredSpells = computed(() => {
     const term = this.spellSearch().toLowerCase().trim();
     const cls = this.selectedClass();

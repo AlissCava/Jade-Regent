@@ -5,97 +5,98 @@
     <p class="header-sub">Compendio completo per Druido & Magus</p>
   </header>
 
-  <div class="control-panel">
-    <!-- Stepper Livello Incantatore -->
-    <div class="cl-bar">
-      <div class="cl-title-wrap">
-        <span class="cl-tag">LIVELLO INCANTATORE ATTIVO</span>
-        <span class="cl-label">Calcola parametri a LI:</span>
-      </div>
-      <div class="cl-stepper">
-        <button type="button" class="cl-btn" (click)="changeCl(-1)">−</button>
-        <span class="cl-val">LI {{ casterLevel() }}</span>
-        <button type="button" class="cl-btn" (click)="changeCl(1)">+</button>
-      </div>
-    </div>
-
-    <!-- Selettore Classe -->
-    <div class="class-selector">
-      <button class="class-btn" [class.active]="selectedClass() === 'druid'" (click)="selectedClass.set('druid')">🌿 Druido (Airyn)</button>
-      <button class="class-btn" [class.active]="selectedClass() === 'magus'" (click)="selectedClass.set('magus')">⚔️ Magus</button>
-      <button class="class-btn" [class.active]="selectedClass() === 'all'" (click)="selectedClass.set('all')">🌐 Entrambi</button>
-    </div>
-
-    <!-- Ricerca Bilingue -->
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input 
-        type="search" 
-        [ngModel]="spellSearch()" 
-        (ngModelChange)="spellSearch.set($event)" 
-        placeholder="Cerca in italiano o inglese (es. Greater Invisibility, Stretta Folgorante)..."
-      />
-      <button *ngIf="spellSearch()" class="clear-search" (click)="spellSearch.set('')">✕</button>
-    </div>
-
-    <!-- Dropdown Scuola e TS -->
-    <div class="selectors-grid">
-      <div class="select-wrapper">
-        <label>Scuola di Magia</label>
-        <select [ngModel]="selectedSchool()" (ngModelChange)="selectedSchool.set($event)">
-          <option value="Tutte">Tutte le Scuole</option>
-          <option value="Abiurazione">Abiurazione</option>
-          <option value="Ammaliamento">Ammaliamento</option>
-          <option value="Divinazione">Divinazione</option>
-          <option value="Evocazione">Evocazione</option>
-          <option value="Illusione">Illusione</option>
-          <option value="Invocazione">Invocazione</option>
-          <option value="Necromanzia">Necromanzia</option>
-          <option value="Trasmutazione">Trasmutazione</option>
-        </select>
+    <!-- Barra di Ricerca sempre visibile + Tasto Filtri -->
+<div class="control-panel">
+    <!-- Barra di Ricerca sempre visibile + Tasto Filtri -->
+    <div class="search-bar-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="search" 
+          [ngModel]="spellSearch()" 
+          (ngModelChange)="spellSearch.set($event)" 
+          placeholder="Cerca in italiano o inglese (es. Greater Invisibility, Stretta Folgorante)..."
+        />
+        <button *ngIf="spellSearch()" class="clear-search" (click)="spellSearch.set('')">✕</button>
       </div>
 
-      <div class="select-wrapper">
-        <label>Tiro Salvezza</label>
-        <select [ngModel]="selectedSavingThrow()" (ngModelChange)="selectedSavingThrow.set($event)">
-          <option value="Tutti">Tutti i Tiri</option>
-          <option value="Nessun">Nessun TS (No Save)</option>
-          <option value="Tempra">Tempra</option>
-          <option value="Riflessi">Riflessi</option>
-          <option value="Volontà">Volontà</option>
-        </select>
+      <button type="button" class="filter-toggle-btn" [class.open]="filtersOpen()" (click)="toggleFilters()">
+        <span>{{ filtersOpen() ? 'Chiudi ▲' : 'Filtri ▼' }}</span>
+      </button>
+    </div>
+
+    <!-- Sezione Filtri a comparsa collegata ai tuoi segnali reali -->
+    <div class="filters-collapsible" *ngIf="filtersOpen()">
+      <!-- Stepper Livello Incantatore -->
+      <div class="cl-bar">
+        <div class="cl-title-wrap">
+          <span class="cl-tag">LIVELLO INCANTATORE ATTIVO</span>
+          <span class="cl-label">Calcola parametri a LI:</span>
+        </div>
+        <div class="cl-stepper">
+          <button type="button" class="cl-btn" (click)="changeCl(-1)">−</button>
+          <span class="cl-val">LI {{ casterLevel() }}</span>
+          <button type="button" class="cl-btn" (click)="changeCl(1)">+</button>
+        </div>
       </div>
-    </div>
 
-    <!-- Chip Livello Slot -->
-    <div class="chips-container">
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === 'all'" (click)="selectedSpellLevel.set('all')">Tutti i Livelli</button>
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === '0'" (click)="selectedSpellLevel.set('0')">Liv. 0</button>
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === '1'" (click)="selectedSpellLevel.set('1')">1°</button>
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === '2'" (click)="selectedSpellLevel.set('2')">2°</button>
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === '3'" (click)="selectedSpellLevel.set('3')">3°</button>
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === '4'" (click)="selectedSpellLevel.set('4')">4°</button>
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === '5'" (click)="selectedSpellLevel.set('5')">5°</button>
-      <button type="button" class="chip" [class.active]="selectedSpellLevel() === '6'" (click)="selectedSpellLevel.set('6')">6°</button>
-      <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '7'" (click)="selectedSpellLevel.set('7')">7°</button>
-      <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '8'" (click)="selectedSpellLevel.set('8')">8°</button>
-      <button *ngIf="selectedClass() !== 'magus'" type="button" class="chip" [class.active]="selectedSpellLevel() === '9'" (click)="selectedSpellLevel.set('9')">9°</button>
-    </div>
+      <!-- Selettore Classe -->
+      <div class="class-selector">
+        <button class="class-btn" [class.active]="selectedClass() === 'druid'" (click)="selectedClass.set('druid')">🌿 Druido (Airyn)</button>
+        <button class="class-btn" [class.active]="selectedClass() === 'magus'" (click)="selectedClass.set('magus')">⚔️ Magus</button>
+        <button class="class-btn" [class.active]="selectedClass() === 'all'" (click)="selectedClass.set('all')">🌐 Entrambi</button>
+      </div>
 
-    <!-- Chip Tattici -->
-    <div class="chips-container tactical-chips">
-      <button type="button" class="chip touch-chip" [class.active]="onlyTouch()" (click)="onlyTouch.set(!onlyTouch())">⚡ A Contatto (Spellstrike)</button>
-      <button type="button" class="chip no-save-chip" [class.active]="onlyNoSave()" (click)="onlyNoSave.set(!onlyNoSave())">🛡️ No TS</button>
-      <button type="button" class="chip no-sr-chip" [class.active]="onlyNoSpellRes()" (click)="onlyNoSpellRes.set(!onlyNoSpellRes())">🚫 Ignora RI</button>
-      <button type="button" class="chip swift-chip" [class.active]="onlySwiftAction()" (click)="onlySwiftAction.set(!onlySwiftAction())">⏱️ Azione Veloce</button>
-      <button *ngIf="hasActiveSpellFilters()" type="button" class="chip reset-chip" (click)="resetSpellFilters()">↺ Azzera</button>
+      <!-- Dropdown Scuola e Tiro Salvezza (i tuoi segnali) -->
+      <div class="selectors-grid">
+        <div class="select-wrapper">
+          <label>Scuola di Magia</label>
+          <select [ngModel]="selectedSchool()" (ngModelChange)="selectedSchool.set($event)">
+            <option value="Tutte">Tutte le Scuole</option>
+            <option value="Abiurazione">Abiurazione</option>
+            <option value="Ammaliamento">Ammaliamento</option>
+            <option value="Divinazione">Divinazione</option>
+            <option value="Evocazione">Evocazione</option>
+            <option value="Illusione">Illusione</option>
+            <option value="Invocazione">Invocazione</option>
+            <option value="Necromanzia">Necromanzia</option>
+            <option value="Trasmutazione">Trasmutazione</option>
+            <option value="Universale">Universale</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label>Tiro Salvezza</label>
+          <select [ngModel]="selectedSavingThrow()" (ngModelChange)="selectedSavingThrow.set($event)">
+            <option value="Tutti">Tutti i Tiri</option>
+            <option value="Tempra">Tempra</option>
+            <option value="Riflessi">Riflessi</option>
+            <option value="Volontà">Volontà</option>
+            <option value="Nessuno">Nessuno</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Chip Livello Incantesimo -->
+      <div class="chips-container">
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === 'all'" (click)="selectedSpellLevel.set('all')">Tutti i Livelli</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '0'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '0' ? 'all' : '0')">Liv. 0</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '1'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '1' ? 'all' : '1')">1°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '2'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '2' ? 'all' : '2')">2°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '3'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '3' ? 'all' : '3')">3°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '4'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '4' ? 'all' : '4')">4°</button>
+      </div>
+
+      <!-- Filtri Tattici Rapidi -->
+      <div class="chips-container">
+        <button type="button" class="chip" [class.active]="onlyTouch()" (click)="onlyTouch.set(!onlyTouch())">⚡ Contatto (Spellstrike)</button>
+        <button type="button" class="chip" [class.active]="onlyNoSave()" (click)="onlyNoSave.set(!onlyNoSave())">🛡️ No TS</button>
+        <button type="button" class="chip" [class.active]="onlyNoSpellRes()" (click)="onlyNoSpellRes.set(!onlyNoSpellRes())">✨ No RI</button>
+        <button type="button" class="chip" [class.active]="onlySwiftAction()" (click)="onlySwiftAction.set(!onlySwiftAction())">⏱️ Rapida</button>
+      </div>
     </div>
   </div>
 
-  <div class="results-info">
-    <span *ngIf="loadingSpells()" class="loading-text"><span class="spinner"></span> Caricamento incantesimi...</span>
-    <span *ngIf="!loadingSpells()">Trovati <strong>{{ filteredSpells().length }}</strong> incantesimi al <strong>LI {{ casterLevel() }}</strong></span>
-  </div>
 
   <!-- Griglia Schede -->
   <main class="creatures-grid">

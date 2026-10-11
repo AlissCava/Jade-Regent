@@ -13,7 +13,7 @@ export class App {
   isMenuOpen = signal<boolean>(false);
 
   toggleMenu(): void {
-    this.isMenuOpen.update((open) => !open);
+    this.isMenuOpen.update(open => !open);
   }
 
   closeMenu(): void {
