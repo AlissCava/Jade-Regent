@@ -124,9 +124,7 @@ $text-muted: #94a3b8;
       &:focus { border-color: $gold; }
     }
 
-    &.file-group input {
-      padding-top: 0.45rem;
-    }
+    &.file-group input { padding-top: 0.45rem; }
   }
 
   .processing-status-box {
@@ -194,129 +192,204 @@ $text-muted: #94a3b8;
   }
 }
 
-/* LISTA SESSIONI */
+/* LISTA DELLE SCHEDE */
 .sessions-list {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.85rem;
 
   .session-card {
     background: $bg-card;
     border: 1px solid $border-card;
-    border-radius: 16px;
-    padding: 1.25rem;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    border-radius: 14px;
+    transition: all 0.2s ease;
+    overflow: hidden;
 
-    .card-top-bar {
+    &:hover {
+      border-color: rgba($gold, 0.45);
+    }
+
+    &.is-open {
+      border-color: rgba($gold, 0.6);
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+    }
+
+    /* HEADER CLICCABILE DELLA SCHEDA */
+    .card-header-toggle {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.65rem;
+      padding: 1rem 1.15rem;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(#0a1120, 0.4);
 
-      .meta-tags {
-        display: flex;
-        gap: 0.45rem;
-        flex-wrap: wrap;
-
-        .session-number-badge {
-          background: rgba($gold, 0.18);
-          border: 1px solid $gold;
-          color: #fef08a;
-          padding: 0.2rem 0.6rem;
-          border-radius: 6px;
-          font-weight: 800;
-          font-size: 0.76rem;
-        }
-
-        .session-date-badge {
-          background: #080d18;
-          border: 1px solid #1a283f;
-          color: #cbd5e1;
-          padding: 0.2rem 0.6rem;
-          border-radius: 6px;
-          font-size: 0.76rem;
-          font-weight: 600;
-        }
+      &:hover {
+        background: rgba(#0a1120, 0.75);
       }
 
-      .card-actions {
+      .header-left {
         display: flex;
+        flex-direction: column;
         gap: 0.35rem;
 
-        .action-btn {
-          padding: 0.3rem 0.65rem;
-          border-radius: 8px;
-          font-size: 0.8rem;
-          font-weight: 700;
-          cursor: pointer;
-          background: #080d18;
-          border: 1px solid #233452;
-          color: #cbd5e1;
+        .meta-tags {
+          display: flex;
+          gap: 0.45rem;
+          align-items: center;
 
-          &.edit:hover { border-color: $gold; color: #fef08a; }
-          &.delete:hover { border-color: $crimson; color: #fca5a5; }
+          .session-number-badge {
+            background: rgba($gold, 0.18);
+            border: 1px solid $gold;
+            color: #fef08a;
+            padding: 0.15rem 0.55rem;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.74rem;
+          }
+
+          .session-date-badge {
+            background: #080d18;
+            border: 1px solid #1a283f;
+            color: #cbd5e1;
+            padding: 0.15rem 0.55rem;
+            border-radius: 6px;
+            font-size: 0.74rem;
+            font-weight: 600;
+          }
+        }
+
+        .session-title {
+          font-family: 'Cinzel', serif;
+          font-size: 1.25rem;
+          color: #fff;
+          margin: 0.15rem 0 0;
+          line-height: 1.3;
+        }
+
+        .mini-tags-preview {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.35rem;
+          margin-top: 0.25rem;
+
+          .tag-pill {
+            font-size: 0.7rem;
+            color: $text-muted;
+            background: #09101d;
+            border: 1px solid #1e2c44;
+            padding: 0.1rem 0.45rem;
+            border-radius: 4px;
+          }
+        }
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .card-actions {
+          display: flex;
+          gap: 0.35rem;
+
+          .action-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            background: #080d18;
+            border: 1px solid #233452;
+            color: #cbd5e1;
+
+            &.edit:hover { border-color: $gold; }
+            &.delete:hover { border-color: $crimson; }
+          }
+        }
+
+        .expand-chevron {
+          font-size: 1.25rem;
+          color: $gold;
+          padding: 0 0.3rem;
         }
       }
     }
 
-    .session-title {
-      font-family: 'Cinzel', serif;
-      font-size: 1.45rem;
-      color: #fff;
-      margin: 0.35rem 0 0.85rem;
-      line-height: 1.25;
-    }
+    /* CORPO ESPANSO */
+    .card-expanded-body {
+      padding: 1.15rem;
+      border-top: 1px solid #1a273e;
+      background: #0e1626;
 
-    .narrative-summary {
-      font-size: 0.95rem;
-      color: #e2e8f0;
-      line-height: 1.6;
-      white-space: pre-line;
-      margin-bottom: 1rem;
-    }
+      .narrative-summary {
+        margin-bottom: 1.25rem;
 
-    .details-blocks-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.65rem;
-
-      @media (min-width: 650px) {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .detail-box {
-        background: #080d18;
-        border: 1px solid #1a283f;
-        border-radius: 10px;
-        padding: 0.75rem 0.95rem;
-
-        .box-head {
-          font-size: 0.76rem;
-          font-weight: 800;
-          letter-spacing: 0.05em;
+        .section-title {
+          font-family: 'Cinzel', serif;
+          font-size: 0.9rem;
+          color: $gold;
+          margin-bottom: 0.4rem;
           text-transform: uppercase;
-          margin-bottom: 0.35rem;
+          letter-spacing: 0.05em;
         }
 
-        .box-content {
-          font-size: 0.86rem;
-          color: #cbd5e1;
-          line-height: 1.45;
+        p {
+          font-size: 0.95rem;
+          color: #e2e8f0;
+          line-height: 1.65;
           white-space: pre-line;
+          margin: 0;
+        }
+      }
+
+      .details-blocks-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+
+        @media (min-width: 650px) {
+          grid-template-columns: repeat(2, 1fr);
         }
 
-        &.combat .box-head { color: #fca5a5; }
-        &.loot .box-head { color: #fde68a; }
-        &.npcs .box-head { color: #67e8f9; }
-        &.quotes .box-head { color: #a7f3d0; }
-        &.quotes .quotes-text { font-style: italic; }
+        .detail-box {
+          background: #080d18;
+          border: 1px solid #1a283f;
+          border-radius: 10px;
+          padding: 0.75rem 0.95rem;
+
+          .box-head {
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+          }
+
+          .box-content {
+            font-size: 0.86rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+            white-space: pre-line;
+          }
+
+          &.combat .box-head { color: #fca5a5; }
+          &.loot .box-head { color: #fde68a; }
+          &.npcs .box-head { color: #67e8f9; }
+          &.quotes .box-head { color: #a7f3d0; }
+          &.quotes .quotes-text { font-style: italic; }
+        }
       }
     }
   }
 }
 
-/* MODALITÀ MODIFICA INLINE */
+/* MODIFICA MANUALE */
 .edit-mode-container {
+  padding: 1.15rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;

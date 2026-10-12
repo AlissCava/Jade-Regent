@@ -49,7 +49,7 @@
       </div>
     </div>
 
-    <!-- BARRA DI AVANZAMENTO QUANDO IN ELABORAZIONE -->
+    <!-- STATO ELABORAZIONE AUDIO -->
     <div class="processing-status-box" *ngIf="isProcessing()">
       <div class="status-spinner"></div>
       <div class="status-text">{{ processStatusText() }}</div>
@@ -84,51 +84,72 @@
     <p>Nessuna cronaca registrata. Tocca <strong>«Carica Nuova Sessione»</strong> per sbobinare la prima serata di gioco!</p>
   </div>
 
-  <!-- ELENCO CRONACHE DELLE SESSIONI -->
+  <!-- ELENCO SCHEDE DELLE SESSIONI -->
   <div class="sessions-list" *ngIf="!loadingList()">
-    <article class="session-card" *ngFor="let s of sessions()">
+    <article 
+      class="session-card" 
+      *ngFor="let s of sessions()"
+      [class.is-open]="isExpanded(s.id)">
       
       <!-- ================= VISTA LETTURA NORMALE ================= -->
       <ng-container *ngIf="editingSessionId() !== s.id">
-        <div class="card-top-bar">
-          <div class="meta-tags">
-            <span class="session-number-badge">Sessione {{ s.session_number }}</span>
-            <span class="session-date-badge">📅 {{ s.session_date }}</span>
+        
+        <!-- TESTATA SCHEDA CLICCABILE -->
+        <div class="card-header-toggle" (click)="toggleExpand(s.id)">
+          <div class="header-left">
+            <div class="meta-tags">
+              <span class="session-number-badge">Sessione {{ s.session_number }}</span>
+              <span class="session-date-badge">📅 {{ s.session_date }}</span>
+            </div>
+            <h2 class="session-title">{{ s.title }}</h2>
+
+            <!-- ANTEPRIMA RAPIDA DEI CONTENUTI QUANDO LA SCHEDA È CHIUSA -->
+            <div class="mini-tags-preview" *ngIf="!isExpanded(s.id)">
+              <span class="tag-pill" *ngIf="s.combat">⚔️ Combattimento</span>
+              <span class="tag-pill" *ngIf="s.loot">💰 Loot</span>
+              <span class="tag-pill" *ngIf="s.npcs">🎭 PNG</span>
+              <span class="tag-pill" *ngIf="s.quotes">💬 Citazioni</span>
+            </div>
           </div>
 
-          <div class="card-actions">
-            <button type="button" class="action-btn edit" (click)="startEditing(s)" title="Modifica cronaca">✏️ Modifica</button>
-            <button type="button" class="action-btn delete" (click)="deleteSession(s.id)" title="Elimina cronaca">🗑️</button>
+          <div class="header-right">
+            <div class="card-actions" (click)="$event.stopPropagation()">
+              <button type="button" class="action-btn edit" (click)="startEditing(s)" title="Modifica cronaca">✏️</button>
+              <button type="button" class="action-btn delete" (click)="deleteSession(s.id)" title="Elimina cronaca">🗑️</button>
+            </div>
+            <span class="expand-chevron">{{ isExpanded(s.id) ? '▴' : '▾' }}</span>
           </div>
         </div>
 
-        <h2 class="session-title">{{ s.title }}</h2>
-
-        <!-- RIASSUNTO NARRATIVO -->
-        <div class="narrative-summary">
-          <p>{{ s.summary }}</p>
-        </div>
-
-        <!-- BLOCCHI DETTAGLIATI (COMBATTIMENTI, LOOT, PNG, CITAZIONI) -->
-        <div class="details-blocks-grid">
-          <div class="detail-box combat" *ngIf="s.combat">
-            <div class="box-head">⚔️ Combattimenti & Scontri</div>
-            <div class="box-content">{{ s.combat }}</div>
+        <!-- CORPO COMPLETO DELLA SCHEDA (VISIBILE SOLO SE APERTA) -->
+        <div class="card-expanded-body" *ngIf="isExpanded(s.id)">
+          <!-- SUNTO NARRATIVO -->
+          <div class="narrative-summary">
+            <div class="section-title">📜 Resoconto del Cronista</div>
+            <p>{{ s.summary }}</p>
           </div>
 
-          <div class="detail-box loot" *ngIf="s.loot">
-            <div class="box-head">💰 Tesori & Loot Trovato</div>
-            <div class="box-content">{{ s.loot }}</div>
-          </div>
+          <!-- DETTAGLI (COMBAT, LOOT, PNG, QUOTES) -->
+          <div class="details-blocks-grid">
+            <div class="detail-box combat" *ngIf="s.combat">
+              <div class="box-head">⚔️ Combattimenti & Scontri</div>
+              <div class="box-content">{{ s.combat }}</div>
+            </div>
 
-          <div class="detail-box npcs" *ngIf="s.npcs">
-            <div class="box-head">🎭 PNG & Incontri</div>
-            <div class="box-content">{{ s.npcs }}</div>
-          </div>
+            <div class="detail-box loot" *ngIf="s.loot">
+              <div class="box-head">💰 Tesori & Loot Trovato</div>
+              <div class="box-content">{{ s.loot }}</div>
+            </div>
 
-          <div class="detail-box quotes" *ngIf="s.quotes">
-            <div class="box-head">💬 Citazioni & Momenti Top</div>
-            <div class="box-content quotes-text">{{ s.quotes }}</div>
+            <div class="detail-box npcs" *ngIf="s.npcs">
+              <div class="box-head">🎭 PNG & Incontri</div>
+              <div class="box-content">{{ s.npcs }}</div>
+            </div>
+
+            <div class="detail-box quotes" *ngIf="s.quotes">
+              <div class="box-head">💬 Citazioni & Momenti Top</div>
+              <div class="box-content quotes-text">{{ s.quotes }}</div>
+            </div>
           </div>
         </div>
       </ng-container>
