@@ -133,14 +133,36 @@ $border: #233352;
     }
   }
 
-  .chronicles-card {
-  border-color: rgba(245, 158, 11, 0.3) !important;
-  &:hover {
-    border-color: #f59e0b !important;
-    box-shadow: 0 8px 30px rgba(245, 158, 11, 0.15);
+/* Stile dedicato per la Card Cronache (Tema Ambra & Oro Antico) */
+.chronicles-card {
+  .card-tag {
+    color: #f59e0b;
   }
-  .card-btn {
-    color: #fef08a !important;
+
+  .card-action {
+    color: #cbd5e1;
+
+    span:last-child {
+      transition: transform 0.2s ease;
+    }
+  }
+
+  &:hover {
+    border-color: rgba(245, 158, 11, 0.6) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 24px rgba(245, 158, 11, 0.18) !important;
+    transform: translateY(-2px);
+
+    .card-title {
+      color: #fef08a;
+    }
+
+    .card-action {
+      color: #fef08a;
+
+      span:last-child {
+        transform: translateX(4px);
+      }
+    }
   }
 }
 }

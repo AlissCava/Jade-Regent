@@ -13,6 +13,7 @@ export const routes: Routes = [
   { path: 'character', component: CharacterSheetComponent, title: 'Scheda Personaggio • Jade Regent' },
   { path: 'wild-shapes', component: WildShapesComponent, title: 'Forma Selvatica • Airyn' },
   { path: 'spells', component: SpellsComponent, title: 'Grimorio Incantesimi' },
-  { path: '**', redirectTo: '' },
   { path: 'chronicles', component: ChroniclesComponent },
+  { path: '**', redirectTo: '' },
+
 ];
