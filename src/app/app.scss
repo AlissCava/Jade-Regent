@@ -98,15 +98,15 @@ $text-muted: #94a3b8;
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(9, 14, 26, 0.95);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(30, 41, 59, 0.9);
-  padding: 0.4rem 0.5rem max(0.4rem, env(safe-area-inset-bottom));
+  background: rgba(9, 14, 26, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 0.25rem 0.5rem max(0.25rem, env(safe-area-inset-bottom));
   display: flex;
   justify-content: space-around;
   align-items: center;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.45);
 
   .bottom-nav-btn {
     display: flex;
@@ -115,25 +115,53 @@ $text-muted: #94a3b8;
     justify-content: center;
     background: transparent;
     border: none;
-    color: $text-muted;
+    color: #64748b;
     text-decoration: none;
-    padding: 0.3rem 0.5rem;
-    border-radius: 10px;
-    min-width: 52px;
+    padding: 0.2rem 0.4rem;
+    border-radius: 8px;
+    min-width: 48px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.12s ease, color 0.15s ease;
 
-    .btn-icon { font-size: 1.25rem; line-height: 1.1; }
-    .btn-label { font-size: 0.72rem; font-weight: 700; margin-top: 0.15rem; }
+    .btn-icon {
+      font-size: 1.15rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-    &:active { transform: scale(0.92); }
-    &.active { color: $gold; }
+    .btn-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-top: 0.1rem;
+      line-height: 1;
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+
+    &.active {
+      color: $gold;
+
+      .btn-label {
+        font-weight: 700;
+      }
+    }
 
     &.burger-bottom-btn {
-      color: #cbd5e1;
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      .btn-icon { font-size: 1.2rem; color: $gold; }
+      color: #94a3b8;
+      background: rgba(245, 158, 11, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.18);
+      border-radius: 8px;
+      padding: 0.2rem 0.45rem;
+
+      .btn-icon {
+        font-size: 1.05rem;
+        color: $gold;
+      }
     }
   }
 }
