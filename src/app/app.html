@@ -20,6 +20,34 @@
   </div>
 </header>
 
+<!-- SCHERMATA DI BLOCCO PER ESTRANEI -->
+<div class="lock-gate-overlay" *ngIf="!isUnlocked()">
+  <div class="lock-card">
+    <div class="lock-icon">⛩️</div>
+    <div class="lock-badge">Accesso Riservato</div>
+    <h1 class="lock-title">Carovana di Sandpoint</h1>
+    <p class="lock-desc">
+      Gli archivi e le cronache di Jade Regent sono protetti. Inserisci la parola d'ordine del party per proseguire.
+    </p>
+
+    <form (ngSubmit)="unlock()" class="lock-form">
+      <input 
+        type="password" 
+        [(ngModel)]="passcode" 
+        name="passcode"
+        placeholder="Parola d'ordine..." 
+        autocomplete="off"
+        autofocus />
+
+      <button type="submit" class="btn-unlock">Accedi ➔</button>
+    </form>
+
+    <div class="lock-error" *ngIf="authError()">
+      ⚠️ Parola d'ordine errata. Accesso negato.
+    </div>
+  </div>
+</div>
+
 <!-- CONTENUTO PRINCIPALE -->
 <main class="main-content">
   <router-outlet></router-outlet>

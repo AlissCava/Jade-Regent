@@ -247,4 +247,116 @@ $text-muted: #94a3b8;
       }
     }
   }
+
+  /* SCHERMATA LOCK GATE */
+.lock-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at center, #111a2e 0%, #060a12 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+
+  .lock-card {
+    background: #0d1527;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.12);
+    border-radius: 20px;
+    padding: 2.5rem 1.75rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+
+    .lock-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .lock-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      margin-bottom: 0.65rem;
+    }
+
+    .lock-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      color: #fff;
+      margin: 0 0 0.5rem;
+    }
+
+    .lock-desc {
+      font-size: 0.86rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin: 0 0 1.5rem;
+    }
+
+    .lock-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      input {
+        width: 100%;
+        height: 46px;
+        background: #060a12;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        color: #fff;
+        padding: 0 1rem;
+        font-size: 1rem;
+        text-align: center;
+        letter-spacing: 0.15em;
+        outline: none;
+        box-sizing: border-box;
+
+        &:focus {
+          border-color: #f59e0b;
+          box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+        }
+      }
+
+      .btn-unlock {
+        height: 46px;
+        background: #f59e0b;
+        color: #000;
+        font-weight: 800;
+        font-size: 0.95rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+
+        &:hover {
+          background: #fbbf24;
+        }
+
+        &:active {
+          transform: scale(0.97);
+        }
+      }
+    }
+
+    .lock-error {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+    }
+  }
+}
 }

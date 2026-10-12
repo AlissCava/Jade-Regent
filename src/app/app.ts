@@ -1,29 +1,53 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App implements OnInit {
-  isMenuOpen = signal<boolean>(false);
-  textScale = signal<number>(100);
+  // --- ACCESSO RISERVATO ---
+  private readonly SECRET_KEY = 'J4deR3d3nt!'; 
+  isUnlocked = signal<boolean>(false);
+  passcode = '';
+  authError = signal<boolean>(false);
 
-  // Livelli sicuri che ingrandiscono i testi senza spezzare griglie o pulsanti
-  readonly availableScales: number[] = [100, 120, 140];
+  // --- MENU DRAWER LATERALE ---
+  isMenuOpen = signal<boolean>(false);
+
+  // --- SCALA TESTO (Pulsante Aa) ---
+  textScale = signal<number>(100);
+  availableScales: number[] = [100, 110, 125, 90];
 
   ngOnInit(): void {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('jr_text_scale');
-      if (saved && ['100', '120', '140'].includes(saved)) {
-        this.applyScale(Number(saved));
-      } else {
-        this.applyScale(100);
+    // 1. Verifica autorizzazione party
+    if (localStorage.getItem('jade_regent_authorized') === 'true') {
+      this.isUnlocked.set(true);
+    }
+
+    // 2. Ripristina scala testo salvata
+    const savedScale = localStorage.getItem('jade_regent_text_scale');
+    if (savedScale) {
+      const num = parseInt(savedScale, 10);
+      if (this.availableScales.includes(num)) {
+        this.applyScale(num);
       }
+    }
+  }
+
+  unlock(): void {
+    if (this.passcode.trim().toLowerCase() === this.SECRET_KEY.toLowerCase()) {
+      localStorage.setItem('jade_regent_authorized', 'true');
+      this.isUnlocked.set(true);
+      this.authError.set(false);
+    } else {
+      this.authError.set(true);
+      this.passcode = '';
     }
   }
 
@@ -35,7 +59,6 @@ export class App implements OnInit {
     this.isMenuOpen.set(false);
   }
 
-  // Cicla a ogni tocco: 100% -> 120% -> 140% -> 100%
   cycleTextScale(): void {
     const currentIndex = this.availableScales.indexOf(this.textScale());
     const nextIndex = (currentIndex + 1) % this.availableScales.length;
@@ -44,11 +67,10 @@ export class App implements OnInit {
 
   private applyScale(scale: number): void {
     this.textScale.set(scale);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('jr_text_scale', scale.toString());
-      document.documentElement.setAttribute('data-text-scale', scale.toString());
-    }
+    document.documentElement.style.fontSize = `${(scale / 100) * 16}px`;
+    localStorage.setItem('jade_regent_text_scale', scale.toString());
   }
 }
 
+// Esportazione alias per compatibilità con il bootstrap di Angular
 export { App as AppComponent };
