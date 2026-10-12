@@ -6,13 +6,13 @@ import { SessionRecord } from '../models/session.model';
 })
 export class SessionService {
   private apiUrl = '/api/sessions';
-  private uploadUrlEndpoint = '/api/upload-session-audio';
+  private uploadInitUrl = '/api/upload-session-audio';
 
   async getSessions(order: 'asc' | 'desc' = 'desc'): Promise<SessionRecord[]> {
     const res = await fetch(`${this.apiUrl}?order=${order}`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || err.details || `Errore ${res.status}`);
+      throw new Error(err.details || err.error || `Errore server ${res.status}`);
     }
     return res.json();
   }
@@ -32,9 +32,9 @@ export class SessionService {
     return res.ok;
   }
 
-  // 1. Chiede a Google l'URL di upload tramite la nostra API
+  // Chiede l'URL temporaneo a Vercel
   async initDirectUpload(file: File): Promise<{ uploadUrl: string }> {
-    const res = await fetch(`${this.uploadUrlEndpoint}?action=start`, {
+    const res = await fetch(this.uploadInitUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -45,75 +45,58 @@ export class SessionService {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || err.details || 'Errore inizializzazione Google');
+      throw new Error(err.details || err.error || 'Errore inizializzazione upload Google');
     }
     return res.json();
   }
 
-  // 2. Invia il file a pezzi da 3 MB bypassando CORS e il limite di Vercel
-  async uploadAudioFile(uploadUrl: string, file: File, onProgress: (pct: number) => void): Promise<string> {
-    const CHUNK_SIZE = 3 * 1024 * 1024; // 3 MB
-    const totalBytes = file.size;
-    let offset = 0;
-    let fileUri = '';
+  // Invia il file GIGANTE direttamente dal browser a Google senza passare dai limiti Vercel
+  uploadAudioFile(uploadUrl: string, file: File, onProgress: (pct: number) => void): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', uploadUrl, true);
+      
+      // Header ufficiali Google Resumable Protocol per invio completo
+      xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
+      xhr.setRequestHeader('X-Goog-Upload-Offset', '0');
+      xhr.setRequestHeader('Content-Type', file.type || 'audio/mp3');
 
-    while (offset < totalBytes) {
-      const end = Math.min(offset + CHUNK_SIZE, totalBytes);
-      const chunkBlob = file.slice(offset, end);
-      const isLast = end >= totalBytes;
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent);
+        }
+      };
 
-      const base64Chunk = await this.blobToBase64(chunkBlob);
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            // Restituisce il nome univoco del file su Google (es. files/abc123xyz)
+            resolve(data.file?.name || data.file?.uri || '');
+          } catch {
+            resolve('');
+          }
+        } else {
+          reject(new Error(`Errore upload Google (${xhr.status}):${xhr.responseText}`));
+        }
+      };
 
-      const res = await fetch(`${this.uploadUrlEndpoint}?action=chunk`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Upload-Url': uploadUrl,
-          'X-Upload-Offset': offset.toString(),
-          'X-Upload-Command': isLast ? 'upload, finalize' : 'upload'
-        },
-        body: JSON.stringify({ chunkBase64: base64Chunk })
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.details || err.error || 'Errore durante il caricamento');
-      }
-
-      const resData = await res.json().catch(() => ({}));
-      if (isLast && resData.file?.uri) {
-        fileUri = resData.file.uri;
-      }
-
-      offset = end;
-      onProgress(Math.round((offset / totalBytes) * 100));
-    }
-
-    return fileUri;
+      xhr.onerror = () => reject(new Error('Errore di connessione durante il caricamento audio'));
+      xhr.send(file);
+    });
   }
 
-  async processSessionAudio(fileUri: string, sessionDate: string, sessionNumber: number): Promise<SessionRecord> {
+  async processSessionAudio(fileUri: string, sessionDate: string, sessionNumber: number, mimeType: string): Promise<SessionRecord> {
     const res = await fetch(this.apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileUri, sessionDate, sessionNumber })
+      body: JSON.stringify({ fileUri, sessionDate, sessionNumber, mimeType })
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.details || err.error || 'Errore elaborazione Gemini');
     }
     return res.json();
-  }
-
-  private blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   }
 }

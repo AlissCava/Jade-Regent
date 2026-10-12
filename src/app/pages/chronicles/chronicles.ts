@@ -87,8 +87,13 @@ export class ChroniclesComponent implements OnInit {
       });
 
       this.processStatusText.set('Gemini sta ascoltando la sessione e redigendo la cronaca...');
-      await this.sessionService.processSessionAudio(fileUri, this.newSessionDate, this.newSessionNumber);
-
+      await this.sessionService.processSessionAudio(
+        fileUri, 
+        this.newSessionDate, 
+        this.newSessionNumber,
+        this.selectedFile.type || 'audio/mp3'
+      );
+      
       this.isProcessing.set(false);
       this.selectedFile = null;
       this.uploadBoxOpen.set(false);
