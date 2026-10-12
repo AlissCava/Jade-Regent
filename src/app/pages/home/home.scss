@@ -132,4 +132,15 @@ $border: #233352;
       box-shadow: 0 12px 30px rgba(239, 68, 68, 0.2);
     }
   }
+
+  .chronicles-card {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  &:hover {
+    border-color: #f59e0b !important;
+    box-shadow: 0 8px 30px rgba(245, 158, 11, 0.15);
+  }
+  .card-btn {
+    color: #fef08a !important;
+  }
+}
 }

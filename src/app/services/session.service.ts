@@ -1,41 +1,53 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
 import { SessionRecord } from '../models/session.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SessionService {
-  private http = inject(HttpClient);
   private apiUrl = '/api/sessions';
   private uploadInitUrl = '/api/upload-session-audio';
 
-  // 1. Lettura sessioni ordinate per data
-  getSessions(order: 'asc' | 'desc' = 'desc'): Observable<SessionRecord[]> {
-    return this.http.get<SessionRecord[]>(`${this.apiUrl}?order=${order}`);
+  // 1. Lettura sessioni
+  async getSessions(order: 'asc' | 'desc' = 'desc'): Promise<SessionRecord[]> {
+    const res = await fetch(`${this.apiUrl}?order=${order}`);
+    if (!res.ok) throw new Error('Errore caricamento sessioni');
+    return res.json();
   }
 
-  // 2. Aggiornamento manuale (modifica correttiva)
-  updateSession(session: SessionRecord): Observable<SessionRecord> {
-    return this.http.put<SessionRecord>(this.apiUrl, session);
-  }
-
-  // 3. Eliminazione sessione
-  deleteSession(id: number): Observable<{ success: boolean; deletedId: number }> {
-    return this.http.delete<{ success: boolean; deletedId: number }>(`${this.apiUrl}?id=${id}`);
-  }
-
-  // 4. Inizio upload diretto verso Google AI (bypassa il limite di 4.5 MB di Vercel)
-  initDirectUpload(file: File): Observable<{ uploadUrl: string }> {
-    return this.http.post<{ uploadUrl: string }>(this.uploadInitUrl, {
-      filename: file.name,
-      mimeType: file.type || 'audio/mp3',
-      sizeBytes: file.size
+  // 2. Modifica manuale
+  async updateSession(session: SessionRecord): Promise<SessionRecord> {
+    const res = await fetch(this.apiUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(session)
     });
+    if (!res.ok) throw new Error('Errore aggiornamento sessione');
+    return res.json();
   }
 
-  // 5. Upload effettivo del file con tracciamento percentuale
+  // 3. Eliminazione
+  async deleteSession(id: number): Promise<boolean> {
+    const res = await fetch(`${this.apiUrl}?id=${id}`, { method: 'DELETE' });
+    return res.ok;
+  }
+
+  // 4. Inizio upload diretto verso Google
+  async initDirectUpload(file: File): Promise<{ uploadUrl: string }> {
+    const res = await fetch(this.uploadInitUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: file.name,
+        mimeType: file.type || 'audio/mp3',
+        sizeBytes: file.size
+      })
+    });
+    if (!res.ok) throw new Error('Errore avvio upload Google');
+    return res.json();
+  }
+
+  // 5. Upload del file pesante con barra di avanzamento
   uploadAudioFile(uploadUrl: string, file: File, onProgress: (pct: number) => void): Promise<string> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -53,27 +65,31 @@ export class SessionService {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const res = JSON.parse(xhr.responseText);
-            // Restituisce l'URI del file su Google AI
-            resolve(res.file?.uri || res.file?.name);
+            resolve(res.file?.uri || res.file?.name || '');
           } catch {
             resolve('');
           }
         } else {
-          reject(new Error(`Errore upload file: ${xhr.status} ${xhr.statusText}`));
+          reject(new Error(`Errore upload file (${xhr.status})`));
         }
       };
 
-      xhr.onerror = () => reject(new Error('Errore di rete durante il caricamento audio'));
+      xhr.onerror = () => reject(new Error('Errore di rete durante upload audio'));
       xhr.send(file);
     });
   }
 
-  // 6. Invio a Gemini e salvataggio su Neon
-  processSessionAudio(fileUri: string, sessionDate: string, sessionNumber: number): Observable<SessionRecord> {
-    return this.http.post<SessionRecord>(this.apiUrl, {
-      fileUri,
-      sessionDate,
-      sessionNumber
+  // 6. Elaborazione Gemini
+  async processSessionAudio(fileUri: string, sessionDate: string, sessionNumber: number): Promise<SessionRecord> {
+    const res = await fetch(this.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileUri, sessionDate, sessionNumber })
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Errore elaborazione sessione');
+    }
+    return res.json();
   }
 }
