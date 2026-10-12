@@ -1,33 +1,12 @@
-<!-- HEADER SUPERIORE: LOGO + PULSANTE INGRANDIMENTO TESTO -->
-<header class="app-header">
-  <div class="header-container">
-    <a routerLink="/" class="app-logo">
-      <span class="logo-icon">⛩️</span>
-      <span class="logo-text">JADE REGENT</span>
-    </a>
-
-    <!-- PULSANTE SINGOLO PER INGRANDIRE IL TESTO -->
-    <button 
-      type="button" 
-      class="text-scale-btn" 
-      [class.scaled]="textScale() > 100"
-      (click)="cycleTextScale()" 
-      [attr.aria-label]="'Dimensione testo attuale: ' + textScale() + ' percento. Clicca per ingrandire'"
-      title="Clicca per ingrandire le scritte (100% -> 120% -> 140%)">
-      <span class="scale-symbol">Aa</span>
-      <span class="scale-indicator">{{ textScale() }}%</span>
-    </button>
-  </div>
-</header>
-
-<!-- SCHERMATA DI BLOCCO PER ESTRANEI -->
+<!-- 1. SE NON AUTORIZZATO: SCHERMATA DI BLOCCO A SCHERMO INTERO -->
 <div class="lock-gate-overlay" *ngIf="!isUnlocked()">
   <div class="lock-card">
     <div class="lock-icon">⛩️</div>
     <div class="lock-badge">Accesso Riservato</div>
     <h1 class="lock-title">Carovana di Sandpoint</h1>
     <p class="lock-desc">
-      Gli archivi e le cronache di Jade Regent sono protetti. Inserisci la parola d'ordine del party per proseguire.
+      Gli archivi e le cronache di Jade Regent sono protetti.<br>
+      Inserisci la parola d'ordine del party per entrare.
     </p>
 
     <form (ngSubmit)="unlock()" class="lock-form">
@@ -48,81 +27,73 @@
   </div>
 </div>
 
-<!-- CONTENUTO PRINCIPALE -->
-<main class="main-content">
-  <router-outlet></router-outlet>
-</main>
+<!-- 2. SE AUTORIZZATO: L'INTERA APPLICAZIONE -->
+<ng-container *ngIf="isUnlocked()">
+  <!-- HEADER IN ALTO -->
+  <header class="app-top-header">
+    <div class="brand">
+      <span class="brand-icon">⛩️</span>
+      <span class="brand-text">JADE REGENT</span>
+    </div>
+    <button type="button" class="scale-btn" (click)="cycleTextScale()" aria-label="Cambia dimensione testo">
+      Aa {{ textScale() }}%
+    </button>
+  </header>
 
-<!-- BOTTOM NAVIGATION BAR (SNELLA) -->
-<nav class="bottom-nav-bar" aria-label="Navigazione principale">
-  <button 
-    type="button" 
-    class="bottom-nav-btn burger-bottom-btn" 
-    (click)="toggleMenu()" 
-    [attr.aria-expanded]="isMenuOpen()" 
-    aria-label="Apri menu">
-    <span class="btn-icon">☰</span>
-    <span class="btn-label">Menu</span>
-  </button>
+  <!-- CONTENUTO PRINCIPALE DELLE PAGINE -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
 
-  <a routerLink="/spells" class="bottom-nav-btn" routerLinkActive="active" aria-label="Grimorio">
-    <span class="btn-icon">📜</span>
-    <span class="btn-label">Grimorio</span>
-  </a>
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav-bar" aria-label="Navigazione principale">
+    <button 
+      type="button" 
+      class="bottom-nav-btn burger-bottom-btn" 
+      (click)="toggleMenu()" 
+      [attr.aria-expanded]="isMenuOpen()" 
+      aria-label="Apri menu">
+      <span class="btn-icon">☰</span>
+      <span class="btn-label">Menu</span>
+    </button>
+
+    <a routerLink="/characters" class="bottom-nav-btn" routerLinkActive="active" aria-label="Party">
+      <span class="btn-icon">👥</span>
+      <span class="btn-label">Party</span>
+    </a>
 
     <a routerLink="/wild-shapes" class="bottom-nav-btn" routerLinkActive="active" aria-label="Forme">
-    <span class="btn-icon">🐾</span>
-    <span class="btn-label">Forme</span>
-  </a>
+      <span class="btn-icon">🐾</span>
+      <span class="btn-label">Forme</span>
+    </a>
+
+    <a routerLink="/spells" class="bottom-nav-btn" routerLinkActive="active" aria-label="Grimorio">
+      <span class="btn-icon">📜</span>
+      <span class="btn-label">Grimorio</span>
+    </a>
 
     <a routerLink="/chronicles" class="bottom-nav-btn" routerLinkActive="active" aria-label="Cronache">
-    <span class="btn-icon">📖</span>
-    <span class="btn-label">Diario</span>
-  </a>
-
-  <a routerLink="/characters" class="bottom-nav-btn" routerLinkActive="active" aria-label="Party">
-    <span class="btn-icon">👥</span>
-    <span class="btn-label">Party</span>
-  </a>
-</nav>
+      <span class="btn-icon">📖</span>
+      <span class="btn-label">Diario</span>
+    </a>
 
 
-<!-- MENU A CASSETTO (DRAWER) -->
-<div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
-  <aside class="menu-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Menu completo">
-    <div class="drawer-header">
-      <div class="drawer-title">
-        <span class="icon">⛩️</span>
-        <span>Caravan Codex</span>
+  </nav>
+
+  <!-- MENU DRAWER LATERALE -->
+  <div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
+    <div class="drawer" (click)="$event.stopPropagation()">
+      <div class="drawer-header">
+        <h3>Menu Carovana</h3>
+        <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
       </div>
-      <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
+      <div class="drawer-links">
+        <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">🏠 Home</a>
+        <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">👥 Compagnia</a>
+        <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">🐾 Forme Selvatiche</a>
+        <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📜 Grimorio</a>
+        <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📖 Cronache</a>
+      </div>
     </div>
-
-    <nav class="drawer-links">
-      <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-        <span class="link-icon">🏠</span>
-        <span class="link-text">Home / Accampamento</span>
-      </a>
-      <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">👥</span>
-        <span class="link-text">Eroi del Party</span>
-      </a>
-      <a routerLink="/character" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">⚔️</span>
-        <span class="link-text">Scheda Ryoujin & Hisui</span>
-      </a>
-      <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">📜</span>
-        <span class="link-text">Grimorio Incantesimi</span>
-      </a>
-      <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">🐾</span>
-        <span class="link-text">Forme Selvatica • Airyn</span>
-      </a>
-      <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">📖</span>
-        <span class="link-text">Cronache della Carovana</span>
-      </a>
-    </nav>
-  </aside>
-</div>
+  </div>
+</ng-container>

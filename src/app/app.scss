@@ -1,97 +1,172 @@
-$bg-dark: #0b0f19;
-$border-color: #1e293b;
-$gold: #f59e0b;
-$text-light: #f8fafc;
-$text-muted: #94a3b8;
+/* ========================================================
+   1. SCHERMATA DI BLOCCO (LOCK GATE FULLSCREEN)
+   ======================================================== */
+.lock-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: radial-gradient(circle at center, #111a2e 0%, #060a12 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
 
-.app-header {
-  background: #090e1a;
-  border-bottom: 1px solid $border-color;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  .lock-card {
+    background: #0d1527;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.12);
+    border-radius: 20px;
+    padding: 2.5rem 1.75rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
 
-  .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0.65rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .app-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-      color: $text-light;
-      font-family: 'Cinzel', serif;
-      font-weight: 700;
-      font-size: 1.15rem;
-
-      .logo-icon { font-size: 1.35rem; }
-      .logo-text { letter-spacing: 0.05em; }
+    .lock-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      line-height: 1;
     }
 
-    /* PULSANTE INGRANDIMENTO TESTO */
-    .text-scale-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: #0f172a;
-      border: 1px solid #283958;
-      border-radius: 10px;
-      padding: 0.35rem 0.65rem;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.15s ease;
+    .lock-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      margin-bottom: 0.65rem;
+    }
 
-      .scale-symbol {
-        font-size: 0.9rem;
+    .lock-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      color: #ffffff;
+      margin: 0 0 0.5rem;
+    }
+
+    .lock-desc {
+      font-size: 0.86rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin: 0 0 1.5rem;
+    }
+
+    .lock-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      input {
+        width: 100%;
+        height: 46px;
+        background: #060a12;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        color: #ffffff;
+        padding: 0 1rem;
+        font-size: 1rem;
+        text-align: center;
+        letter-spacing: 0.15em;
+        outline: none;
+        box-sizing: border-box;
+
+        &:focus {
+          border-color: #f59e0b;
+          box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+        }
+      }
+
+      .btn-unlock {
+        height: 46px;
+        background: #f59e0b;
+        color: #000000;
         font-weight: 800;
-        letter-spacing: -0.02em;
-        color: #e2e8f0;
-      }
+        font-size: 0.95rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.12s ease, background 0.15s ease;
 
-      .scale-indicator {
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #94a3b8;
-        background: #1e293b;
-        padding: 0.1rem 0.35rem;
-        border-radius: 6px;
-      }
-
-      &:active {
-        transform: scale(0.93);
-      }
-
-      /* Quando il testo è ingrandito, si evidenzia in oro */
-      &.scaled {
-        border-color: rgba($gold, 0.6);
-        background: rgba($gold, 0.12);
-        box-shadow: 0 0 10px rgba($gold, 0.18);
-
-        .scale-symbol {
-          color: #fef08a;
+        &:hover {
+          background: #fbbf24;
         }
 
-        .scale-indicator {
-          background: rgba($gold, 0.25);
-          color: #fef08a;
+        &:active {
+          transform: scale(0.97);
         }
       }
+    }
+
+    .lock-error {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+    }
+  }
+}
+
+/* ========================================================
+   2. HEADER SUPERIORE
+   ======================================================== */
+.app-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: rgba(9, 14, 26, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .brand-icon {
+      font-size: 1.25rem;
+    }
+
+    .brand-text {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      font-size: 1.05rem;
+    }
+  }
+
+  .scale-btn {
+    background: #101c33;
+    border: 1px solid #1e2c48;
+    color: #cbd5e1;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 0.3rem 0.65rem;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.95);
     }
   }
 }
 
 .main-content {
-  min-height: calc(100vh - 60px);
-  padding-bottom: 5.5rem;
+  padding-bottom: 4.5rem;
 }
 
+/* ========================================================
+   3. BOTTOM NAVIGATION BAR
+   ======================================================== */
 .bottom-nav-bar {
   position: fixed;
   bottom: 0;
@@ -126,9 +201,6 @@ $text-muted: #94a3b8;
     .btn-icon {
       font-size: 1.15rem;
       line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .btn-label {
@@ -144,7 +216,7 @@ $text-muted: #94a3b8;
     }
 
     &.active {
-      color: $gold;
+      color: #f59e0b;
 
       .btn-label {
         font-weight: 700;
@@ -160,62 +232,53 @@ $text-muted: #94a3b8;
 
       .btn-icon {
         font-size: 1.05rem;
-        color: $gold;
+        color: #f59e0b;
       }
     }
   }
 }
 
+/* ========================================================
+   4. DRAWER MENU LATERALE
+   ======================================================== */
 .menu-overlay {
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
 
-  .menu-drawer {
-    width: 100%;
-    max-width: 500px;
-    background: #0f172a;
-    border-top: 1px solid #283958;
-    border-radius: 20px 20px 0 0;
-    padding: 1.2rem;
-    padding-bottom: max(1.2rem, env(safe-area-inset-bottom));
-    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.8);
+  .drawer {
+    width: 260px;
+    max-width: 80vw;
+    background: #0d1527;
+    border-right: 1px solid #1e2c48;
+    height: 100%;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.7);
 
     .drawer-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 0.85rem;
-      border-bottom: 1px solid #1e293b;
-      margin-bottom: 0.85rem;
 
-      .drawer-title {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+      h3 {
+        margin: 0;
         font-family: 'Cinzel', serif;
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #fff;
+        color: #f59e0b;
+        font-size: 1.1rem;
       }
 
       .close-drawer-btn {
-        width: 32px;
-        height: 32px;
-        background: #1e293b;
-        border: 1px solid #334155;
-        color: #cbd5e1;
-        border-radius: 50%;
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.1rem;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
     }
 
@@ -225,138 +288,24 @@ $text-muted: #94a3b8;
       gap: 0.45rem;
 
       .drawer-link {
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        padding: 0.75rem 1rem;
-        background: #090e1a;
-        border: 1px solid #1a283f;
-        border-radius: 12px;
         color: #cbd5e1;
         text-decoration: none;
-        font-size: 0.95rem;
+        padding: 0.65rem 0.85rem;
+        border-radius: 8px;
         font-weight: 600;
+        font-size: 0.92rem;
+        transition: background 0.15s ease, color 0.15s ease;
 
-        .link-icon { font-size: 1.2rem; }
+        &:hover {
+          background: rgba(245, 158, 11, 0.08);
+          color: #fef08a;
+        }
 
         &.active {
           background: rgba(245, 158, 11, 0.15);
-          border-color: $gold;
-          color: #fef08a;
+          color: #f59e0b;
         }
       }
     }
   }
-
-  /* SCHERMATA LOCK GATE */
-.lock-gate-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: radial-gradient(circle at center, #111a2e 0%, #060a12 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-
-  .lock-card {
-    background: #0d1527;
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.12);
-    border-radius: 20px;
-    padding: 2.5rem 1.75rem;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-
-    .lock-icon {
-      font-size: 3rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .lock-badge {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #f59e0b;
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 0.2rem 0.65rem;
-      border-radius: 9999px;
-      margin-bottom: 0.65rem;
-    }
-
-    .lock-title {
-      font-family: 'Cinzel', serif;
-      font-size: 1.6rem;
-      color: #fff;
-      margin: 0 0 0.5rem;
-    }
-
-    .lock-desc {
-      font-size: 0.86rem;
-      color: #94a3b8;
-      line-height: 1.5;
-      margin: 0 0 1.5rem;
-    }
-
-    .lock-form {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-
-      input {
-        width: 100%;
-        height: 46px;
-        background: #060a12;
-        border: 1px solid #1e293b;
-        border-radius: 12px;
-        color: #fff;
-        padding: 0 1rem;
-        font-size: 1rem;
-        text-align: center;
-        letter-spacing: 0.15em;
-        outline: none;
-        box-sizing: border-box;
-
-        &:focus {
-          border-color: #f59e0b;
-          box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
-        }
-      }
-
-      .btn-unlock {
-        height: 46px;
-        background: #f59e0b;
-        color: #000;
-        font-weight: 800;
-        font-size: 0.95rem;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: transform 0.15s ease, background-color 0.15s ease;
-
-        &:hover {
-          background: #fbbf24;
-        }
-
-        &:active {
-          transform: scale(0.97);
-        }
-      }
-    }
-
-    .lock-error {
-      margin-top: 1rem;
-      font-size: 0.82rem;
-      color: #fca5a5;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 0.45rem 0.75rem;
-      border-radius: 8px;
-    }
-  }
-}
 }
