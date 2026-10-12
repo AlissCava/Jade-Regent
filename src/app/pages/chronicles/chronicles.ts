@@ -68,7 +68,8 @@ export class ChroniclesComponent implements OnInit {
   }
 
   async startAudioProcessing(): Promise<void> {
-    if (!this.selectedFile) {
+    const file = this.selectedFile;
+    if (!file) {
       this.errorMessage.set('Seleziona prima un file audio');
       return;
     }
@@ -76,13 +77,13 @@ export class ChroniclesComponent implements OnInit {
     this.isProcessing.set(true);
     this.errorMessage.set('');
     this.uploadProgress.set(0);
-    this.processStatusText.set('Avvio connessione di caricamento...');
+    this.processStatusText.set('Connessione al canale di caricamento...');
 
     try {
-      const { uploadUrl } = await this.sessionService.initDirectUpload(this.selectedFile);
+      const { uploadUrl } = await this.sessionService.initDirectUpload(file);
 
-      this.processStatusText.set(`Caricamento audio (${(this.selectedFile.size / (1024 * 1024)).toFixed(1)} MB)...`);
-      const fileUri = await this.sessionService.uploadAudioFile(uploadUrl, this.selectedFile, (pct) => {
+      this.processStatusText.set(`Caricamento audio (${(file.size / (1024 * 1024)).toFixed(1)} MB)...`);
+      const fileUri = await this.sessionService.uploadAudioFile(uploadUrl, file, (pct) => {
         this.uploadProgress.set(pct);
       });
 
@@ -90,10 +91,10 @@ export class ChroniclesComponent implements OnInit {
       await this.sessionService.processSessionAudio(
         fileUri, 
         this.newSessionDate, 
-        this.newSessionNumber,
-        this.selectedFile.type || 'audio/mp3'
+        this.newSessionNumber, 
+        file.type || 'audio/mp3'
       );
-      
+
       this.isProcessing.set(false);
       this.selectedFile = null;
       this.uploadBoxOpen.set(false);

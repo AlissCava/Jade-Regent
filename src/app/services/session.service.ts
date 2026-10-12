@@ -32,7 +32,6 @@ export class SessionService {
     return res.ok;
   }
 
-  // Chiede l'URL temporaneo a Vercel
   async initDirectUpload(file: File): Promise<{ uploadUrl: string }> {
     const res = await fetch(this.uploadInitUrl, {
       method: 'POST',
@@ -50,13 +49,11 @@ export class SessionService {
     return res.json();
   }
 
-  // Invia il file GIGANTE direttamente dal browser a Google senza passare dai limiti Vercel
   uploadAudioFile(uploadUrl: string, file: File, onProgress: (pct: number) => void): Promise<string> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', uploadUrl, true);
       
-      // Header ufficiali Google Resumable Protocol per invio completo
       xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
       xhr.setRequestHeader('X-Goog-Upload-Offset', '0');
       xhr.setRequestHeader('Content-Type', file.type || 'audio/mp3');
@@ -72,13 +69,12 @@ export class SessionService {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const data = JSON.parse(xhr.responseText);
-            // Restituisce il nome univoco del file su Google (es. files/abc123xyz)
             resolve(data.file?.name || data.file?.uri || '');
           } catch {
             resolve('');
           }
         } else {
-          reject(new Error(`Errore upload Google (${xhr.status}):${xhr.responseText}`));
+          reject(new Error(`Errore upload Google (${xhr.status}): ${xhr.responseText}`));
         }
       };
 

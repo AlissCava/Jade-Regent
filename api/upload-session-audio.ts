@@ -20,8 +20,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const { filename, mimeType, sizeBytes } = req.body;
+    const clientOrigin = req.headers.origin || 'https://jade-regent.vercel.app';
 
-    // Richiesta a Google per aprire il canale di caricamento diretto
+    // Richiesta a Google per aprire il canale di caricamento diretto con CORS abilitato
     const initRes = await fetch(
       `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
       {
@@ -31,7 +32,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'X-Goog-Upload-Command': 'start',
           'X-Goog-Upload-Header-Content-Length': sizeBytes.toString(),
           'X-Goog-Upload-Header-Content-Type': mimeType || 'audio/mp3',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Origin': clientOrigin
         },
         body: JSON.stringify({
           file: { display_name: filename || 'Session_Audio' }
