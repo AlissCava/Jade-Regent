@@ -6,16 +6,17 @@ import { SessionRecord } from '../models/session.model';
 })
 export class SessionService {
   private apiUrl = '/api/sessions';
-  private uploadInitUrl = '/api/upload-session-audio';
+  private uploadUrlEndpoint = '/api/upload-session-audio';
 
-  // 1. Lettura sessioni
   async getSessions(order: 'asc' | 'desc' = 'desc'): Promise<SessionRecord[]> {
     const res = await fetch(`${this.apiUrl}?order=${order}`);
-    if (!res.ok) throw new Error('Errore caricamento sessioni');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.details || `Errore ${res.status}`);
+    }
     return res.json();
   }
 
-  // 2. Modifica manuale
   async updateSession(session: SessionRecord): Promise<SessionRecord> {
     const res = await fetch(this.apiUrl, {
       method: 'PUT',
@@ -26,15 +27,14 @@ export class SessionService {
     return res.json();
   }
 
-  // 3. Eliminazione
   async deleteSession(id: number): Promise<boolean> {
     const res = await fetch(`${this.apiUrl}?id=${id}`, { method: 'DELETE' });
     return res.ok;
   }
 
-  // 4. Inizio upload diretto verso Google
+  // 1. Chiede a Google l'URL di upload tramite la nostra API
   async initDirectUpload(file: File): Promise<{ uploadUrl: string }> {
-    const res = await fetch(this.uploadInitUrl, {
+    const res = await fetch(`${this.uploadUrlEndpoint}?action=start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -43,43 +43,55 @@ export class SessionService {
         sizeBytes: file.size
       })
     });
-    if (!res.ok) throw new Error('Errore avvio upload Google');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.details || 'Errore inizializzazione Google');
+    }
     return res.json();
   }
 
-  // 5. Upload del file pesante con barra di avanzamento
-  uploadAudioFile(uploadUrl: string, file: File, onProgress: (pct: number) => void): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('PUT', uploadUrl, true);
-      xhr.setRequestHeader('Content-Type', file.type || 'audio/mp3');
+  // 2. Invia il file a pezzi da 3 MB bypassando CORS e il limite di Vercel
+  async uploadAudioFile(uploadUrl: string, file: File, onProgress: (pct: number) => void): Promise<string> {
+    const CHUNK_SIZE = 3 * 1024 * 1024; // 3 MB
+    const totalBytes = file.size;
+    let offset = 0;
+    let fileUri = '';
 
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          onProgress(percent);
-        }
-      };
+    while (offset < totalBytes) {
+      const end = Math.min(offset + CHUNK_SIZE, totalBytes);
+      const chunkBlob = file.slice(offset, end);
+      const isLast = end >= totalBytes;
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const res = JSON.parse(xhr.responseText);
-            resolve(res.file?.uri || res.file?.name || '');
-          } catch {
-            resolve('');
-          }
-        } else {
-          reject(new Error(`Errore upload file (${xhr.status})`));
-        }
-      };
+      const base64Chunk = await this.blobToBase64(chunkBlob);
 
-      xhr.onerror = () => reject(new Error('Errore di rete durante upload audio'));
-      xhr.send(file);
-    });
+      const res = await fetch(`${this.uploadUrlEndpoint}?action=chunk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Upload-Url': uploadUrl,
+          'X-Upload-Offset': offset.toString(),
+          'X-Upload-Command': isLast ? 'upload, finalize' : 'upload'
+        },
+        body: JSON.stringify({ chunkBase64: base64Chunk })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.details || err.error || 'Errore durante il caricamento');
+      }
+
+      const resData = await res.json().catch(() => ({}));
+      if (isLast && resData.file?.uri) {
+        fileUri = resData.file.uri;
+      }
+
+      offset = end;
+      onProgress(Math.round((offset / totalBytes) * 100));
+    }
+
+    return fileUri;
   }
 
-  // 6. Elaborazione Gemini
   async processSessionAudio(fileUri: string, sessionDate: string, sessionNumber: number): Promise<SessionRecord> {
     const res = await fetch(this.apiUrl, {
       method: 'POST',
@@ -88,8 +100,20 @@ export class SessionService {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Errore elaborazione sessione');
+      throw new Error(err.details || err.error || 'Errore elaborazione Gemini');
     }
     return res.json();
+  }
+
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 }
