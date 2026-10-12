@@ -37,26 +37,27 @@
     <span class="btn-label">Menu</span>
   </button>
 
-  <a routerLink="/characters" class="bottom-nav-btn" routerLinkActive="active" aria-label="Party">
-    <span class="btn-icon">👥</span>
-    <span class="btn-label">Party</span>
-  </a>
-
   <a routerLink="/spells" class="bottom-nav-btn" routerLinkActive="active" aria-label="Grimorio">
     <span class="btn-icon">📜</span>
     <span class="btn-label">Grimorio</span>
   </a>
+
+    <a routerLink="/wild-shapes" class="bottom-nav-btn" routerLinkActive="active" aria-label="Forme">
+    <span class="btn-icon">🐾</span>
+    <span class="btn-label">Forme</span>
+  </a>
+</nav>
 
   <a routerLink="/chronicles" class="bottom-nav-btn" routerLinkActive="active" aria-label="Cronache">
     <span class="btn-icon">📖</span>
     <span class="btn-label">Diario</span>
   </a>
 
-  <a routerLink="/wild-shapes" class="bottom-nav-btn" routerLinkActive="active" aria-label="Forme">
-    <span class="btn-icon">🐾</span>
-    <span class="btn-label">Forme</span>
+  <a routerLink="/characters" class="bottom-nav-btn" routerLinkActive="active" aria-label="Party">
+    <span class="btn-icon">👥</span>
+    <span class="btn-label">Party</span>
   </a>
-</nav>
+
 
 <!-- MENU A CASSETTO (DRAWER) -->
 <div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
