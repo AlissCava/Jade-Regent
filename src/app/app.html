@@ -52,6 +52,11 @@
     <span class="btn-label">Grimorio</span>
   </a>
 
+  <a routerLink="/chronicles" class="bottom-nav-btn" routerLinkActive="active" aria-label="Cronache">
+    <span class="btn-icon">📖</span>
+    <span class="btn-label">Diario</span>
+  </a>
+
   <a routerLink="/wild-shapes" class="bottom-nav-btn" routerLinkActive="active" aria-label="Forme">
     <span class="btn-icon">🐾</span>
     <span class="btn-label">Forme</span>
@@ -89,6 +94,10 @@
       <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
         <span class="link-icon">🐾</span>
         <span class="link-text">Forme Selvatica • Airyn</span>
+      </a>
+      <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">📖</span>
+        <span class="link-text">Cronache della Carovana</span>
       </a>
     </nav>
   </aside>
