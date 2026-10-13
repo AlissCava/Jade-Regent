@@ -1,41 +1,34 @@
-<div class="party-page-container">
-  <header class="party-hero">
-    <div class="campaign-badge">Pathfinder 1E • Jade Regent</div>
-    <h1 class="hero-title">⚔️ Gli Eroi della Carovana</h1>
-    <p class="hero-desc">Seleziona un personaggio per aprire la scheda interattiva, consultare le statistiche o gestire il Level Up.</p>
+<div class="characters-container">
+  <!-- HEADER COMPATTO -->
+  <header class="characters-header">
+    <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
+    <h1 class="main-title">⚔️ Gli Eroi della Carovana</h1>
+    <p class="subtitle">Seleziona un personaggio per aprire la scheda interattiva e gestire le statistiche.</p>
   </header>
 
-  <div *ngIf="loading()" class="loading-state">
-    <div class="spinner"></div>
-    <span>Caricamento eroi dal database...</span>
-  </div>
-
-  <div class="characters-grid" *ngIf="!loading()">
-    <!-- Card dinamica per ciascun personaggio presente su Neon -->
+  <!-- GRIGLIA EROI (2 COLONNE SU MOBILE, 3 SU DESKTOP) -->
+  <div class="modules-grid">
     <a 
-      *ngFor="let pg of characters()" 
-      [routerLink]="['/characters', pg.slug]" 
-      class="character-card">
-      <div class="card-icon">
-        <span *ngIf="pg.slug === 'ryoujin'">🗡️</span>
-        <span *ngIf="pg.slug.includes('druid') || pg.slug === 'airyn'">🌿</span>
-        <span *ngIf="pg.slug.includes('magus') || pg.slug === 'azoi'">⚡</span>
-        <span *ngIf="pg.slug !== 'ryoujin' && pg.slug !== 'airyn' && pg.slug !== 'azoi'">🛡️</span>
+      *ngFor="let hero of characters" 
+      [routerLink]="['/characters', hero.slug]" 
+      class="module-card">
+      
+      <!-- ICONA COLORATA -->
+      <div class="card-icon-wrap" [ngClass]="hero.theme">
+        <span class="icon">{{ hero.icon }}</span>
       </div>
 
-      <div class="card-body">
-        <div class="card-tags-row">
-          <span class="level-badge">Livello {{ pg.level }}</span>
-          <span class="race-badge" *ngIf="pg.race">{{ pg.race }}</span>
-        </div>
-        <h2 class="card-title">{{ pg.name }}</h2>
-        <div class="class-title">{{ pg.class_name }}</div>
+      <!-- CONTENUTO SCHEDA -->
+      <div class="card-content">
+        <div class="card-tag">Livello {{ hero.level }} • {{ hero.race }}</div>
+        <h2 class="card-title">
+          {{ hero.name }} <span class="kanji" *ngIf="hero.kanji">({{ hero.kanji }})</span>
+        </h2>
+        <div class="card-class">{{ hero.className }}</div>
+        <p class="card-desc">{{ hero.subtitle }}</p>
       </div>
 
-      <div class="card-action">
-        <span>Apri Scheda Personaggio</span>
-        <span>→</span>
-      </div>
+      <div class="card-action-hint">Apri Scheda ➔</div>
     </a>
   </div>
 </div>

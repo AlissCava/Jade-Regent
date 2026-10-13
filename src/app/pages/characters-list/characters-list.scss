@@ -1,146 +1,187 @@
-$bg-card: #141e33;
-$border-card: #233352;
+$bg-card: #0d1527;
+$border-card: #1e2c48;
 $gold: #f59e0b;
-$text-light: #f8fafc;
 $text-muted: #94a3b8;
 
-.party-page-container {
-  max-width: 1050px;
+.characters-container {
+  max-width: 900px;
   margin: 0 auto;
-  padding: 0.5rem 0.5rem 3rem;
+  padding: 10px 10px 60px;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+
+  @media (min-width: 500px) {
+    padding: 16px 16px 70px;
+  }
 }
 
-.party-hero {
+/* HEADER */
+.characters-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
 
-  .campaign-badge {
+  .campaign-pill {
     display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: 0.66rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.06em;
     color: $gold;
-    background: rgba(245, 158, 11, 0.12);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    padding: 0.25rem 0.8rem;
+    background: rgba($gold, 0.12);
+    border: 1px solid rgba($gold, 0.3);
+    padding: 2px 8px;
     border-radius: 9999px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 4px;
   }
 
-  .hero-title {
+  .main-title {
     font-family: 'Cinzel', serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 0.4rem;
+    font-size: clamp(1.2rem, 5vw, 1.8rem);
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
-  .hero-desc {
-    font-size: 0.92rem;
+  .subtitle {
+    font-size: clamp(0.74rem, 3.2vw, 0.85rem);
     color: $text-muted;
-    max-width: 580px;
-    margin: 0 auto;
+    margin: 4px auto 0;
+    line-height: 1.35;
+    max-width: 480px;
   }
 }
 
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 3rem 0;
-  color: $text-muted;
-
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(245, 158, 11, 0.3);
-    border-top-color: $gold;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.characters-grid {
+/* GRIGLIA A TESSERE */
+.modules-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.15rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 
-  @media (min-width: 640px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.character-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: $bg-card;
-  border: 1px solid $border-card;
-  border-radius: 16px;
-  padding: 1.35rem;
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    border-color: $gold;
-    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+  @media (min-width: 720px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
   }
 
-  .card-icon {
-    font-size: 2.2rem;
-    margin-bottom: 0.85rem;
-  }
-
-  .card-tags-row {
+  .module-card {
+    background: $bg-card;
+    border: 1px solid $border-card;
+    border-radius: 12px;
+    padding: 10px 8px;
     display: flex;
-    gap: 0.4rem;
-    margin-bottom: 0.4rem;
+    flex-direction: column;
+    align-items: flex-start;
+    text-decoration: none;
+    transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease;
+    user-select: none;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
 
-    .level-badge {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #fef08a;
-      background: rgba(245, 158, 11, 0.16);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 0.15rem 0.5rem;
-      border-radius: 6px;
+    &:active {
+      transform: scale(0.96);
     }
 
-    .race-badge {
-      font-size: 0.7rem;
-      color: $text-muted;
-      background: #0d1424;
-      padding: 0.15rem 0.5rem;
-      border-radius: 6px;
+    &:hover {
+      border-color: rgba($gold, 0.5);
+      background: #111b32;
     }
-  }
 
-  .card-title {
-    font-family: 'Cinzel', serif;
-    font-size: 1.35rem;
-    color: #fff;
-    margin-bottom: 0.2rem;
-  }
+    .card-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+      flex-shrink: 0;
 
-  .class-title {
-    font-size: 0.88rem;
-    color: #38bdf8;
-    margin-bottom: 1.25rem;
-  }
+      .icon {
+        font-size: 1.2rem;
+        line-height: 1;
+      }
 
-  .card-action {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.84rem;
-    font-weight: 700;
-    color: $gold;
-    padding-top: 0.85rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+      &.crimson { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); }
+      &.emerald { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); }
+      &.blue    { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); }
+      &.amber   { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); }
+      &.violet  { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); }
+    }
+
+    .card-content {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      flex: 1 1 auto;
+
+      .card-tag {
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: $text-muted;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .card-title {
+        font-family: 'Cinzel', serif;
+        font-size: clamp(0.85rem, 3.4vw, 1rem);
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0 0 2px;
+        line-height: 1.15;
+        overflow-wrap: break-word;
+        word-break: break-word;
+
+        .kanji {
+          font-family: sans-serif;
+          font-size: 0.78rem;
+          color: $gold;
+          font-weight: 600;
+        }
+      }
+
+      .card-class {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: $gold;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .card-desc {
+        font-size: clamp(0.64rem, 2.7vw, 0.72rem);
+        color: #64748b;
+        margin: 0;
+        line-height: 1.25;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+      }
+    }
+
+    .card-action-hint {
+      margin-top: 8px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: rgba($gold, 0.85);
+      letter-spacing: 0.02em;
+    }
   }
 }
