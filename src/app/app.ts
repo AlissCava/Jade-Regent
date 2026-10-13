@@ -11,7 +11,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './app.scss'
 })
 export class App implements OnInit {
-  // --- ACCESSO RISERVATO ---
+  // --- ACCESSO RISERVATO (Con la 'g' e il punto esclamativo) ---
   private readonly SECRET_KEY = 'J4deR3g3nt!'; 
   isUnlocked = signal<boolean>(false);
   passcode = '';
@@ -41,7 +41,9 @@ export class App implements OnInit {
   }
 
   unlock(): void {
-    if (this.passcode.trim() === this.SECRET_KEY || this.passcode.trim().toLowerCase() === this.SECRET_KEY.toLowerCase()) {
+    const clean = this.passcode.trim();
+    // Accetta sia il case esatto che minuscolo per evitare errori da tastiera mobile
+    if (clean === this.SECRET_KEY || clean.toLowerCase() === this.SECRET_KEY.toLowerCase()) {
       localStorage.setItem('jade_regent_authorized', 'true');
       this.isUnlocked.set(true);
       this.authError.set(false);
@@ -67,10 +69,9 @@ export class App implements OnInit {
 
   private applyScale(scale: number): void {
     this.textScale.set(scale);
-    // Imposta la dimensione base in px sul root document
     document.documentElement.style.fontSize = `${(scale / 100) * 16}px`;
-    // Imposta l'attributo per consentire alle pagine di riadattare il layout alle scale grandi
     document.documentElement.setAttribute('data-text-scale', scale.toString());
+    document.body.setAttribute('data-text-scale', scale.toString());
     localStorage.setItem('jade_regent_text_scale', scale.toString());
   }
 }
