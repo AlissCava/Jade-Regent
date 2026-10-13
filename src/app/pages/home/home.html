@@ -1,75 +1,85 @@
 <div class="home-container">
-  <header class="home-hero">
-    <div class="campaign-badge">Pathfinder 1E • Jade Regent</div>
-    <h1 class="hero-title">🏯 Ameiko's Caravan Codex</h1>
-    <p class="hero-desc">Strumenti e registri per il party nella traversata della Corona del Mondo.</p>
+  <!-- HEADER COMPATTO -->
+  <header class="home-header">
+    <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
+    <h1 class="main-title">⛩️ Ameiko's Caravan Codex</h1>
+    <p class="subtitle">Strumenti e registri per la traversata della Corona del Mondo</p>
   </header>
 
+  <!-- GRIGLIA MODULI COMPATTA (2 COLONNE SU MOBILE, 3 SU DESKTOP) -->
   <div class="modules-grid">
-    <!-- CARD 1: TUTTI GLI EROI DEL PARTY -->
-    <a routerLink="/characters" class="module-card party-card">
-      <div class="card-icon">⚔️</div>
-      <div class="card-body">
-        <div class="card-tag">Compagnia della Carovana</div>
-        <h2 class="card-title">Schede Personaggi</h2>
-        <p class="card-text">
-          Tutti gli eroi del gruppo con compagni animali, calcolo automatico di tiri per colpire e danni, tracciatore di PF e gestione Level Up online sincronizzata.
-        </p>
-      </div>
-      <div class="card-action">
-        <span>Vedi Tutti i Personaggi</span>
-        <span>→</span>
-      </div>
-    </a>
-
-    <!-- CARD 2: FORME SELVATICHE -->
-    <a routerLink="/wild-shapes" class="module-card druid-card">
-      <div class="card-icon">🌿</div>
-      <div class="card-body">
-        <div class="card-tag">Airyn • Druido Lv 7</div>
-        <h2 class="card-title">Codex Forme Selvatiche</h2>
-        <p class="card-text">
-          Bestiario completo per Forma della Bestia I e II. Filtra per taglia, volo, nuoto, balzare, afferrare e sbilanciare.
-        </p>
-      </div>
-      <div class="card-action">
-        <span>Apri Bestiario</span>
-        <span>→</span>
-      </div>
-    </a>
-
-    <!-- CARD 3: GRIMORIO INCANTESIMI -->
-    <a routerLink="/spells" class="module-card spells-card">
-      <div class="card-icon">📜</div>
-      <div class="card-body">
-        <div class="card-tag">Druido & Magus • Arcano & Divino</div>
-        <h2 class="card-title">Grimorio Incantesimi</h2>
-        <p class="card-text">
-          Oltre 660 incantesimi in italiano e inglese. Calcolo automatico di raggi, durate e danni in base al Livello Incantatore e filtro rapido Spellstrike a contatto.
-        </p>
-      </div>
-     
-      <div class="card-action">
-        <span>Apri Grimorio</span>
-        <span>→</span>
-      </div>
-    </a>
     
-<!-- CARD CRONACHE DELLA CAROVANA / DIARIO -->
-    <a routerLink="/chronicles" class="module-card chronicles-card">
-      <div class="card-icon">📖</div>
-      <div class="card-body">
-        <div class="card-tag">Sessioni • Diario IA</div>
-        <h2 class="card-title">Cronache della Carovana</h2>
-        <p class="card-text">
-          Diario di bordo, registrazione e sbobinatura automatica delle sessioni con IA, tesori e citazioni del party.
-        </p>
+    <!-- 1. COMPAGNIA / PARTY -->
+    <a routerLink="/characters" class="module-card">
+      <div class="card-icon-wrap violet">
+        <span class="icon">👥</span>
       </div>
-      
-      <div class="card-action">
-        <span>Apri Diario</span>
-        <span>→</span>
+      <div class="card-content">
+        <div class="card-tag">Party & PNG</div>
+        <h2 class="card-title">Compagnia</h2>
+        <p class="card-desc">Carovana, PNG chiave e alleati</p>
       </div>
     </a>
+
+    <!-- 2. SCHEDA RYOUJIN -->
+    <a routerLink="/character" class="module-card">
+      <div class="card-icon-wrap crimson">
+        <span class="icon">⚔️</span>
+      </div>
+      <div class="card-content">
+        <div class="card-tag">Samurai Lv 7</div>
+        <h2 class="card-title">Scheda Ryoujin</h2>
+        <p class="card-desc">Statistiche, PF e dadi click-to-roll</p>
+      </div>
+    </a>
+
+    <!-- 3. GRIMORIO INCANTESIMI -->
+    <a routerLink="/spells" class="module-card">
+      <div class="card-icon-wrap amber">
+        <span class="icon">📜</span>
+      </div>
+      <div class="card-content">
+        <div class="card-tag">Druido & Magus</div>
+        <h2 class="card-title">Grimorio</h2>
+        <p class="card-desc">660+ formule con calcolo LI</p>
+      </div>
+    </a>
+
+    <!-- 4. FORME SELVATICHE -->
+    <a routerLink="/wild-shapes" class="module-card">
+      <div class="card-icon-wrap emerald">
+        <span class="icon">🐾</span>
+      </div>
+      <div class="card-content">
+        <div class="card-tag">Airyn • Druido</div>
+        <h2 class="card-title">Forme Selvatiche</h2>
+        <p class="card-desc">66 bestie, balzi e manovre</p>
+      </div>
+    </a>
+
+    <!-- 5. CRONACHE & DIARIO IA -->
+    <a routerLink="/chronicles" class="module-card">
+      <div class="card-icon-wrap blue">
+        <span class="icon">📖</span>
+      </div>
+      <div class="card-content">
+        <div class="card-tag">Gemini 3.8 Flash</div>
+        <h2 class="card-title">Cronache</h2>
+        <p class="card-desc">Sbobinatura sessioni e tesori</p>
+      </div>
+    </a>
+
+    <!-- 6. TRACKER INIZIATIVA (IN ARRIVO) -->
+    <a routerLink="/initiative" class="module-card highlight">
+      <div class="card-icon-wrap red">
+        <span class="icon">⏱️</span>
+      </div>
+      <div class="card-content">
+        <div class="card-tag new-tag">Combattimento</div>
+        <h2 class="card-title">Iniziativa</h2>
+        <p class="card-desc">Turni e PF nemici anti-spoiler</p>
+      </div>
+    </a>
+
   </div>
 </div>

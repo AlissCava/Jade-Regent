@@ -1,168 +1,152 @@
-$emerald: #10b981;
+$bg-card: #0d1527;
+$border-card: #1e2c48;
 $gold: #f59e0b;
-$card-bg: #141e33;
-$border: #233352;
+$text-muted: #94a3b8;
 
 .home-container {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 1.5rem 0.75rem 4rem;
+  padding: 0.75rem 1rem 4.5rem;
 }
 
-.home-hero {
+/* HEADER COMPATTO */
+.home-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.25rem;
 
-  .campaign-badge {
+  .campaign-pill {
     display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: $gold;
-    background: rgba(245, 158, 11, 0.12);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    padding: 0.3rem 0.85rem;
-    border-radius: 9999px;
-    margin-bottom: 0.75rem;
-  }
-
-  .hero-title {
-    font-family: 'Cinzel', serif;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-    margin-bottom: 0.5rem;
-  }
-
-  .hero-desc {
-    font-size: 1rem;
-    color: #94a3b8;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-}
-
-.modules-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-
-  @media (min-width: 680px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.module-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: $card-bg;
-  border: 1px solid $border;
-  border-radius: 18px;
-  padding: 1.5rem;
-  text-decoration: none;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-
-  .card-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .card-tag {
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: 0.7rem;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-bottom: 0.4rem;
+    color: $gold;
+    background: rgba($gold, 0.12);
+    border: 1px solid rgba($gold, 0.3);
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    margin-bottom: 0.35rem;
   }
 
-  .card-title {
+  .main-title {
     font-family: 'Cinzel', serif;
-    font-size: 1.4rem;
-    color: #fff;
-    margin-bottom: 0.6rem;
+    font-size: 1.55rem;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+
+    @media (min-width: 600px) {
+      font-size: 1.85rem;
+    }
   }
 
-  .card-text {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #94a3b8;
-    margin-bottom: 1.5rem;
+  .subtitle {
+    font-size: 0.82rem;
+    color: $text-muted;
+    margin: 0.25rem 0 0;
+  }
+}
+
+/* GRIGLIA A TESSERE SNELLA */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); // 2 colonne su smartphone
+  gap: 0.65rem;
+
+  @media (min-width: 700px) {
+    grid-template-columns: repeat(3, 1fr); // 3 colonne su tablet e PC
+    gap: 0.85rem;
   }
 
-  .card-action {
+  .module-card {
+    background: $bg-card;
+    border: 1px solid $border-card;
+    border-radius: 12px;
+    padding: 0.75rem 0.7rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 700;
-    font-size: 0.88rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
+    flex-direction: column;
+    align-items: flex-start;
+    text-decoration: none;
+    transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease;
+    user-select: none;
 
-  &.druid-card {
-    .card-tag { color: $emerald; }
-    .card-action { color: $emerald; }
+    &:active {
+      transform: scale(0.96);
+    }
+
     &:hover {
-      border-color: $emerald;
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.2);
-    }
-  }
-
-  &.spells-card {
-    .card-tag { color: $gold; }
-    .card-action { color: $gold; }
-    &:hover {
-      border-color: $gold;
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.2);
-    }
-  }
-
-  &.ryoujin-home-card {
-    .card-tag { color: #f87171; }
-    .card-action { color: #f87171; }
-    &:hover {
-      border-color: #ef4444;
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(239, 68, 68, 0.2);
-    }
-  }
-
-/* Stile dedicato per la Card Cronache (Tema Ambra & Oro Antico) */
-.chronicles-card {
-  .card-tag {
-    color: #f59e0b;
-  }
-
-  .card-action {
-    color: #cbd5e1;
-
-    span:last-child {
-      transition: transform 0.2s ease;
-    }
-  }
-
-  &:hover {
-    border-color: rgba(245, 158, 11, 0.6) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 24px rgba(245, 158, 11, 0.18) !important;
-    transform: translateY(-2px);
-
-    .card-title {
-      color: #fef08a;
+      border-color: rgba($gold, 0.5);
+      background: #111b32;
     }
 
-    .card-action {
-      color: #fef08a;
+    /* CARD IN EVIDENZA (es. Iniziativa) */
+    &.highlight {
+      border-color: rgba(#ef4444, 0.35);
+      background: linear-gradient(145deg, #0d1527 0%, rgba(#ef4444, 0.06) 100%);
 
-      span:last-child {
-        transform: translateX(4px);
+      &:hover {
+        border-color: #ef4444;
+      }
+    }
+
+    /* ICONA COMPATTA CON SFONDO COLORATO */
+    .card-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.45rem;
+
+      .icon {
+        font-size: 1.2rem;
+        line-height: 1;
+      }
+
+      &.violet  { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); }
+      &.crimson { background: rgba(244, 63, 94, 0.15);  border: 1px solid rgba(244, 63, 94, 0.3); }
+      &.amber   { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
+      &.emerald { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); }
+      &.blue    { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); }
+      &.red     { background: rgba(239, 68, 68, 0.15);  border: 1px solid rgba(239, 68, 68, 0.3); }
+    }
+
+    .card-content {
+      width: 100%;
+
+      .card-tag {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: $text-muted;
+        margin-bottom: 0.15rem;
+
+        &.new-tag {
+          color: #f87171;
+        }
+      }
+
+      .card-title {
+        font-family: 'Cinzel', serif;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0 0 0.15rem;
+        line-height: 1.2;
+      }
+
+      .card-desc {
+        font-size: 0.72rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }
-}
 }
