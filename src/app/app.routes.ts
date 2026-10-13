@@ -5,6 +5,7 @@ import { CharacterSheetComponent } from './pages/character-sheet/character-sheet
 import { WildShapesComponent } from './pages/wild-shapes/wild-shapes';
 import { SpellsComponent } from './pages/spells/spells';
 import { ChroniclesComponent } from './pages/chronicles/chronicles';
+import { InitiativeComponent } from './pages/initiative/initiative';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, title: 'Caravan Codex • Jade Regent' },
@@ -13,7 +14,7 @@ export const routes: Routes = [
   { path: 'character', component: CharacterSheetComponent, title: 'Scheda Personaggio • Jade Regent' },
   { path: 'wild-shapes', component: WildShapesComponent, title: 'Forma Selvatica • Airyn' },
   { path: 'spells', component: SpellsComponent, title: 'Grimorio Incantesimi' },
-  { path: 'chronicles', component: ChroniclesComponent },
-  { path: '**', redirectTo: '' },
-
+  { path: 'chronicles', component: ChroniclesComponent, title: 'Cronache della Carovana • Jade Regent' },
+  { path: 'initiative', component: InitiativeComponent, title: 'Ordine d\'Iniziativa • Combattimento' },
+  { path: '**', redirectTo: '' }
 ];

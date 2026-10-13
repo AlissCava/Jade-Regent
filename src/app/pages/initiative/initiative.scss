@@ -1,0 +1,311 @@
+$bg-card: #0d1527;
+$border-card: #1e2c48;
+$gold: #f59e0b;
+$crimson: #ef4444;
+$emerald: #10b981;
+$blue: #38bdf8;
+$text-muted: #94a3b8;
+
+.initiative-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 10px 10px 60px;
+}
+
+.initiative-header {
+  text-align: center;
+  margin-bottom: 12px;
+
+  .header-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: $crimson;
+    background: rgba($crimson, 0.12);
+    border: 1px solid rgba($crimson, 0.35);
+    padding: 2px 8px;
+    border-radius: 9999px;
+  }
+
+  .header-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.55rem;
+    color: #fff;
+    margin: 4px 0 2px;
+  }
+
+  .header-sub { font-size: 0.78rem; color: $text-muted; margin: 0; }
+}
+
+/* PANNELLO ROUND E CONTROLLI */
+.round-control-card {
+  background: $bg-card;
+  border: 1px solid $border-card;
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .round-indicator {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+
+    .round-label { font-size: 0.75rem; font-weight: 800; color: $text-muted; }
+    .round-number { font-size: 1.8rem; font-weight: 900; color: $gold; font-family: 'Cinzel', serif; }
+  }
+
+  .turn-actions {
+    display: flex;
+    gap: 6px;
+
+    button {
+      height: 38px;
+      padding: 0 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+
+      &.prev { background: #131d33; border-color: #22324f; color: #cbd5e1; }
+      &.next { background: $gold; color: #000; font-weight: 800; }
+      &.btn-sort { background: #101c33; border-color: $blue; color: $blue; }
+      &.btn-reset { background: transparent; border-color: #334155; color: #94a3b8; }
+    }
+  }
+}
+
+/* PANNELLO AGGIUNGI NEMICO */
+.add-enemy-panel {
+  background: #090e1a;
+  border: 1px dashed rgba($crimson, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+
+  h3 { font-size: 0.85rem; color: #fca5a5; margin: 0 0 6px; }
+
+  .add-form {
+    display: flex;
+    gap: 6px;
+
+    input {
+      background: #050811;
+      border: 1px solid #1a253a;
+      border-radius: 8px;
+      color: #fff;
+      padding: 6px 8px;
+      font-size: 0.88rem;
+      flex: 1;
+      outline: none;
+      &:focus { border-color: $crimson; }
+    }
+
+    .btn-add {
+      background: $crimson;
+      color: #fff;
+      border: none;
+      font-weight: 800;
+      padding: 0 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      &:disabled { opacity: 0.4; }
+    }
+  }
+}
+
+/* LISTA SCHEDE COMBATTENTI */
+.combatants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .combatant-card {
+    background: $bg-card;
+    border: 1px solid $border-card;
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: all 0.15s ease;
+
+    /* TURNO ATTIVO CON BAGLIORE DORATO */
+    &.active-turn {
+      border-color: $gold;
+      box-shadow: 0 0 14px rgba($gold, 0.25);
+      background: #111a2f;
+
+      .badge-turn {
+        background: $gold;
+        color: #000;
+        font-weight: 900;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+      }
+    }
+
+    &.is-pc { border-left: 4px solid $blue; }
+    &.is-npc { border-left: 4px solid #a855f7; opacity: 0.85; }
+    &.is-enemy { border-left: 4px solid $crimson; }
+
+    .combatant-main-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .turn-marker {
+        width: 32px;
+        text-align: center;
+        .badge-index { font-size: 0.82rem; font-weight: 800; color: #64748b; }
+      }
+
+      .info-block {
+        flex: 1;
+
+        .name-line {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .name {
+            margin: 0;
+            font-size: 1rem;
+            color: #fff;
+            font-family: 'Cinzel', serif;
+          }
+
+          .type-badge {
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 1px 6px;
+            border-radius: 4px;
+
+            &.pc { background: rgba($blue, 0.15); color: $blue; }
+            &.npc { background: rgba(#a855f7, 0.15); color: #c084fc; }
+            &.enemy { background: rgba($crimson, 0.15); color: #f87171; }
+          }
+        }
+
+        .init-line {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 3px;
+          font-size: 0.74rem;
+          color: $text-muted;
+
+          .init-input {
+            width: 48px;
+            height: 26px;
+            background: #080d18;
+            border: 1px solid #1a283f;
+            border-radius: 6px;
+            color: #fff;
+            text-align: center;
+            font-weight: 800;
+          }
+
+          .npc-note { font-style: italic; color: #a855f7; font-size: 0.68rem; }
+        }
+      }
+
+      .btn-del {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        font-size: 1rem;
+        cursor: pointer;
+        &:hover { color: $crimson; }
+      }
+    }
+
+    /* SEZIONE DANNI ANTI-METAGAME */
+    .enemy-damage-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #1a253a;
+
+      .damage-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+
+        .damage-label { font-size: 0.74rem; color: $text-muted; font-weight: 700; }
+        .damage-total { font-size: 1.15rem; font-weight: 900; color: #fca5a5; }
+
+        .status-pill {
+          font-size: 0.68rem;
+          font-weight: 800;
+          background: #1e293b;
+          color: #cbd5e1;
+          padding: 1px 6px;
+          border-radius: 4px;
+          &.ko { background: $crimson; color: #fff; }
+        }
+      }
+
+      .damage-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        .quick-btns {
+          display: flex;
+          gap: 4px;
+
+          .dmg-quick {
+            height: 28px;
+            padding: 0 8px;
+            background: #17243b;
+            border: 1px solid #233452;
+            color: #fca5a5;
+            font-weight: 800;
+            font-size: 0.76rem;
+            border-radius: 6px;
+            cursor: pointer;
+
+            &.undo { color: #94a3b8; }
+            &:active { transform: scale(0.95); }
+          }
+        }
+
+        .custom-input-wrap {
+          display: flex;
+          gap: 4px;
+
+          .custom-dmg-input {
+            width: 55px;
+            height: 28px;
+            background: #080d18;
+            border: 1px solid #1a283f;
+            border-radius: 6px;
+            color: #fff;
+            padding: 0 4px;
+            font-size: 0.8rem;
+            text-align: center;
+          }
+
+          button {
+            height: 28px;
+            padding: 0 8px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+
+            &.btn-inflict { background: $crimson; color: #fff; font-weight: 800; }
+            &.btn-ko { background: #334155; color: #cbd5e1; }
+          }
+        }
+      }
+    }
+  }
+}
