@@ -167,21 +167,23 @@
 /* ========================================================
    3. BOTTOM NAVIGATION BAR
    ======================================================== */
+/* Assicura proporzioni perfette alla barra inferiore anche a 150% e 200% */
 .bottom-nav-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(9, 14, 26, 0.94);
+  background: rgba(9, 14, 26, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  padding: 0.25rem 0.5rem max(0.25rem, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.25rem 0.35rem max(0.25rem, env(safe-area-inset-bottom));
   display: flex;
   justify-content: space-around;
   align-items: center;
-  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
 
   .bottom-nav-btn {
     display: flex;
@@ -192,9 +194,11 @@
     border: none;
     color: #64748b;
     text-decoration: none;
-    padding: 0.2rem 0.4rem;
+    padding: 0.2rem 0.25rem;
     border-radius: 8px;
-    min-width: 48px;
+    min-width: 0;
+    flex: 1 1 0;
+    max-width: 68px;
     cursor: pointer;
     transition: transform 0.12s ease, color 0.15s ease;
 
@@ -206,9 +210,13 @@
     .btn-label {
       font-size: 0.65rem;
       font-weight: 600;
-      letter-spacing: 0.02em;
-      margin-top: 0.1rem;
+      letter-spacing: 0.01em;
+      margin-top: 0.15rem;
       line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     &:active {
@@ -225,13 +233,11 @@
 
     &.burger-bottom-btn {
       color: #94a3b8;
-      background: rgba(245, 158, 11, 0.05);
-      border: 1px solid rgba(245, 158, 11, 0.18);
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid rgba(245, 158, 11, 0.2);
       border-radius: 8px;
-      padding: 0.2rem 0.45rem;
 
       .btn-icon {
-        font-size: 1.05rem;
         color: #f59e0b;
       }
     }

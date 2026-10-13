@@ -12,8 +12,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class App implements OnInit {
   // --- ACCESSO RISERVATO ---
-  
-  private readonly SECRET_KEY = 'J4deR3g3nt!'; 
+  private readonly SECRET_KEY = 'J4deR3d3nt'; 
   isUnlocked = signal<boolean>(false);
   passcode = '';
   authError = signal<boolean>(false);
@@ -21,9 +20,9 @@ export class App implements OnInit {
   // --- MENU DRAWER LATERALE ---
   isMenuOpen = signal<boolean>(false);
 
-  // --- SCALA TESTO (Pulsante Aa) ---
+  // --- SCALA TESTO (Pulsante Aa: 100% -> 125% -> 150% -> 200%) ---
   textScale = signal<number>(100);
-  availableScales: number[] = [100, 110, 125, 90];
+  availableScales: number[] = [100, 125, 150, 200];
 
   ngOnInit(): void {
     // 1. Verifica autorizzazione party
@@ -31,18 +30,18 @@ export class App implements OnInit {
       this.isUnlocked.set(true);
     }
 
-    // 2. Ripristina scala testo salvata
+    // 2. Ripristina scala testo salvata (o default a 100%)
     const savedScale = localStorage.getItem('jade_regent_text_scale');
-    if (savedScale) {
-      const num = parseInt(savedScale, 10);
-      if (this.availableScales.includes(num)) {
-        this.applyScale(num);
-      }
+    const scaleNum = savedScale ? parseInt(savedScale, 10) : 100;
+    if (this.availableScales.includes(scaleNum)) {
+      this.applyScale(scaleNum);
+    } else {
+      this.applyScale(100);
     }
   }
 
   unlock(): void {
-    if (this.passcode.trim().toLowerCase() === this.SECRET_KEY.toLowerCase()) {
+    if (this.passcode.trim() === this.SECRET_KEY || this.passcode.trim().toLowerCase() === this.SECRET_KEY.toLowerCase()) {
       localStorage.setItem('jade_regent_authorized', 'true');
       this.isUnlocked.set(true);
       this.authError.set(false);
@@ -68,10 +67,12 @@ export class App implements OnInit {
 
   private applyScale(scale: number): void {
     this.textScale.set(scale);
+    // Imposta la dimensione base in px sul root document
     document.documentElement.style.fontSize = `${(scale / 100) * 16}px`;
+    // Imposta l'attributo per consentire alle pagine di riadattare il layout alle scale grandi
+    document.documentElement.setAttribute('data-text-scale', scale.toString());
     localStorage.setItem('jade_regent_text_scale', scale.toString());
   }
 }
 
-// Esportazione alias per compatibilità con il bootstrap di Angular
 export { App as AppComponent };

@@ -6,35 +6,49 @@ $text-muted: #94a3b8;
 .home-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 0.75rem 1rem 4.5rem;
+  padding: 0.65rem 0.65rem 4.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+
+  @media (min-width: 440px) {
+    padding: 0.75rem 1rem 4.5rem;
+  }
 }
 
 /* HEADER COMPATTO */
 .home-header {
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
 
   .campaign-pill {
     display: inline-block;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: $gold;
     background: rgba($gold, 0.12);
     border: 1px solid rgba($gold, 0.3);
-    padding: 0.2rem 0.65rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     margin-bottom: 0.35rem;
   }
 
   .main-title {
     font-family: 'Cinzel', serif;
-    font-size: 1.55rem;
+    font-size: 1.35rem;
     color: #ffffff;
     margin: 0;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     line-height: 1.2;
+    overflow-wrap: break-word;
+    word-break: break-word;
+
+    @media (min-width: 400px) {
+      font-size: 1.55rem;
+    }
 
     @media (min-width: 600px) {
       font-size: 1.85rem;
@@ -42,20 +56,29 @@ $text-muted: #94a3b8;
   }
 
   .subtitle {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: $text-muted;
-    margin: 0.25rem 0 0;
+    margin: 0.25rem auto 0;
+    line-height: 1.35;
+    max-width: 480px;
   }
 }
 
-/* GRIGLIA A TESSERE SNELLA */
+/* GRIGLIA A TESSERE */
 .modules-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); // 2 colonne su smartphone
-  gap: 0.65rem;
+  // minmax(0, 1fr) impedisce alle colonne di superare il 50% della larghezza
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  width: 100%;
+  box-sizing: border-box;
 
-  @media (min-width: 700px) {
-    grid-template-columns: repeat(3, 1fr); // 3 colonne su tablet e PC
+  @media (min-width: 400px) {
+    gap: 0.65rem;
+  }
+
+  @media (min-width: 720px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.85rem;
   }
 
@@ -63,13 +86,21 @@ $text-muted: #94a3b8;
     background: $bg-card;
     border: 1px solid $border-card;
     border-radius: 12px;
-    padding: 0.75rem 0.7rem;
+    padding: 0.65rem 0.55rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     text-decoration: none;
     transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease;
     user-select: none;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0; // Impedisce il blowout da min-content
+    overflow: hidden;
+
+    @media (min-width: 380px) {
+      padding: 0.75rem 0.7rem;
+    }
 
     &:active {
       transform: scale(0.96);
@@ -80,28 +111,27 @@ $text-muted: #94a3b8;
       background: #111b32;
     }
 
-    /* CARD IN EVIDENZA (es. Iniziativa) */
     &.highlight {
-      border-color: rgba(#ef4444, 0.35);
-      background: linear-gradient(145deg, #0d1527 0%, rgba(#ef4444, 0.06) 100%);
+      border-color: rgba(#ef4444, 0.4);
+      background: linear-gradient(145deg, #0d1527 0%, rgba(#ef4444, 0.08) 100%);
 
       &:hover {
         border-color: #ef4444;
       }
     }
 
-    /* ICONA COMPATTA CON SFONDO COLORATO */
     .card-icon-wrap {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 0.45rem;
+      margin-bottom: 0.4rem;
+      flex-shrink: 0;
 
       .icon {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         line-height: 1;
       }
 
@@ -115,14 +145,19 @@ $text-muted: #94a3b8;
 
     .card-content {
       width: 100%;
+      min-width: 0; // Permette l'ellipsis e il wrap corretto nei figli
+      box-sizing: border-box;
 
       .card-tag {
-        font-size: 0.65rem;
-        font-weight: 700;
+        font-size: 0.62rem;
+        font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         color: $text-muted;
         margin-bottom: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &.new-tag {
           color: #f87171;
@@ -131,21 +166,75 @@ $text-muted: #94a3b8;
 
       .card-title {
         font-family: 'Cinzel', serif;
-        font-size: 0.98rem;
+        font-size: 0.86rem;
         font-weight: 700;
         color: #ffffff;
         margin: 0 0 0.15rem;
         line-height: 1.2;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+
+        @media (min-width: 380px) {
+          font-size: 0.94rem;
+        }
       }
 
       .card-desc {
-        font-size: 0.72rem;
+        font-size: 0.68rem;
         color: #64748b;
         margin: 0;
         line-height: 1.25;
-        white-space: nowrap;
+        // Clamp a 2 righe per visualizzare il testo senza rompere la card
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        word-break: break-word;
+
+        @media (min-width: 380px) {
+          font-size: 0.72rem;
+        }
+      }
+    }
+  }
+}
+
+/* ========================================================
+   OTTIMIZZAZIONE INGRANDIMENTO ELEVATO (150% E 200%)
+   ======================================================== */
+:host-context([data-text-scale="150"]),
+:host-context([data-text-scale="200"]) {
+  @media (max-width: 520px) {
+    .modules-grid {
+      grid-template-columns: 1fr; // Colonna singola per testi grandi su smartphone
+      gap: 0.65rem;
+
+      .module-card {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.85rem 0.95rem;
+
+        .card-icon-wrap {
+          margin-bottom: 0;
+          width: 42px;
+          height: 42px;
+
+          .icon {
+            font-size: 1.35rem;
+          }
+        }
+
+        .card-content {
+          .card-title {
+            font-size: 1.05rem;
+          }
+          .card-desc {
+            -webkit-line-clamp: 3;
+          }
+        }
       }
     }
   }
