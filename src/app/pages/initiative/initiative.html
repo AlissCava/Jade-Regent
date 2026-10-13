@@ -22,11 +22,23 @@
 
   <!-- AGGIUNGI NEMICO -->
   <div class="add-enemy-panel">
-    <h3>⚔️ Inserisci Nemico</h3>
+    <div class="panel-title">⚔️ Inserisci Nemico</div>
     <div class="add-form">
-      <input type="text" [(ngModel)]="newEnemyName" placeholder="Nome (es. Goblin 1, Lupo Leader)..." />
-      <input type="number" [(ngModel)]="newEnemyInit" placeholder="Iniziativa" style="max-width: 90px;" />
-      <button type="button" class="btn-add" [disabled]="!newEnemyName" (click)="addEnemy()">+ Aggiungi</button>
+      <input 
+        type="text" 
+        [(ngModel)]="newEnemyName" 
+        placeholder="Nome (es. Goblin 1, Lupo Leader)..." 
+        class="input-name" />
+      <div class="init-input-group">
+        <span class="init-label">Iniz:</span>
+        <input 
+          type="number" 
+          [(ngModel)]="newEnemyInit" 
+          class="input-init" />
+      </div>
+      <button type="button" class="btn-add" [disabled]="!newEnemyName.trim()" (click)="addEnemy()">
+        + Aggiungi
+      </button>
     </div>
   </div>
 
@@ -44,13 +56,20 @@
       [class.is-npc]="c.type === 'npc'"
       [class.is-enemy]="c.type === 'enemy'">
       
-      <!-- TESTATA COMBATTENTE -->
+      <!-- RIGA INTESTAZIONE COMBATTENTE -->
       <div class="combatant-main-row">
-        <div class="turn-marker">
-          <span class="badge-index" *ngIf="i !== encounter()!.active_turn_index">{{ i + 1 }}</span>
-          <span class="badge-turn" *ngIf="i === encounter()!.active_turn_index">TURN!</span>
+        <!-- COLONNA TURNO FISSA (NON SI SOVRAPPONE MAI AL TESTO) -->
+        <div class="turn-column">
+          <div class="turn-badge-active" *ngIf="i === encounter()!.active_turn_index">
+            <span class="turn-icon">▶</span>
+            <span class="turn-text">TURNO</span>
+          </div>
+          <div class="turn-index-idle" *ngIf="i !== encounter()!.active_turn_index">
+            #{{ i + 1 }}
+          </div>
         </div>
 
+        <!-- BLOCCO INFORMAZIONI NOME E INIZIATIVA -->
         <div class="info-block">
           <div class="name-line">
             <h3 class="name">{{ c.name }}</h3>
@@ -60,46 +79,68 @@
           </div>
 
           <div class="init-line">
-            <label>Iniziativa:</label>
+            <span class="init-label">Iniziativa:</span>
             <input 
               type="number" 
               [(ngModel)]="c.initiative" 
               (change)="sortCombatants()" 
               [disabled]="c.type === 'npc'"
               class="init-input" />
-            <span *ngIf="c.type === 'npc'" class="npc-note">(Agisce a fine round)</span>
+            <span *ngIf="c.type === 'npc'" class="npc-note">Agisce a fine round</span>
           </div>
         </div>
 
-        <div class="actions-right" *ngIf="c.type === 'enemy'">
-          <button type="button" class="btn-del" (click)="removeCombatant(c.id)" title="Rimuovi Nemico">✕</button>
-        </div>
+        <!-- TASTO ELIMINA (SOLO NEMICI) -->
+        <button 
+          type="button" 
+          class="btn-del" 
+          *ngIf="c.type === 'enemy'"
+          (click)="removeCombatant(c.id)" 
+          title="Rimuovi Nemico"
+          aria-label="Rimuovi Nemico">
+          ✕
+        </button>
       </div>
 
-      <!-- BLOCCO DANNI SOLO PER NEMICI (ANTI-METAGAME: SOLO DANNI INFERTI) -->
+      <!-- SEZIONE DANNI (SOLO PER NEMICI - ANTI METAGAME) -->
       <div class="enemy-damage-section" *ngIf="c.type === 'enemy'">
-        <div class="damage-display">
-          <span class="damage-label">💥 Danni Totali Subiti:</span>
-          <span class="damage-total">{{ c.damageTaken || 0 }}</span>
-          <span class="status-pill" [class.ko]="c.status === 'KO / A Terra'">{{ c.status || 'Illeso' }}</span>
-        </div>
-
-        <div class="damage-controls">
-          <div class="quick-btns">
-            <button type="button" class="dmg-quick" (click)="applyDamage(c, 1)">+1</button>
-            <button type="button" class="dmg-quick" (click)="applyDamage(c, 5)">+5</button>
-            <button type="button" class="dmg-quick" (click)="applyDamage(c, 10)">+10</button>
-            <button type="button" class="dmg-quick undo" (click)="applyDamage(c, -5)">-5</button>
+        <div class="damage-summary-row">
+          <div class="damage-counter">
+            <span class="dmg-label">Danni Subiti:</span>
+            <span class="dmg-val">{{ c.damageTaken || 0 }}</span>
           </div>
 
-          <div class="custom-input-wrap">
+          <div class="status-tags">
+            <span class="status-pill" [class.ko]="c.status === 'KO / A Terra'">
+              {{ c.status || 'Illeso' }}
+            </span>
+            <button 
+              type="button" 
+              class="btn-toggle-ko" 
+              [class.is-ko]="c.status === 'KO / A Terra'"
+              (click)="toggleKo(c)">
+              {{ c.status === 'KO / A Terra' ? 'Rianima' : 'Segna KO' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="damage-actions-row">
+          <div class="quick-dmg-group">
+            <button type="button" class="btn-dmg plus" (click)="applyDamage(c, 1)">+1</button>
+            <button type="button" class="btn-dmg plus" (click)="applyDamage(c, 5)">+5</button>
+            <button type="button" class="btn-dmg plus" (click)="applyDamage(c, 10)">+10</button>
+            <button type="button" class="btn-dmg minus" (click)="applyDamage(c, -5)">-5</button>
+          </div>
+
+          <div class="manual-dmg-group">
             <input 
               type="number" 
               [(ngModel)]="damageInputs[c.id]" 
-              placeholder="Danno" 
-              class="custom-dmg-input" />
-            <button type="button" class="btn-inflict" (click)="applyCustomDamage(c)">Infliggi</button>
-            <button type="button" class="btn-ko" (click)="toggleKo(c)">KO</button>
+              placeholder="0" 
+              class="input-custom-dmg" />
+            <button type="button" class="btn-apply-dmg" (click)="applyCustomDamage(c)">
+              Infliggi
+            </button>
           </div>
         </div>
       </div>
