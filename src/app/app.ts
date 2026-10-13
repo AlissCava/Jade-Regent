@@ -12,7 +12,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class App implements OnInit {
   // --- ACCESSO RISERVATO ---
-  private readonly SECRET_KEY = 'J4deR3d3nt'; 
+  private readonly SECRET_KEY = 'J4deR3d3nt!'; 
   isUnlocked = signal<boolean>(false);
   passcode = '';
   authError = signal<boolean>(false);
