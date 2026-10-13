@@ -38,7 +38,7 @@ export class CharactersListComponent {
       slug: 'airyn',
       name: 'Airyn',
       className: 'Druido',
-      race: 'Druido',
+      race: 'Silfide',
       level: 7,
       icon: '🌿',
       theme: 'emerald',
@@ -66,7 +66,7 @@ export class CharactersListComponent {
     },
     {
       slug: 'nijena',
-      name: 'Nijena',
+      name: 'Aasimar',
       className: 'Barda',
       race: 'Barda',
       level: 7,
