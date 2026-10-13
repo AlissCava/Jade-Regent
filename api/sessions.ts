@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
 
+export const config = { maxDuration: 60 };
+
+function getApiKeys(): string[] {
+  const raw = process.env.GEMINI_API_KEY || '';
+  return raw.split(',').map(k => k.trim()).filter(Boolean);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -44,31 +51,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 2. POST: Analisi Gemini + Inserimento DB
   if (req.method === 'POST') {
     try {
-      const { fileUri, sessionDate, sessionNumber, mimeType } = req.body;
+      const { fileUri, sessionDate, sessionNumber, mimeType, keyIndex } = req.body;
 
       if (!fileUri || !sessionDate) {
         return res.status(400).json({ error: 'Parametri mancanti (fileUri, sessionDate)' });
       }
 
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
+      const apiKeys = getApiKeys();
+      if (apiKeys.length === 0) {
         return res.status(500).json({ error: 'GEMINI_API_KEY non configurata' });
       }
 
-      // Estrai il nome file pulito (es. files/xyz123)
-      const fileName = fileUri.includes('files/') ? fileUri.substring(fileUri.indexOf('files/')) : fileUri;
+      // Estrai il nome risorsa su Google (es. files/xyz123)
+      const rawFile = fileUri.includes('files/') ? fileUri.substring(fileUri.indexOf('files/')) : fileUri;
+      const resourceName = rawFile.startsWith('files/') ? rawFile : `files/${rawFile}`;
 
-      // Attesa se il file audio è ancora in elaborazione da parte di Google
-      for (let i = 0; i < 15; i++) {
-        const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`);
+      // Individua quale chiave possiede il file caricato
+      let activeKey = '';
+      if (typeof keyIndex === 'number' && apiKeys[keyIndex]) {
+        activeKey = apiKeys[keyIndex];
+      } else {
+        for (const k of apiKeys) {
+          const check = await fetch(`https://generativelanguage.googleapis.com/v1beta/${resourceName}?key=${k}`);
+          if (check.ok) {
+            activeKey = k;
+            break;
+          }
+        }
+      }
+
+      if (!activeKey) {
+        activeKey = apiKeys[0];
+      }
+
+      // Polling: attesa che Google elabori il file audio in stato ACTIVE
+      let isReady = false;
+      for (let i = 0; i < 20; i++) {
+        const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${resourceName}?key=${activeKey}`);
         if (checkRes.ok) {
           const fileInfo = await checkRes.json();
-          if (fileInfo.state === 'ACTIVE') break;
+          if (fileInfo.state === 'ACTIVE') {
+            isReady = true;
+            break;
+          }
           if (fileInfo.state === 'FAILED') {
             return res.status(500).json({ error: 'Elaborazione del file audio fallita su Google' });
           }
         }
         await new Promise(r => setTimeout(r, 2000));
+      }
+
+      if (!isReady) {
+        return res.status(504).json({ error: 'Timeout: il file audio non è ancora pronto sui server Google' });
       }
 
       const promptText = `
@@ -78,7 +112,7 @@ Ascolta questa registrazione audio della sessione di gioco di ruolo.
 REGOLE CRITICHE:
 1. Filtra completamente ed elimina qualsiasi chiacchiera fuori gioco (cibo, vita reale, battute personali, pause).
 2. Distingui il metagame dalle azioni narrative: trasforma le discussioni meccaniche sui tiri in narrazione fluida.
-3. Riconosci i personaggi e compagni: Ryoujin (il samurai Oni-spawn), il lupo Hisui, Airyn la druida, Azoi il mago, Nijena la barda, Kaede la litzone, Ameiko l'erede al trono di MIkai, Zaia mamma di sandru, Sandru, Shalelu wlfa.
+3. Riconosci i personaggi e compagni: Ryoujin (samurai Oni-spawn), il lupo compagno Hisui, Airyn (druida), Azoi (magus tengu), Nijena (barda), Kaede (kitsune ninja), Ameiko Kaijitsu (erede al trono del Minkai), Koya / Zaya, Sandru Vhiski, Shalelu Andosana (elfa).
 4. Rispondi ESCLUSIVAMENTE con un JSON valido (senza markdown o delimitatori \`\`\`json):
 {
   "title": "Titolo epico della sessione",
@@ -91,7 +125,7 @@ REGOLE CRITICHE:
 `;
 
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${activeKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -100,12 +134,20 @@ REGOLE CRITICHE:
               {
                 role: 'user',
                 parts: [
-                  { fileData: { mimeType: mimeType || 'audio/mp3', fileUri: `https://generativelanguage.googleapis.com/v1beta/${fileName}` } },
+                  {
+                    fileData: {
+                      mimeType: mimeType || 'audio/mp3',
+                      fileUri: `https://generativelanguage.googleapis.com/v1beta/${resourceName}`
+                    }
+                  },
                   { text: promptText }
                 ]
               }
             ],
-            generationConfig: { responseMimeType: 'application/json' }
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.2
+            }
           })
         }
       );
@@ -116,13 +158,22 @@ REGOLE CRITICHE:
       }
 
       const geminiData = await geminiRes.json();
-      const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+      const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
+      // Estrazione e pulizia sicura del JSON
       let parsed: any;
       try {
-        parsed = JSON.parse(rawText.replace(/^```json\s*/i, '').replace(/```$/i, '').trim());
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
       } catch {
-        parsed = { title: `Sessione ${sessionNumber}`, summary: rawText, combat: '', loot: '', npcs: '', quotes: '' };
+        parsed = {
+          title: `Sessione ${sessionNumber}`,
+          summary: rawText,
+          combat: '',
+          loot: '',
+          npcs: '',
+          quotes: ''
+        };
       }
 
       const result = await sql`
@@ -142,6 +193,11 @@ REGOLE CRITICHE:
                   title, summary, combat, loot, npcs, quotes, created_at, updated_at;
       `;
 
+      // Pulizia: elimina l'audio temporaneo dai server di Google
+      fetch(`https://generativelanguage.googleapis.com/v1beta/${resourceName}?key=${activeKey}`, {
+        method: 'DELETE'
+      }).catch(() => {});
+
       return res.status(201).json(result[0]);
     } catch (err: any) {
       console.error('Errore POST session:', err);
@@ -153,6 +209,10 @@ REGOLE CRITICHE:
   if (req.method === 'PUT') {
     try {
       const { id, session_number, session_date, title, summary, combat, loot, npcs, quotes } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ error: 'ID sessione obbligatorio per la modifica' });
+      }
 
       const updated = await sql`
         UPDATE campaign_sessions
@@ -179,7 +239,11 @@ REGOLE CRITICHE:
   // 4. DELETE: Eliminazione
   if (req.method === 'DELETE') {
     try {
-      const id = req.query.id;
+      const id = req.query.id || req.body?.id;
+      if (!id) {
+        return res.status(400).json({ error: 'ID sessione mancante' });
+      }
+
       await sql`DELETE FROM campaign_sessions WHERE id = ${Number(id)}`;
       return res.status(200).json({ success: true, deletedId: Number(id) });
     } catch (err: any) {
@@ -187,5 +251,5 @@ REGOLE CRITICHE:
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(405).json({ error: 'Metodo non consentito' });
 }
