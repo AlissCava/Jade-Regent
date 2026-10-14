@@ -1,193 +1,297 @@
 /* ========================================================
-   1. SCHERMATA DI BLOCCO (LOCK GATE FULLSCREEN)
+   VARIABILI TEMA SCURO
+   ======================================================== */
+$bg-main: #060a12;
+$bg-card: #0d1527;
+$border-color: #1e2c48;
+$gold: #f59e0b;
+$blue: #38bdf8;
+$crimson: #ef4444;
+$text-light: #ffffff;
+$text-muted: #94a3b8;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: $bg-main;
+  color: $text-light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ========================================================
+   SCHERMATA DI BLOCCO PASSWORD
    ======================================================== */
 .lock-gate-overlay {
   position: fixed;
   inset: 0;
-  z-index: 999999;
-  background: radial-gradient(circle at center, #111a2e 0%, #060a12 100%);
+  background: radial-gradient(circle at center, #101c33 0%, #050811 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  box-sizing: border-box;
+  padding: 1.5rem;
+  z-index: 9999;
 
   .lock-card {
-    background: #0d1527;
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.12);
-    border-radius: 20px;
-    padding: 24px 16px;
-    max-width: 400px;
+    background: $bg-card;
+    border: 1px solid rgba($gold, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    border-radius: 16px;
+    padding: 2.2rem 1.8rem;
+    max-width: 420px;
     width: 100%;
     text-align: center;
-    box-sizing: border-box;
 
-    .lock-icon {
-      font-size: 2.8rem;
-      margin-bottom: 0.4rem;
-      line-height: 1;
-    }
-
+    .lock-icon { font-size: 3rem; margin-bottom: 0.5rem; }
     .lock-badge {
       display: inline-block;
       font-size: 0.7rem;
       font-weight: 800;
-      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #f59e0b;
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 0.2rem 0.65rem;
+      letter-spacing: 0.08em;
+      color: $gold;
+      background: rgba($gold, 0.12);
+      border: 1px solid rgba($gold, 0.3);
+      padding: 3px 10px;
       border-radius: 9999px;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
     }
-
     .lock-title {
       font-family: 'Cinzel', serif;
-      font-size: 1.5rem;
-      color: #ffffff;
-      margin: 0 0 0.4rem;
+      font-size: 1.6rem;
+      color: #fff;
+      margin: 0 0 0.5rem;
     }
-
     .lock-desc {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      line-height: 1.45;
-      margin: 0 0 1.25rem;
+      font-size: 0.88rem;
+      color: $text-muted;
+      line-height: 1.4;
+      margin-bottom: 1.5rem;
     }
 
     .lock-form {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 10px;
 
       input {
-        width: 100%;
-        height: 46px;
-        background: #060a12;
-        border: 1px solid #1e293b;
-        border-radius: 12px;
-        color: #ffffff;
-        padding: 0 1rem;
-        font-size: 1.05rem;
+        background: #050811;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.95rem;
+        padding: 12px 14px;
         text-align: center;
-        letter-spacing: 0.12em;
         outline: none;
-        box-sizing: border-box;
+        transition: border-color 0.15s ease;
 
-        &:focus {
-          border-color: #f59e0b;
-          box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
-        }
+        &:focus { border-color: $gold; }
       }
 
       .btn-unlock {
-        height: 46px;
-        background: #f59e0b;
-        color: #000000;
-        font-weight: 800;
+        background: $gold;
+        color: #000;
         font-size: 0.95rem;
+        font-weight: 800;
+        padding: 12px;
         border: none;
-        border-radius: 12px;
+        border-radius: 8px;
         cursor: pointer;
-        transition: transform 0.12s ease;
+        transition: transform 0.1s ease, filter 0.15s ease;
 
-        &:active { transform: scale(0.97); }
+        &:hover { filter: brightness(1.1); }
+        &:active { transform: scale(0.98); }
       }
     }
 
     .lock-error {
-      margin-top: 0.85rem;
-      font-size: 0.82rem;
-      color: #fca5a5;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 0.45rem 0.75rem;
-      border-radius: 8px;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: $crimson;
+      font-weight: 600;
     }
   }
 }
 
 /* ========================================================
-   2. HEADER SUPERIORE COMPATTO
+   TOP HEADER GLOBALE
    ======================================================== */
 .app-top-header {
+  height: 56px;
+  background: #080d1a;
+  border-bottom: 1px solid $border-color;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background: rgba(9, 14, 26, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  width: 100%;
-  box-sizing: border-box;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 
-  .brand {
+  .header-left {
     display: flex;
     align-items: center;
-    gap: 6px;
-    min-width: 0;
+  }
 
-    .brand-icon {
-      font-size: 1.2rem;
-      line-height: 1;
-      flex-shrink: 0;
-    }
+  .brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none !important;
+    color: #ffffff !important;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
 
-    .brand-text {
+    &:visited, &:active, &:link { color: #ffffff !important; text-decoration: none !important; }
+
+    .brand-torii { font-size: 1.35rem; line-height: 1; }
+    .brand-title {
       font-family: 'Cinzel', serif;
-      font-weight: 700;
+      font-size: 1.15rem;
+      font-weight: 800;
       letter-spacing: 0.06em;
       color: #ffffff;
-      font-size: 0.95rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1;
     }
+
+    &:hover {
+      filter: drop-shadow(0 0 8px rgba($gold, 0.4));
+      .brand-title { color: $gold; }
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .scale-btn {
-    background: #101c33;
-    border: 1px solid #1e2c48;
+    background: #0d1527;
+    border: 1px solid $border-color;
     color: #cbd5e1;
-    font-size: 0.74rem;
-    font-weight: 800;
-    padding: 5px 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 6px 10px;
     border-radius: 8px;
     cursor: pointer;
-    flex-shrink: 0;
-    white-space: nowrap;
 
-    &:active { transform: scale(0.95); }
+    &:hover { border-color: $gold; color: $gold; }
+  }
+
+  .desktop-sidebar-toggle-btn {
+    display: none; // Nascosto di default su smartphone
   }
 }
 
-.main-content {
-  padding-bottom: 60px;
+/* ========================================================
+   LAYOUT CENTRALE E CONTENUTI
+   ======================================================== */
+.app-main-layout {
+  display: flex;
   width: 100%;
+  min-height: calc(100vh - 56px);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding-bottom: 75px; // Spazio per non sovrapporsi alla bottom nav su mobile
   box-sizing: border-box;
 }
 
+/* SIDEBAR INIZIATIVA: Nascosta su smartphone */
+.initiative-desktop-sidebar {
+  display: none;
+}
+
 /* ========================================================
-   3. BOTTOM NAVIGATION BAR PROTETTA
+   SOLO SCHERMI GRANDI (PC, MACBOOK, IPAD >= 1024px)
+   ======================================================== */
+@media screen and (min-width: 1024px) {
+  .app-top-header {
+    .desktop-sidebar-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0d1527;
+      border: 1px solid $border-color;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: $gold;
+        color: $gold;
+        background: #14223d;
+      }
+    }
+  }
+
+  .initiative-desktop-sidebar {
+    display: block;
+    width: 380px;
+    min-width: 380px;
+    max-width: 420px;
+    background: #080c16;
+    border-left: 1px solid #1a253a;
+    height: calc(100vh - 56px);
+    position: sticky;
+    top: 56px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 40;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.is-collapsed {
+      width: 0;
+      min-width: 0;
+      transform: translateX(100%);
+      border-left: none;
+    }
+
+    .sidebar-inner-wrap {
+      width: 380px;
+      padding: 12px 10px 40px;
+      box-sizing: border-box;
+
+      ::ng-deep .initiative-container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+    }
+
+    &::-webkit-scrollbar { width: 5px; }
+    &::-webkit-scrollbar-thumb { background: #1e2c48; border-radius: 4px; }
+  }
+}
+
+/* ========================================================
+   BOTTOM NAVIGATION BAR
    ======================================================== */
 .bottom-nav-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
-  background: rgba(9, 14, 26, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 4px 4px max(4px, env(safe-area-inset-bottom));
+  height: 60px;
+  background: #080d1a;
+  border-top: 1px solid $border-color;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.5);
-  box-sizing: border-box;
-  width: 100%;
+  z-index: 1000;
+  padding: 0 4px;
 
   .bottom-nav-btn {
     display: flex;
@@ -196,160 +300,98 @@
     justify-content: center;
     background: transparent;
     border: none;
-    color: #64748b;
+    color: $text-muted;
     text-decoration: none;
-    padding: 3px 2px;
-    border-radius: 8px;
-    min-width: 0;
-    flex: 1 1 0;
-    max-width: 68px;
+    padding: 4px 8px;
     cursor: pointer;
-    transition: transform 0.12s ease, color 0.15s ease;
+    font-size: 0.72rem;
+    transition: color 0.15s ease;
 
-    .btn-icon {
-      font-size: 1.15rem;
-      line-height: 1;
-    }
+    .btn-icon { font-size: 1.25rem; line-height: 1; margin-bottom: 2px; }
+    .btn-label { font-weight: 600; }
 
-    .btn-label {
-      // Font vincolato per evitare che i 5 pulsanti si sovrappongano a scale 200%
-      font-size: 0.62rem;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      margin-top: 2px;
-      line-height: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    &:active { transform: scale(0.92); }
+    &:hover { color: #fff; }
     &.active {
-      color: #f59e0b;
-      .btn-label { font-weight: 700; }
-    }
-
-    &.burger-bottom-btn {
-      color: #94a3b8;
-      background: rgba(245, 158, 11, 0.06);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      border-radius: 8px;
-      .btn-icon { color: #f59e0b; }
+      color: $gold;
+      .btn-icon { transform: scale(1.1); }
     }
   }
 }
 
 /* ========================================================
-   4. DRAWER MENU LATERALE
+   MENU DRAWER LATERALE
    ======================================================== */
 .menu-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
+  z-index: 2000;
   display: flex;
+  justify-content: flex-start;
 
   .drawer {
-    width: 260px;
-    max-width: 80vw;
-    background: #0d1527;
-    border-right: 1px solid #1e2c48;
+    width: 280px;
+    max-width: 80%;
+    background: #0a101d;
     height: 100%;
-    padding: 18px 14px;
+    border-right: 1px solid $border-color;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.7);
 
     .drawer-header {
+      padding: 16px;
+      border-bottom: 1px solid $border-color;
       display: flex;
       justify-content: space-between;
       align-items: center;
 
       h3 {
-        margin: 0;
         font-family: 'Cinzel', serif;
-        color: #f59e0b;
         font-size: 1.1rem;
+        color: #fff;
+        margin: 0;
       }
 
       .close-drawer-btn {
         background: transparent;
         border: none;
-        color: #94a3b8;
+        color: $text-muted;
         font-size: 1.2rem;
         cursor: pointer;
+        &:hover { color: #fff; }
       }
     }
 
     .drawer-links {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      padding: 12px 8px;
+      gap: 4px;
 
       .drawer-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 14px;
         color: #cbd5e1;
         text-decoration: none;
-        padding: 0.6rem 0.8rem;
-        border-radius: 8px;
-        font-weight: 600;
         font-size: 0.92rem;
-        transition: background 0.15s ease, color 0.15s ease;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.15s ease;
 
-        &:hover { background: rgba(245, 158, 11, 0.08); color: #fef08a; }
-        &.active { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        &:hover {
+          background: #14223d;
+          color: $gold;
+        }
+
+        &.active {
+          background: rgba($gold, 0.12);
+          border-left: 3px solid $gold;
+          color: $gold;
+        }
       }
     }
-  }
-}
-
-/* ========================================================
-   LOGO / HOME LINK GLOBALE (HEADER)
-   ======================================================== */
-.brand-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none !important;
-  color: #ffffff !important;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.12s ease, filter 0.15s ease, opacity 0.15s ease;
-
-  /* Protezione da colori predefiniti del browser */
-  &:visited,
-  &:active,
-  &:link {
-    color: #ffffff !important;
-    text-decoration: none !important;
-  }
-
-  .brand-torii {
-    font-size: 1.35rem;
-    line-height: 1;
-    display: inline-block;
-  }
-
-  .brand-title {
-    font-family: 'Cinzel', serif;
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    color: #ffffff;
-    line-height: 1;
-  }
-
-  /* Effetto al passaggio del mouse e al tocco su mobile */
-  &:hover {
-    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.45));
-    .brand-title {
-      color: #f59e0b;
-    }
-  }
-
-  &:active {
-    transform: scale(0.97);
   }
 }

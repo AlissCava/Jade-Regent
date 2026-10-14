@@ -31,21 +31,49 @@
 <ng-container *ngIf="isUnlocked()">
   <!-- HEADER IN ALTO -->
   <header class="app-top-header">
-    <a routerLink="/" class="brand-link" title="Torna alla Home">
-      <span class="brand-torii">⛩️</span>
-      <span class="brand-title">JADE REGENT</span>
-    </a>
-    <button type="button" class="scale-btn" (click)="cycleTextScale()" aria-label="Cambia dimensione testo">
-      Aa {{ textScale() }}%
-    </button>
+    <div class="header-left">
+      <a routerLink="/" class="brand-link" title="Torna alla Home">
+        <span class="brand-torii">⛩️</span>
+        <span class="brand-title">JADE REGENT</span>
+      </a>
+    </div>
+
+    <div class="header-right">
+      <!-- Toggle Sidebar Iniziativa (visibile solo su PC/iPad quando non si è già nella pagina /initiative) -->
+      <button 
+        *ngIf="!isInitiativePage()"
+        type="button" 
+        class="desktop-sidebar-toggle-btn"
+        (click)="toggleSidebar()"
+        [title]="sidebarOpen() ? 'Nascondi Iniziativa' : 'Mostra Iniziativa'">
+        <span>⚔️ Iniziativa {{ sidebarOpen() ? '▸' : '◂' }}</span>
+      </button>
+
+      <button type="button" class="scale-btn" (click)="cycleTextScale()" aria-label="Cambia dimensione testo">
+        Aa {{ textScale() }}%
+      </button>
+    </div>
   </header>
 
-  <!-- CONTENUTO PRINCIPALE DELLE PAGINE -->
-  <main class="main-content">
-    <router-outlet></router-outlet>
-  </main>
+  <!-- CONTENITORE CENTRALE CON EVENTUALE SIDEBAR INIZIATIVA -->
+  <div class="app-main-layout">
+    <!-- CONTENUTO PRINCIPALE DELLE PAGINE -->
+    <main class="main-content" [class.with-sidebar]="sidebarOpen() && !isInitiativePage()">
+      <router-outlet></router-outlet>
+    </main>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+    <!-- SIDEBAR INIZIATIVA LATERALE (SOLO PC / IPAD GRANDI >= 1024px) -->
+    <aside 
+      class="initiative-desktop-sidebar" 
+      *ngIf="!isInitiativePage()" 
+      [class.is-collapsed]="!sidebarOpen()">
+      <div class="sidebar-inner-wrap">
+        <app-initiative></app-initiative>
+      </div>
+    </aside>
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR (SEMPRE COMODA SU CELLULARE) -->
   <nav class="bottom-nav-bar" aria-label="Navigazione principale">
     <button 
       type="button" 
@@ -76,8 +104,6 @@
       <span class="btn-icon">📖</span>
       <span class="btn-label">Diario</span>
     </a>
-
-
   </nav>
 
   <!-- MENU DRAWER LATERALE -->
@@ -90,6 +116,8 @@
       <div class="drawer-links">
         <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">🏠 Home</a>
         <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">👥 Compagnia</a>
+        <a routerLink="/initiative" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">⚔️ Iniziativa & Nemici</a>
+        <a routerLink="/inventory" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">🎒 Inventario & Tesori</a>
         <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">🐾 Forme Selvatiche</a>
         <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📜 Grimorio</a>
         <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📖 Cronache</a>
