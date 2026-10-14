@@ -1,8 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
 
-export const config = { maxDuration: 60 };
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -17,10 +15,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const sql = neon(databaseUrl);
 
-  // 1. GET: Lettura sessioni
+  // 1. GET: Lettura sessioni ordinate per data
   if (req.method === 'GET') {
     try {
       const orderDirection = req.query.order === 'asc' ? 'ASC' : 'DESC';
+
       const sessions = orderDirection === 'ASC'
         ? await sql`
             SELECT id, session_number, to_char(session_date, 'YYYY-MM-DD') as session_date, 
@@ -34,37 +33,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             FROM campaign_sessions
             ORDER BY session_date DESC, session_number DESC
           `;
+
       return res.status(200).json(sessions);
     } catch (err: any) {
+      console.error('Errore GET sessions:', err);
       return res.status(500).json({ error: 'Errore lettura database', details: err.message });
     }
   }
 
-  // 2. POST: Salvataggio immediato su Neon DB (tempo di esecuzione: ~50ms)
+  // 2. POST: Salvataggio nuova sessione
   if (req.method === 'POST') {
     try {
       const { sessionNumber, sessionDate, title, summary, combat, loot, npcs, quotes } = req.body;
 
-      if (!sessionDate) {
-        return res.status(400).json({ error: 'Parametro sessionDate mancante' });
-      }
-
-      const result = await sql`
+      const inserted = await sql`
         INSERT INTO campaign_sessions (
           session_number, session_date, title, summary, combat, loot, npcs, quotes
         ) VALUES (
-          ${Number(sessionNumber) \vert{}\vert{} 1},${sessionDate}::DATE,
-          ${title \vert{}\vert{} 'Cronaca di Viaggio'},${summary || 'Nessun riassunto disponibile.'},
-          ${combat \vert{}\vert{} ''},${loot || ''},
-          ${npcs \vert{}\vert{} ''},${quotes || ''}
+          ${Number(sessionNumber) || 1},
+          ${sessionDate}::DATE,
+          ${title || 'Cronaca di Viaggio'},
+          ${summary || ''},
+          ${combat || ''},
+          ${loot || ''},
+          ${npcs || ''},
+          ${quotes || ''}
         )
         RETURNING id, session_number, to_char(session_date, 'YYYY-MM-DD') as session_date,
                   title, summary, combat, loot, npcs, quotes, created_at, updated_at;
       `;
 
-      return res.status(201).json(result[0]);
+      return res.status(201).json(inserted[0]);
     } catch (err: any) {
-      return res.status(500).json({ error: err.message || 'Errore inserimento DB' });
+      console.error('Errore POST sessions:', err);
+      return res.status(500).json({ error: 'Errore inserimento', details: err.message });
     }
   }
 
