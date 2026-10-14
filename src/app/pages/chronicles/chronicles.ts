@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SessionService } from '../../services/session.service';
 import { SessionRecord } from '../../models/session.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-chronicles',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './chronicles.html',
   styleUrl: './chronicles.scss'
 })
