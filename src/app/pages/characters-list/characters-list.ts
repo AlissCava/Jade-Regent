@@ -66,9 +66,9 @@ export class CharactersListComponent {
     },
     {
       slug: 'nijena',
-      name: 'Aasimar',
+      name: 'Nijena',
       className: 'Barda',
-      race: 'Barda',
+      race: 'Aasimar',
       level: 7,
       icon: '🪕',
       theme: 'violet',
