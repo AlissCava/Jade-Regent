@@ -1223,4 +1223,111 @@ $text-muted: #94a3b8;
   }
 }
 
+/* Permette al componente di restringersi dentro il layout con sidebar */
+:host {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.char-page-container {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip; /* rete di sicurezza: mai scroll orizzontale */
+}
+
+/* Tutti i figli di griglia/flex possono restringersi */
+.status-card,
+.section-card,
+.weapon-card,
+.resource-box,
+.feat-card,
+.skill-tile,
+.maneuver-box {
+  min-width: 0;
+}
+
+/* ---------- STATUS (PF, CA, Iniziativa, TS) ---------- */
+.combat-status-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+
+  .hp-card .hp-display {
+    flex-wrap: wrap;
+    .hp-current, .hp-divider, .hp-max { white-space: nowrap; }
+  }
+
+  .ca-card .ca-sub-pills {
+    flex-wrap: wrap;
+    .ca-pill { white-space: nowrap; }
+  }
+
+  .init-card .stat-dual-row {
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    .sub-lbl { display: block; }          /* era inline: "INIZIATIVAVELOCITÀ" */
+    .highlight-val { white-space: nowrap; }
+  }
+
+  .saves-card {
+    .saves-grid { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
+    .save-box .s-name { font-size: 0.68rem; }
+    .save-note { overflow-wrap: anywhere; }
+  }
+}
+
+/* ---------- CARATTERISTICHE ---------- */
+.attributes-strip {
+  @media (max-width: 480px) { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ---------- BUFF TATTICI ---------- */
+.tactical-buffs-panel .buffs-header {
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+}
+
+/* ---------- ARMI ---------- */
+.weapons-grid .weapon-card {
+  .wpn-top {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    .wpn-crit { white-space: nowrap; align-self: flex-start; }
+  }
+  .wpn-stats-row {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    .stat-calc .val.highlight { overflow-wrap: anywhere; }
+  }
+}
+
+/* ---------- RISORSE / TALENTI / ABILITÀ / MANOVRE ---------- */
+.resources-row {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  .resource-box .res-head { flex-wrap: wrap; gap: 0.4rem; }
+  .use-pips { flex-wrap: wrap; }
+}
+
+.feats-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  .feat-card .feat-header { flex-wrap: wrap; }
+}
+
+.skills-grid-layout {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+}
+
+.maneuvers-summary-row {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+}
+
+.skills-card-header { flex-wrap: wrap; gap: 0.5rem; }
+
+/* ---------- BARRA SCHEDE ---------- */
+.sheet-action-bar .char-nav-tabs { flex-wrap: wrap; }
+
+/* ---------- TITOLO ---------- */
+.sheet-hero .char-title {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.7rem, 4vw, 2.3rem);
+}
+
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
