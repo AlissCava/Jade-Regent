@@ -514,4 +514,66 @@ $text-muted: #94a3b8;
   .empty-icon { font-size: 2.5rem; }
 }
 
+/* ========================================================
+   STILE PULSANTE INVENTARIO CAROVANA (CRONACHE)
+   ======================================================== */
+.controls-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+
+  .btn-action-inventory {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 14px;
+    background: #0d1527;
+    border: 1px solid #1e2c48;
+    border-radius: 10px;
+    color: #e2e8f0 !important;
+    text-decoration: none !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-sizing: border-box;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+
+    /* Elimina per sempre il viola e la sottolineatura dei link visitati */
+    &:visited,
+    &:active,
+    &:link {
+      color: #e2e8f0 !important;
+      text-decoration: none !important;
+    }
+
+    .icon {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    &:hover {
+      background: #14223d;
+      border-color: #f59e0b;
+      color: #f59e0b !important;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+}
+
+/* Regola di sicurezza globale contro il reset dei link */
+a.btn-action-inventory {
+  text-decoration: none !important;
+  color: #e2e8f0 !important;
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
