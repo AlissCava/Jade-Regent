@@ -12,32 +12,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Origin');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Metodo non consentito' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Metodo non consentito' });
 
   const apiKeys = getApiKeys();
   if (apiKeys.length === 0) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY non configurata su Vercel' });
+    return res.status(500).json({ error: 'GEMINI_API_KEY non configurata' });
   }
 
   try {
     const { filename, mimeType, sizeBytes, size } = req.body;
     const finalSize = sizeBytes || size;
-
-    if (!finalSize) {
-      return res.status(400).json({ error: 'Parametro dimensione file (sizeBytes) mancante' });
-    }
-
     const clientOrigin = req.headers.origin || 'https://jade-regent.vercel.app';
+
     const startIndex = Math.floor(Math.random() * apiKeys.length);
     let lastError: any = null;
 
-    // Tenta con le chiavi configurate: se una restituisce 429 passa all'altra
     for (let i = 0; i < apiKeys.length; i++) {
       const keyIndex = (startIndex + i) % apiKeys.length;
       const currentKey = apiKeys[keyIndex];
@@ -55,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             'Origin': clientOrigin
           },
           body: JSON.stringify({
-            file: { display_name: filename || `Session_Audio_${Date.now()}` }
+            file: { display_name: filename || `Session_${Date.now()}` }
           })
         }
       );
@@ -71,20 +61,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const uploadUrl = initRes.headers.get('x-goog-upload-url');
-      if (!uploadUrl) {
-        lastError = 'Nessun uploadUrl restituito da Google';
-        continue;
-      }
+      if (!uploadUrl) continue;
 
-      return res.status(200).json({ uploadUrl, keyIndex });
+      // Ritorna l'uploadUrl e la chiave autorizzata
+      return res.status(200).json({ uploadUrl, apiKey: currentKey });
     }
 
-    return res.status(429).json({
-      error: 'Tutte le chiavi Gemini configurate hanno esaurito la quota giornaliera',
-      details: lastError
-    });
+    return res.status(429).json({ error: 'Tutte le chiavi hanno esaurito la quota', details: lastError });
   } catch (err: any) {
-    console.error('Errore upload-session-audio:', err);
     return res.status(500).json({ error: err.message || 'Errore interno' });
   }
 }
