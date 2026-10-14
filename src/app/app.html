@@ -39,14 +39,14 @@
     </div>
 
     <div class="header-right">
-      <!-- Toggle Sidebar Iniziativa (visibile solo su PC/iPad quando non si è già nella pagina /initiative) -->
+      <!-- Toggle rapido Sidebar Iniziativa (visibile solo su PC/iPad quando non si è su /initiative) -->
       <button 
         *ngIf="!isInitiativePage()"
         type="button" 
         class="desktop-sidebar-toggle-btn"
         (click)="toggleSidebar()"
-        [title]="sidebarOpen() ? 'Nascondi Iniziativa' : 'Mostra Iniziativa'">
-        <span>⚔️ Iniziativa {{ sidebarOpen() ? '▸' : '◂' }}</span>
+        [class.active]="sidebarOpen()">
+        <span>⚔️ Iniziativa {{ sidebarOpen() ? '✕' : '▾' }}</span>
       </button>
 
       <button type="button" class="scale-btn" (click)="cycleTextScale()" aria-label="Cambia dimensione testo">
@@ -55,7 +55,7 @@
     </div>
   </header>
 
-  <!-- CONTENITORE CENTRALE CON EVENTUALE SIDEBAR INIZIATIVA -->
+  <!-- CONTENITORE CENTRALE -->
   <div class="app-main-layout">
     <!-- CONTENUTO PRINCIPALE DELLE PAGINE -->
     <main class="main-content" [class.with-sidebar]="sidebarOpen() && !isInitiativePage()">
@@ -67,6 +67,10 @@
       class="initiative-desktop-sidebar" 
       *ngIf="!isInitiativePage()" 
       [class.is-collapsed]="!sidebarOpen()">
+      <div class="sidebar-header-bar">
+        <span class="sidebar-title">⚔️ Ordine d'Iniziativa</span>
+        <button type="button" class="btn-close-sidebar" (click)="toggleSidebar()" title="Nascondi sidebar">✕</button>
+      </div>
       <div class="sidebar-inner-wrap">
         <app-initiative></app-initiative>
       </div>
