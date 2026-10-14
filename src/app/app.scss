@@ -304,3 +304,52 @@
     }
   }
 }
+
+/* ========================================================
+   LOGO / HOME LINK GLOBALE (HEADER)
+   ======================================================== */
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.12s ease, filter 0.15s ease, opacity 0.15s ease;
+
+  /* Protezione da colori predefiniti del browser */
+  &:visited,
+  &:active,
+  &:link {
+    color: #ffffff !important;
+    text-decoration: none !important;
+  }
+
+  .brand-torii {
+    font-size: 1.35rem;
+    line-height: 1;
+    display: inline-block;
+  }
+
+  .brand-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+    line-height: 1;
+  }
+
+  /* Effetto al passaggio del mouse e al tocco su mobile */
+  &:hover {
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.45));
+    .brand-title {
+      color: #f59e0b;
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}

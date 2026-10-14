@@ -31,10 +31,10 @@
 <ng-container *ngIf="isUnlocked()">
   <!-- HEADER IN ALTO -->
   <header class="app-top-header">
-    <div class="brand">
-      <span class="brand-icon">⛩️</span>
-      <span class="brand-text">JADE REGENT</span>
-    </div>
+    <a routerLink="/" class="brand-link" title="Torna alla Home">
+      <span class="brand-torii">⛩️</span>
+      <span class="brand-title">JADE REGENT</span>
+    </a>
     <button type="button" class="scale-btn" (click)="cycleTextScale()" aria-label="Cambia dimensione testo">
       Aa {{ textScale() }}%
     </button>
