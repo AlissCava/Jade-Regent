@@ -1,0 +1,278 @@
+$bg-card: #0d1527;
+$border-card: #1e2c48;
+$gold: #f59e0b;
+$blue: #38bdf8;
+$crimson: #ef4444;
+$text-muted: #94a3b8;
+
+.inventory-container {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 10px 10px 65px;
+  box-sizing: border-box;
+}
+
+.inv-header {
+  text-align: center;
+  margin-bottom: 1rem;
+
+  .campaign-pill {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: $gold;
+    background: rgba($gold, 0.12);
+    border: 1px solid rgba($gold, 0.3);
+    padding: 2px 8px;
+    border-radius: 9999px;
+  }
+
+  .main-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    color: #fff;
+    margin: 4px 0 2px;
+  }
+
+  .subtitle { font-size: 0.8rem; color: $text-muted; margin: 0; }
+}
+
+/* CASSA COMUNE */
+.treasury-card {
+  background: $bg-card;
+  border: 1px solid rgba($gold, 0.4);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 1rem;
+
+  .treasury-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      h2 { font-family: 'Cinzel', serif; font-size: 1.05rem; color: #fff; margin: 0; }
+    }
+
+    .total-gp { font-size: 0.85rem; color: $gold; font-weight: 700; }
+  }
+
+  .coins-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+
+    .coin-box {
+      background: #060a12;
+      border: 1px solid #1a253a;
+      border-radius: 8px;
+      padding: 6px;
+      text-align: center;
+
+      label { display: block; font-size: 0.65rem; font-weight: 800; margin-bottom: 2px; }
+      input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 800;
+        text-align: center;
+        outline: none;
+      }
+
+      &.mp label { color: #a5f3fc; }
+      &.mo label { color: #fde047; }
+      &.ma label { color: #cbd5e1; }
+      &.mr label { color: #fba575; }
+    }
+  }
+}
+
+/* CONTROLLI E FILTRI */
+.controls-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .search-wrap {
+    display: flex;
+    align-items: center;
+    background: #060a12;
+    border: 1px solid $border-card;
+    border-radius: 8px;
+    padding: 0 10px;
+    height: 38px;
+
+    .search-icon { font-size: 0.9rem; margin-right: 6px; }
+    input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.88rem;
+      outline: none;
+    }
+  }
+
+  .filters-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    select {
+      background: #0d1527;
+      border: 1px solid #1e2c48;
+      color: #cbd5e1;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      outline: none;
+      flex: 1 1 120px;
+    }
+
+    .btn-new-item {
+      background: $gold;
+      color: #000;
+      border: none;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 0 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  }
+}
+
+/* FORM AGGIUNTA */
+.add-item-card {
+  background: #0a101d;
+  border: 1px solid rgba($gold, 0.4);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+
+  h3 { font-size: 0.92rem; color: $gold; margin: 0 0 10px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+
+    .form-group {
+      &.full { grid-column: span 2; }
+      label { display: block; font-size: 0.68rem; font-weight: 700; color: $text-muted; margin-bottom: 2px; }
+      input, select {
+        width: 100%;
+        height: 34px;
+        background: #050811;
+        border: 1px solid #1e2c48;
+        border-radius: 6px;
+        color: #fff;
+        padding: 0 8px;
+        font-size: 0.84rem;
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+
+    button {
+      height: 32px;
+      padding: 0 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &.btn-cancel { background: transparent; border: 1px solid #334155; color: #94a3b8; }
+      &.btn-save { background: $gold; border: none; color: #000; font-weight: 800; }
+    }
+  }
+}
+
+/* SCHEDE OGGETTI */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .item-card {
+    background: $bg-card;
+    border: 1px solid $border-card;
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .item-main {
+      flex: 1;
+
+      .item-title-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+
+        .item-name { font-size: 0.95rem; color: #fff; margin: 0; font-family: 'Cinzel', serif; }
+        .qty-badge { font-size: 0.72rem; font-weight: 800; color: $gold; }
+        .cat-pill {
+          font-size: 0.62rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          background: rgba($blue, 0.12);
+          border: 1px solid rgba($blue, 0.3);
+          color: $blue;
+          padding: 1px 5px;
+          border-radius: 4px;
+        }
+      }
+
+      .item-meta {
+        display: flex;
+        gap: 8px;
+        margin-top: 3px;
+        font-size: 0.72rem;
+        color: $text-muted;
+
+        .owner-tag { color: #fde047; font-weight: 600; }
+        .val-tag { color: #a3e635; }
+      }
+
+      .item-desc {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        margin: 4px 0 0;
+      }
+    }
+
+    .btn-del {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 0.95rem;
+      cursor: pointer;
+      &:hover { color: $crimson; }
+    }
+  }
+
+  .empty-state, .loading-state {
+    text-align: center;
+    padding: 2rem;
+    color: $text-muted;
+    font-size: 0.85rem;
+  }
+}

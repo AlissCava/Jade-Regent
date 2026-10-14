@@ -1,0 +1,138 @@
+<div class="inventory-container">
+  <!-- HEADER -->
+  <header class="inv-header">
+    <div class="campaign-pill">Ameiko's Caravan Codex</div>
+    <h1 class="main-title">🎒 Inventario & Tesori</h1>
+    <p class="subtitle">Gestione bottino, merci da viaggio e tesoreria della carovana</p>
+  </header>
+
+  <!-- CASSA COMUNE -->
+  <div class="treasury-card">
+    <div class="treasury-header">
+      <div class="title-wrap">
+        <span class="icon">🪙</span>
+        <h2>Cassa Comune</h2>
+      </div>
+      <div class="total-gp">Totale: <strong>{{ totalGpEquivalent() | number:'1.1-2' }} MO</strong></div>
+    </div>
+
+    <div class="coins-grid">
+      <div class="coin-box mp">
+        <label>MP (Platino)</label>
+        <input type="number" [(ngModel)]="treasury().platinum" (change)="saveTreasury()" />
+      </div>
+      <div class="coin-box mo">
+        <label>MO (Oro)</label>
+        <input type="number" [(ngModel)]="treasury().gold" (change)="saveTreasury()" />
+      </div>
+      <div class="coin-box ma">
+        <label>MA (Argento)</label>
+        <input type="number" [(ngModel)]="treasury().silver" (change)="saveTreasury()" />
+      </div>
+      <div class="coin-box mr">
+        <label>MR (Rame)</label>
+        <input type="number" [(ngModel)]="treasury().copper" (change)="saveTreasury()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA CONTROLLI E FILTRI -->
+  <div class="controls-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Cerca oggetto o parola chiave..." />
+    </div>
+
+    <div class="filters-row">
+      <select [(ngModel)]="selectedOwner">
+        <option *ngFor="let o of owners" [value]="o">Proprietario: {{ o }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedCategory">
+        <option *ngFor="let c of categories" [value]="c">Tipo: {{ c }}</option>
+      </select>
+
+      <button type="button" class="btn-new-item" (click)="showAddForm.set(!showAddForm())">
+        {{ showAddForm() ? '✕ Chiudi' : '+ Aggiungi Oggetto' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- FORM AGGIUNTA OGGETTO -->
+  <div class="add-item-card" *ngIf="showAddForm()">
+    <h3>Nuovo Oggetto nel Bottino</h3>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Nome Oggetto</label>
+        <input type="text" [(ngModel)]="newItem.name" placeholder="es. Katana Perfetta, Pozione..." />
+      </div>
+
+      <div class="form-group">
+        <label>Categoria</label>
+        <select [(ngModel)]="newItem.category">
+          <option *ngFor="let c of categories.slice(1)" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Assegnato a</label>
+        <select [(ngModel)]="newItem.assigned_to">
+          <option *ngFor="let o of owners.slice(1)" [value]="o">{{ o }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Quantità</label>
+        <input type="number" [(ngModel)]="newItem.quantity" min="1" />
+      </div>
+
+      <div class="form-group">
+        <label>Valore (MO)</label>
+        <input type="number" [(ngModel)]="newItem.value_gp" min="0" />
+      </div>
+
+      <div class="form-group full">
+        <label>Note / Proprietà Meccaniche</label>
+        <input type="text" [(ngModel)]="newItem.description" placeholder="Descrizione, incantesimi, bonus..." />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="showAddForm.set(false)">Annulla</button>
+      <button type="button" class="btn-save" [disabled]="!newItem.name" (click)="submitItem()">Salva su Server</button>
+    </div>
+  </div>
+
+  <!-- STATO CARICAMENTO -->
+  <div *ngIf="loading()" class="loading-state">
+    <span>Caricamento inventario della carovana...</span>
+  </div>
+
+  <!-- LISTA OGGETTI -->
+  <div class="items-list" *ngIf="!loading()">
+    <div class="empty-state" *ngIf="filteredItems().length === 0">
+      Nessun oggetto trovato nell'inventario con i filtri selezionati.
+    </div>
+
+    <div class="item-card" *ngFor="let item of filteredItems()">
+      <div class="item-main">
+        <div class="item-title-row">
+          <h3 class="item-name">{{ item.name }}</h3>
+          <span class="qty-badge" *ngIf="item.quantity > 1">x{{ item.quantity }}</span>
+          <span class="cat-pill {{ item.category | lowercase }}">{{ item.category }}</span>
+        </div>
+
+        <div class="item-meta">
+          <span class="owner-tag">👤 {{ item.assigned_to }}</span>
+          <span class="val-tag" *ngIf="item.value_gp > 0">💰 {{ item.value_gp }} MO</span>
+        </div>
+
+        <p class="item-desc" *ngIf="item.description">{{ item.description }}</p>
+      </div>
+
+      <div class="item-actions">
+        <button type="button" class="btn-del" (click)="deleteItem(item.id)" title="Rimuovi">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
