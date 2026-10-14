@@ -22,7 +22,7 @@ export class App implements OnInit {
 
   // --- SCALA TESTO (Pulsante Aa: 100% -> 125% -> 150% -> 200%) ---
   textScale = signal<number>(100);
-  availableScales: number[] = [100, 125, 150, 200];
+  availableScales: number[] = [100, 125, 150];
 
   ngOnInit(): void {
     // 1. Verifica autorizzazione party
