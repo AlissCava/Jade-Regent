@@ -49,7 +49,8 @@
       </select>
 
       <select [(ngModel)]="selectedCategory">
-        <option *ngFor="let c of categories" [value]="c">Tipo: {{ c }}</option>
+        <option value="Tutti">Tipo: Tutti</option>
+        <option *ngFor="let c of categoryOptions" [value]="c.value">{{ c.label }}</option>
       </select>
 
       <button type="button" class="btn-new-item" (click)="showAddForm.set(!showAddForm())">
@@ -64,13 +65,13 @@
     <div class="form-grid">
       <div class="form-group full">
         <label>Nome Oggetto</label>
-        <input type="text" [(ngModel)]="newItem.name" placeholder="es. Katana Perfetta, Pozione..." />
+        <input type="text" [(ngModel)]="newItem.name" placeholder="es. Naginata +1, Pergamena..." />
       </div>
 
       <div class="form-group">
         <label>Categoria</label>
         <select [(ngModel)]="newItem.category">
-          <option *ngFor="let c of categories.slice(1)" [value]="c">{{ c }}</option>
+          <option *ngFor="let c of categoryOptions" [value]="c.value">{{ c.label }}</option>
         </select>
       </div>
 
@@ -108,31 +109,46 @@
     <span>Caricamento inventario della carovana...</span>
   </div>
 
-  <!-- LISTA OGGETTI -->
-  <div class="items-list" *ngIf="!loading()">
-    <div class="empty-state" *ngIf="filteredItems().length === 0">
+  <!-- INVENTARIO DIVISO PER CATEGORIE -->
+  <div class="categories-container" *ngIf="!loading()">
+    <div class="empty-state" *ngIf="categoryGroups().length === 0">
       Nessun oggetto trovato nell'inventario con i filtri selezionati.
     </div>
 
-    <div class="item-card" *ngFor="let item of filteredItems()">
-      <div class="item-main">
-        <div class="item-title-row">
-          <h3 class="item-name">{{ item.name }}</h3>
-          <span class="qty-badge" *ngIf="item.quantity > 1">x{{ item.quantity }}</span>
-          <span class="cat-pill {{ item.category | lowercase }}">{{ item.category }}</span>
+    <section class="category-block" *ngFor="let group of categoryGroups()">
+      <!-- INTESTAZIONE SEZIONE -->
+      <div class="category-header" (click)="toggleCategory(group.key)">
+        <div class="header-title-wrap">
+          <span class="cat-icon">{{ group.icon }}</span>
+          <h2 class="category-title">{{ group.name }}</h2>
+          <span class="cat-count-badge">{{ group.items.length }}</span>
         </div>
-
-        <div class="item-meta">
-          <span class="owner-tag">👤 {{ item.assigned_to }}</span>
-          <span class="val-tag" *ngIf="item.value_gp > 0">💰 {{ item.value_gp }} MO</span>
-        </div>
-
-        <p class="item-desc" *ngIf="item.description">{{ item.description }}</p>
+        <span class="cat-chevron">{{ isCollapsed(group.key) ? '▸' : '▾' }}</span>
       </div>
 
-      <div class="item-actions">
-        <button type="button" class="btn-del" (click)="deleteItem(item.id)" title="Rimuovi">✕</button>
+      <!-- ELENCO SCHEDE OGGETTI DELLA CATEGORIA -->
+      <div class="items-list" *ngIf="!isCollapsed(group.key)">
+        <div class="item-card" *ngFor="let item of group.items">
+          <div class="item-main">
+            <div class="item-title-row">
+              <h3 class="item-name">{{ item.name }}</h3>
+              <span class="qty-badge" *ngIf="item.quantity > 1">x{{ item.quantity }}</span>
+              <span class="cat-pill {{ item.category | lowercase }}">{{ group.name }}</span>
+            </div>
+
+            <div class="item-meta">
+              <span class="owner-tag">👤 {{ item.assigned_to }}</span>
+              <span class="val-tag" *ngIf="item.value_gp > 0">💰 {{ item.value_gp | number:'1.2-2' }} MO</span>
+            </div>
+
+            <p class="item-desc" *ngIf="item.description">{{ item.description }}</p>
+          </div>
+
+          <div class="item-actions">
+            <button type="button" class="btn-del" (click)="deleteItem(item.id)" title="Rimuovi">✕</button>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
 </div>
