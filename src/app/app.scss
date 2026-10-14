@@ -9,6 +9,7 @@ $blue: #38bdf8;
 $crimson: #ef4444;
 $text-light: #ffffff;
 $text-muted: #94a3b8;
+$sidebar-w: 390px;
 
 :host {
   display: block;
@@ -180,7 +181,7 @@ $text-muted: #94a3b8;
   }
 
   .desktop-sidebar-toggle-btn {
-    display: none; // Nascosto di default su smartphone
+    display: none;
   }
 }
 
@@ -191,13 +192,18 @@ $text-muted: #94a3b8;
   width: 100%;
   min-height: calc(100vh - 56px);
   position: relative;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .main-content {
   width: 100%;
+  min-width: 0;
   padding-bottom: 75px;
   box-sizing: border-box;
-  transition: margin-right 0.2s ease;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              margin-right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* SIDEBAR INIZIATIVA: Nascosta su smartphone */
@@ -232,20 +238,22 @@ $text-muted: #94a3b8;
     }
   }
 
-  // Riserva automaticamente lo spazio a destra per non coprire mai le schede/incantesimi
+  /* LA PAGINA SI RESTRINGE FISICAMENTE PER FARE SPAZIO */
   .main-content.with-sidebar {
-    margin-right: 390px;
+    width: calc(100% - #{$sidebar-w}) !important;
+    max-width: calc(100% - #{$sidebar-w}) !important;
+    margin-right: $sidebar-w !important;
   }
 
-  // SIDEBAR FISSA: non segue lo scroll della pagina e non si taglia mai!
+  /* SIDEBAR FISSA A DESTRA */
   .initiative-desktop-sidebar {
     display: flex;
     flex-direction: column;
     position: fixed;
     top: 56px;
     right: 0;
-    bottom: 60px; // Si ferma esattamente sopra la bottom nav bar
-    width: 380px;
+    bottom: 60px;
+    width: $sidebar-w;
     background: #080c16;
     border-left: 1px solid #1a253a;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.45);
@@ -286,7 +294,6 @@ $text-muted: #94a3b8;
       }
     }
 
-    // Scroll indipendente solo per l'iniziativa
     .sidebar-inner-wrap {
       flex: 1;
       overflow-y: auto;
@@ -294,7 +301,6 @@ $text-muted: #94a3b8;
       padding: 10px 10px 20px;
       box-sizing: border-box;
 
-      // Resetta eventuali blocchi e altezze fisse interne che tagliavano le schede
       ::ng-deep {
         .initiative-container {
           max-width: 100% !important;

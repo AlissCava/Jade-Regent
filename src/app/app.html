@@ -39,7 +39,7 @@
     </div>
 
     <div class="header-right">
-      <!-- Toggle rapido Sidebar Iniziativa (visibile solo su PC/iPad quando non si è su /initiative) -->
+      <!-- Toggle rapido Sidebar Iniziativa -->
       <button 
         *ngIf="!isInitiativePage()"
         type="button" 
@@ -57,7 +57,7 @@
 
   <!-- CONTENITORE CENTRALE -->
   <div class="app-main-layout">
-    <!-- CONTENUTO PRINCIPALE DELLE PAGINE -->
+    <!-- CONTENUTO PRINCIPALE DELLE PAGINE CHE SI RIDIMENSIONA -->
     <main class="main-content" [class.with-sidebar]="sidebarOpen() && !isInitiativePage()">
       <router-outlet></router-outlet>
     </main>
@@ -77,7 +77,7 @@
     </aside>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR (SEMPRE COMODA SU CELLULARE) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav-bar" aria-label="Navigazione principale">
     <button 
       type="button" 
