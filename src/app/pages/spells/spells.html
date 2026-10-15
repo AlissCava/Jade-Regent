@@ -1,13 +1,13 @@
 <div class="page-container">
   <header class="page-header">
-    <div class="header-badge gold">Arcane & Divine Codex</div>
+    <div class="header-badge gold">Arcane, Divine & Bardic Codex</div>
     <h1 class="header-title">📜 Grimorio Incantesimi</h1>
-    <p class="header-sub">Compendio completo per Druido & Magus</p>
+    <p class="header-sub">Compendio completo per Druido (Airyn), Magus (Azoi) & Bardo (Nijena)</p>
   </header>
 
+  <!-- PANNELLO CONTROLLI, RICERCA & FILTRI -->
+  <div class="control-panel">
     <!-- Barra di Ricerca sempre visibile + Tasto Filtri -->
-<div class="control-panel">
-   <!-- Barra di Ricerca sempre visibile + Tasto Filtri Stilizzato -->
     <div class="search-bar-row">
       <div class="search-box">
         <span class="search-icon">🔍</span>
@@ -15,7 +15,7 @@
           type="search" 
           [ngModel]="spellSearch()" 
           (ngModelChange)="spellSearch.set($event)" 
-          placeholder="Cerca in italiano o inglese (es. Greater Invisibility, Stretta Folgorante)..."
+          placeholder="Cerca per nome ITA o ENG (es. Greater Invisibility, Stretta Folgorante, Ispirare)..."
         />
         <button *ngIf="spellSearch()" class="clear-search" (click)="spellSearch.set('')">✕</button>
       </div>
@@ -33,7 +33,7 @@
       </button>
     </div>
 
-    <!-- Sezione Filtri a comparsa collegata ai tuoi segnali reali -->
+    <!-- Sezione Filtri a comparsa -->
     <div class="filters-collapsible" *ngIf="filtersOpen()">
       <!-- Stepper Livello Incantatore -->
       <div class="cl-bar">
@@ -48,14 +48,15 @@
         </div>
       </div>
 
-      <!-- Selettore Classe -->
+      <!-- Selettore Classe (Incluso Bardo per Nijena) -->
       <div class="class-selector">
-        <button class="class-btn" [class.active]="selectedClass() === 'druid'" (click)="selectedClass.set('druid')">🌿 Druido (Airyn)</button>
-        <button class="class-btn" [class.active]="selectedClass() === 'magus'" (click)="selectedClass.set('magus')">⚔️ Magus</button>
-        <button class="class-btn" [class.active]="selectedClass() === 'all'" (click)="selectedClass.set('all')">🌐 Entrambi</button>
+        <button class="class-btn druid-btn" [class.active]="selectedClass() === 'druid'" (click)="selectedClass.set('druid')">🌿 Druido (Airyn)</button>
+        <button class="class-btn magus-btn" [class.active]="selectedClass() === 'magus'" (click)="selectedClass.set('magus')">⚔️ Magus (Azoi)</button>
+        <button class="class-btn bard-btn" [class.active]="selectedClass() === 'bard'" (click)="selectedClass.set('bard')">🎭 Bardo (Nijena)</button>
+        <button class="class-btn all-btn" [class.active]="selectedClass() === 'all'" (click)="selectedClass.set('all')">🌐 Tutti</button>
       </div>
 
-      <!-- Dropdown Scuola e Tiro Salvezza (i tuoi segnali) -->
+      <!-- Dropdown Scuola e Tiro Salvezza -->
       <div class="selectors-grid">
         <div class="select-wrapper">
           <label>Scuola di Magia</label>
@@ -85,37 +86,73 @@
         </div>
       </div>
 
-      <!-- Chip Livello Incantesimo -->
+      <!-- Chip Livello Incantesimo (fino al 6° per Bardo e Magus) -->
       <div class="chips-container">
         <button type="button" class="chip" [class.active]="selectedSpellLevel() === 'all'" (click)="selectedSpellLevel.set('all')">Tutti i Livelli</button>
-        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '0'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '0' ? 'all' : '0')">Liv. 0</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '0'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '0' ? 'all' : '0')">Trucchetti (0)</button>
         <button type="button" class="chip" [class.active]="selectedSpellLevel() === '1'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '1' ? 'all' : '1')">1°</button>
         <button type="button" class="chip" [class.active]="selectedSpellLevel() === '2'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '2' ? 'all' : '2')">2°</button>
         <button type="button" class="chip" [class.active]="selectedSpellLevel() === '3'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '3' ? 'all' : '3')">3°</button>
         <button type="button" class="chip" [class.active]="selectedSpellLevel() === '4'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '4' ? 'all' : '4')">4°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '5'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '5' ? 'all' : '5')">5°</button>
+        <button type="button" class="chip" [class.active]="selectedSpellLevel() === '6'" (click)="selectedSpellLevel.set(selectedSpellLevel() === '6' ? 'all' : '6')">6°</button>
       </div>
 
-      <!-- Filtri Tattici Rapidi -->
-      <div class="chips-container">
-        <button type="button" class="chip" [class.active]="onlyTouch()" (click)="onlyTouch.set(!onlyTouch())">⚡ Contatto (Spellstrike)</button>
-        <button type="button" class="chip" [class.active]="onlyNoSave()" (click)="onlyNoSave.set(!onlyNoSave())">🛡️ No TS</button>
-        <button type="button" class="chip" [class.active]="onlyNoSpellRes()" (click)="onlyNoSpellRes.set(!onlyNoSpellRes())">✨ No RI</button>
-        <button type="button" class="chip" [class.active]="onlySwiftAction()" (click)="onlySwiftAction.set(!onlySwiftAction())">⏱️ Rapida</button>
+      <!-- Filtro Preferiti in LocalStorage & Filtri Tattici Rapidi -->
+      <div class="chips-container tactical-chips">
+        <!-- Tasto Preferiti Locale -->
+        <button 
+          type="button" 
+          class="chip fav-chip" 
+          [class.active]="onlyFavorites()" 
+          (click)="onlyFavorites.set(!onlyFavorites())">
+          ⭐ Solo Preferiti ({{ favCount() }})
+        </button>
+
+        <button type="button" class="chip touch-chip" [class.active]="onlyTouch()" (click)="onlyTouch.set(!onlyTouch())">⚡ Contatto (Spellstrike)</button>
+        <button type="button" class="chip no-save-chip" [class.active]="onlyNoSave()" (click)="onlyNoSave.set(!onlyNoSave())">🛡️ No TS</button>
+        <button type="button" class="chip no-sr-chip" [class.active]="onlyNoSpellRes()" (click)="onlyNoSpellRes.set(!onlyNoSpellRes())">✨ No RI</button>
+        <button type="button" class="chip swift-chip" [class.active]="onlySwiftAction()" (click)="onlySwiftAction.set(!onlySwiftAction())">⏱️ Rapida</button>
       </div>
     </div>
   </div>
 
+  <!-- INFORMAZIONI RISULTATI -->
+  <div class="results-info" *ngIf="!loading()">
+    Visualizzati <strong>{{ filteredSpells().length }}</strong> di <strong>{{ spells().length }}</strong> incantesimi
+    <span *ngIf="onlyFavorites()"> (Filtro Preferiti attivo)</span>
+  </div>
 
-  <!-- Griglia Schede -->
-  <main class="creatures-grid">
+  <div class="results-info" *ngIf="loading()">
+    <span class="spinner"></span> Caricamento grimorio in corso...
+  </div>
+
+  <!-- GRIGLIA SCHEDE INCANTESIMI -->
+  <main class="creatures-grid" *ngIf="!loading()">
     <article class="creature-card spell-card" *ngFor="let sp of filteredSpells()" (click)="selectedSpell.set(sp)">
       <div class="card-top">
         <div class="card-titles">
-          <h2 class="card-name">{{ sp.name }}</h2>
+          <div class="title-with-fav">
+            <h2 class="card-name">{{ sp.name }}</h2>
+
+            <!-- STELLA PREFERITI IN LOCALE -->
+            <button 
+              type="button" 
+              class="fav-star-btn" 
+              [class.is-fav]="isFavorite(sp.id)" 
+              (click)="toggleFavorite(sp.id, $event)" 
+              [title]="isFavorite(sp.id) ? 'Rimuovi dai preferiti' : 'Salva nei preferiti'">
+              {{ isFavorite(sp.id) ? '⭐' : '☆' }}
+            </button>
+          </div>
+
           <div class="card-en-name" *ngIf="sp.english_name">({{ sp.english_name }})</div>
+
+          <!-- BADGES CLASSI (DRUIDO, MAGUS, BARDO) & SCUOLA -->
           <div class="badges-row">
-            <span class="badge class-level-badge druid" *ngIf="sp.druid_level !== null">🌿 Dru {{ sp.druid_level }}</span>
-            <span class="badge class-level-badge magus" *ngIf="sp.magus_level !== null">⚔️ Mag {{ sp.magus_level }}</span>
+            <span class="badge class-level-badge druid" *ngIf="sp.druid_level !== null && sp.druid_level !== undefined">🌿 Dru {{ sp.druid_level }}</span>
+            <span class="badge class-level-badge magus" *ngIf="sp.magus_level !== null && sp.magus_level !== undefined">⚔️ Mag {{ sp.magus_level }}</span>
+            <span class="badge class-level-badge bard" *ngIf="sp.bard_level !== null && sp.bard_level !== undefined">🎭 Bar {{ sp.bard_level }}</span>
             <span class="badge school-badge" *ngIf="sp.school">{{ sp.school }}</span>
           </div>
         </div>
@@ -141,23 +178,33 @@
     </article>
   </main>
 
-  <!-- Modale Dettagli Integrali -->
+  <!-- MODALE DETTAGLI INTEGRALI INCANTESIMO -->
   <div class="modal-backdrop" *ngIf="selectedSpell()" (click)="selectedSpell.set(null)">
     <div class="modal-sheet" (click)="$event.stopPropagation()">
       <div class="modal-handle" (click)="selectedSpell.set(null)"></div>
 
       <header class="modal-header">
         <div class="modal-title-row">
-          <div>
+          <div class="title-with-fav">
             <h2 class="modal-title">{{ selectedSpell()?.name }}</h2>
-            <div class="modal-en-name" *ngIf="selectedSpell()?.english_name">({{ selectedSpell()?.english_name }})</div>
+            <button 
+              type="button" 
+              class="fav-star-btn modal-fav" 
+              [class.is-fav]="isFavorite(selectedSpell()!.id)" 
+              (click)="toggleFavorite(selectedSpell()!.id)" 
+              title="Aggiungi / Rimuovi dai preferiti">
+              {{ isFavorite(selectedSpell()!.id) ? '⭐' : '☆' }}
+            </button>
           </div>
           <button class="modal-close-btn" (click)="selectedSpell.set(null)">✕</button>
         </div>
 
+        <div class="modal-en-name" *ngIf="selectedSpell()?.english_name">({{ selectedSpell()?.english_name }})</div>
+
         <div class="badges-row" style="margin-top: 0.5rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
-          <span class="badge class-level-badge druid" *ngIf="selectedSpell()?.druid_level !== null">🌿 Druido {{ selectedSpell()?.druid_level }}</span>
-          <span class="badge class-level-badge magus" *ngIf="selectedSpell()?.magus_level !== null">⚔️ Magus {{ selectedSpell()?.magus_level }}</span>
+          <span class="badge class-level-badge druid" *ngIf="selectedSpell()?.druid_level !== null && selectedSpell()?.druid_level !== undefined">🌿 Druido {{ selectedSpell()?.druid_level }}</span>
+          <span class="badge class-level-badge magus" *ngIf="selectedSpell()?.magus_level !== null && selectedSpell()?.magus_level !== undefined">⚔️ Magus {{ selectedSpell()?.magus_level }}</span>
+          <span class="badge class-level-badge bard" *ngIf="selectedSpell()?.bard_level !== null && selectedSpell()?.bard_level !== undefined">🎭 Bardo {{ selectedSpell()?.bard_level }}</span>
           <span class="badge school-badge" *ngIf="selectedSpell()?.school">{{ selectedSpell()?.school }}</span>
         </div>
       </header>

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { SpellService } from '../../services/spell.service';
 import { Spell } from '../../models/spell.model';
 
+export type SpellClassFilter = 'all' | 'druid' | 'magus' | 'bard';
+
 export interface CalculatedMetric {
   icon: string;
   label: string;
@@ -21,106 +23,114 @@ export interface CalculatedMetric {
 export class SpellsComponent implements OnInit {
   private spellService = inject(SpellService);
 
+  // Lista incantesimi da server
   spells = signal<Spell[]>([]);
-  loadingSpells = signal<boolean>(true);
+  loading = signal<boolean>(true);
+  selectedSpell = signal<Spell | null>(null);
+
+  // Filtri Principali
   spellSearch = signal<string>('');
-  selectedClass = signal<'druid' | 'magus' | 'all'>('druid');
+  filtersOpen = signal<boolean>(false);
+  casterLevel = signal<number>(7); // Default LI 7 (livello attuale del party)
+  selectedClass = signal<SpellClassFilter>('all');
+  selectedSchool = signal<string>('Tutte');
+  selectedSavingThrow = signal<string>('Tutti');
   selectedSpellLevel = signal<string>('all');
 
-  // LIVELLO INCANTATORE
-  casterLevel = signal<number>(7);
-
   // Filtri Tattici
-  filtersOpen = signal<boolean>(false);
   onlyTouch = signal<boolean>(false);
   onlyNoSave = signal<boolean>(false);
   onlyNoSpellRes = signal<boolean>(false);
   onlySwiftAction = signal<boolean>(false);
-  selectedSchool = signal<string>('Tutte');
-  selectedSavingThrow = signal<string>('Tutti');
 
-  selectedSpell = signal<Spell | null>(null);
+  // PREFERITI IN LOCALSTORAGE
+  favoriteSpellIds = signal<Set<number>>(new Set());
+  onlyFavorites = signal<boolean>(false);
 
-  hasActiveSpellFilters = computed(() => {
-    return (
-      this.spellSearch().trim().length > 0 ||
-      this.selectedSpellLevel() !== 'all' ||
-      this.onlyTouch() ||
-      this.onlyNoSave() ||
-      this.onlyNoSpellRes() ||
-      this.onlySwiftAction() ||
-      this.selectedSchool() !== 'Tutte' ||
-      this.selectedSavingThrow() !== 'Tutti'
-    );
-  });
-  toggleFilters(): void {
-    this.filtersOpen.update(v => !v);
-  }
-  
+  // Conteggio Preferiti
+  favCount = computed(() => this.favoriteSpellIds().size);
+
+  // Lista Filtrata Reattiva
   filteredSpells = computed(() => {
-    const term = this.spellSearch().toLowerCase().trim();
+    const q = this.spellSearch().toLowerCase().trim();
     const cls = this.selectedClass();
+    const sch = this.selectedSchool();
+    const st = this.selectedSavingThrow();
     const lvl = this.selectedSpellLevel();
     const touch = this.onlyTouch();
     const noSave = this.onlyNoSave();
     const noSr = this.onlyNoSpellRes();
     const swift = this.onlySwiftAction();
-    const school = this.selectedSchool();
-    const saveType = this.selectedSavingThrow();
+    const favOnly = this.onlyFavorites();
+    const favSet = this.favoriteSpellIds();
 
-    return this.spells().filter((s) => {
-      let matchClass = false;
-      if (cls === 'druid') matchClass = s.druid_level !== null;
-      else if (cls === 'magus') matchClass = s.magus_level !== null;
-      else matchClass = s.druid_level !== null || s.magus_level !== null;
+    return this.spells().filter((sp) => {
+      // 1. Filtro Preferiti
+      if (favOnly && !favSet.has(sp.id)) return false;
 
-      if (!matchClass) return false;
-
-      if (lvl !== 'all') {
-        const targetLvl = Number(lvl);
-        if (cls === 'druid' && s.druid_level !== targetLvl) return false;
-        if (cls === 'magus' && s.magus_level !== targetLvl) return false;
-        if (cls === 'all' && s.druid_level !== targetLvl && s.magus_level !== targetLvl) return false;
+      // 2. Filtro Ricerca (ITA o ENG o descrizione)
+      if (q) {
+        const matchName = sp.name?.toLowerCase().includes(q);
+        const matchEn = sp.english_name?.toLowerCase().includes(q);
+        const matchDesc = sp.short_description?.toLowerCase().includes(q);
+        if (!matchName && !matchEn && !matchDesc) return false;
       }
 
+      // 3. Filtro Classe
+      if (cls === 'druid' && (sp.druid_level === null || sp.druid_level === undefined)) return false;
+      if (cls === 'magus' && (sp.magus_level === null || sp.magus_level === undefined)) return false;
+      if (cls === 'bard' && (sp.bard_level === null || sp.bard_level === undefined)) return false;
+
+      // 4. Filtro Livello Incantesimo
+      if (lvl !== 'all') {
+        const targetLvl = parseInt(lvl, 10);
+        if (cls === 'druid' && sp.druid_level !== targetLvl) return false;
+        if (cls === 'magus' && sp.magus_level !== targetLvl) return false;
+        if (cls === 'bard' && sp.bard_level !== targetLvl) return false;
+        if (cls === 'all') {
+          const matchAny =
+            sp.druid_level === targetLvl ||
+            sp.magus_level === targetLvl ||
+            sp.bard_level === targetLvl;
+          if (!matchAny) return false;
+        }
+      }
+
+      // 5. Filtro Scuola di Magia
+      if (sch !== 'Tutte') {
+        if (!sp.school || !sp.school.toLowerCase().includes(sch.toLowerCase())) return false;
+      }
+
+      // 6. Filtro Tiro Salvezza
+      if (st !== 'Tutti') {
+        if (st === 'Nessuno') {
+          if (sp.saving_throw && !sp.saving_throw.toLowerCase().includes('nessun')) return false;
+        } else {
+          if (!sp.saving_throw || !sp.saving_throw.toLowerCase().includes(st.toLowerCase())) return false;
+        }
+      }
+
+      // 7. Filtri Tattici Rapidi
       if (touch) {
-        const isTouch = (s.range && s.range.toLowerCase().includes('contatto')) ||
-                        (s.casting_time && s.casting_time.toLowerCase().includes('contatto'));
-        if (!isTouch) return false;
+        const r = (sp.range || '').toLowerCase();
+        if (!r.includes('contatto') && !r.includes('touch')) return false;
       }
 
       if (noSave) {
-        const hasNoSave = s.saving_throw && s.saving_throw.toLowerCase().includes('nessun');
-        if (!hasNoSave) return false;
+        const s = (sp.saving_throw || '').toLowerCase();
+        if (!s.includes('nessun') && !s.includes('none') && s !== '') return false;
       }
 
       if (noSr) {
-        const ignoresSr = s.spell_res && s.spell_res.toLowerCase().trim() === 'no';
-        if (!ignoresSr) return false;
+        const sr = (sp.spell_res || '').toLowerCase();
+        if (sr.includes('sì') || sr.includes('si') || sr.includes('yes')) return false;
       }
 
       if (swift) {
-        const isSwift = s.casting_time && (
-          s.casting_time.toLowerCase().includes('veloce') || 
-          s.casting_time.toLowerCase().includes('immediat')
-        );
-        if (!isSwift) return false;
-      }
-
-      if (school !== 'Tutte') {
-        if (!s.school || !s.school.toLowerCase().includes(school.toLowerCase())) return false;
-      }
-
-      if (saveType !== 'Tutti') {
-        if (!s.saving_throw || !s.saving_throw.toLowerCase().includes(saveType.toLowerCase())) return false;
-      }
-
-      if (term !== '') {
-        const inName = s.name.toLowerCase().includes(term);
-        const inEnName = s.english_name ? s.english_name.toLowerCase().includes(term) : false;
-        const inShort = s.short_description ? s.short_description.toLowerCase().includes(term) : false;
-        const inSchool = s.school ? s.school.toLowerCase().includes(term) : false;
-        if (!inName && !inEnName && !inShort && !inSchool) return false;
+        const ct = (sp.casting_time || '').toLowerCase();
+        if (!ct.includes('veloce') && !ct.includes('rapida') && !ct.includes('swift') && !ct.includes('immediata')) {
+          return false;
+        }
       }
 
       return true;
@@ -128,219 +138,142 @@ export class SpellsComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.loadFavoritesFromStorage();
+    this.loadSpells();
+  }
+
+  loadSpells(): void {
+    this.loading.set(true);
     this.spellService.getSpells().subscribe({
       next: (data) => {
-        this.spells.set(data);
-        this.loadingSpells.set(false);
+        this.spells.set(data || []);
+        this.loading.set(false);
       },
-      error: () => this.loadingSpells.set(false)
+      error: (err) => {
+        console.error('Errore recupero incantesimi:', err);
+        this.loading.set(false);
+      }
     });
+  }
+
+  // --- GESTIONE PREFERITI IN LOCALSTORAGE ---
+  private loadFavoritesFromStorage(): void {
+    try {
+      const stored = localStorage.getItem('jade_regent_fav_spells');
+      if (stored) {
+        const ids: number[] = JSON.parse(stored);
+        this.favoriteSpellIds.set(new Set(ids));
+      }
+    } catch (e) {
+      console.warn('Impossibile caricare i preferiti da localStorage', e);
+    }
+  }
+
+  toggleFavorite(id: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation(); // Evita l'apertura accidentale della modale
+    }
+
+    this.favoriteSpellIds.update((set) => {
+      const next = new Set(set);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      try {
+        localStorage.setItem('jade_regent_fav_spells', JSON.stringify(Array.from(next)));
+      } catch (e) {
+        console.warn('Errore salvataggio preferiti in localStorage', e);
+      }
+      return next;
+    });
+  }
+
+  isFavorite(id: number): boolean {
+    return this.favoriteSpellIds().has(id);
+  }
+
+  // --- CONTROLLI INTERFACCIA & STEPPER LI ---
+  toggleFilters(): void {
+    this.filtersOpen.update((v) => !v);
   }
 
   changeCl(delta: number): void {
-    const next = this.casterLevel() + delta;
-    if (next >= 1 && next <= 25) {
-      this.casterLevel.set(next);
-    }
+    this.casterLevel.update((cl) => Math.max(1, Math.min(20, cl + delta)));
   }
 
-  getCalculatedRange(rangeStr: string | null | undefined): string {
-    if (!rangeStr) return '—';
+  // --- CALCOLI DINAMICI SCALATI SU LI ---
+  getCalculatedRange(range: string | null): string {
+    if (!range) return '—';
+    const r = range.toLowerCase();
     const cl = this.casterLevel();
-    const lower = rangeStr.toLowerCase();
 
-    if (lower.includes('contatto')) return 'Contatto • 1 casella (1,5 m)';
-    if (lower.includes('personale')) return 'Personale (Incantatore)';
-
-    if (lower.includes('vicino') || lower.includes('close')) {
-      const dist = 7.5 + 1.5 * Math.floor(cl / 2);
-      const squares = 5 + Math.floor(cl / 2);
-      return `${dist} m (${squares} caselle)`;
+    if (r.includes('vicino') || r.includes('close')) {
+      const m = 7.5 + Math.floor(cl / 2) * 1.5;
+      return `${m} m (${Math.round(m / 1.5)} caselle)`;
     }
-    if (lower.includes('medio') || lower.includes('medium')) {
-      const dist = 30 + 3 * cl;
-      const squares = 20 + 2 * cl;
-      return `${dist} m (${squares} caselle)`;
+    if (r.includes('medio') || r.includes('medium')) {
+      const m = 30 + cl * 3;
+      return `${m} m (${Math.round(m / 1.5)} caselle)`;
     }
-    if (lower.includes('lungo') || lower.includes('long')) {
-      const dist = 120 + 12 * cl;
-      const squares = 80 + 8 * cl;
-      return `${dist} m (${squares} caselle)`;
+    if (r.includes('lungo') || r.includes('long')) {
+      const m = 120 + cl * 12;
+      return `${m} m (${Math.round(m / 1.5)} caselle)`;
     }
-
-    const numMatch = lower.match(/(\d+(?:,\d+)?)\s*m/);
-    if (numMatch) {
-      const meters = parseFloat(numMatch[1].replace(',', '.'));
-      const squares = Math.round(meters / 1.5);
-      return `${meters} m (${squares} caselle)`;
-    }
-
-    return rangeStr;
+    if (r.includes('contatto') || r.includes('touch')) return 'Contatto (1 casella)';
+    if (r.includes('personale') || r.includes('personal')) return 'Personale';
+    return range;
   }
 
-  getCalculatedDuration(durStr: string | null | undefined): string {
-    if (!durStr) return '—';
+  getCalculatedDuration(duration: string | null): string {
+    if (!duration) return '—';
+    const d = duration.toLowerCase();
     const cl = this.casterLevel();
-    const lower = durStr.toLowerCase();
 
-    if (lower.includes('istantaneo') || lower.includes('istantanea')) return 'Istantaneo';
-    if (lower.includes('permanente')) return 'Permanente';
-    if (lower.includes('concentrazione')) return durStr;
-
-    if (lower.includes('round/livello') || lower.includes('round per livello')) {
-      return `${cl} round (${cl} turni • ${cl * 6}s)`;
+    if (d.includes('round/livello') || d.includes('round/level')) {
+      return `${cl} round (${cl * 6} sec)`;
     }
-    if (lower.includes('10 min') || lower.includes('10 minuti')) {
-      const totalMin = cl * 10;
-      if (totalMin >= 60) {
-        const h = Math.floor(totalMin / 60);
-        const m = totalMin % 60;
-        return `${totalMin} min (${h}h ${m > 0 ? m + 'm' : ''})`;
-      }
-      return `${totalMin} minuti`;
-    }
-    if (lower.includes('min/livello') || lower.includes('minuto/livello') || lower.includes('minuti per livello')) {
+    if (d.includes('minuto/livello') || d.includes('min/livello') || d.includes('min/level')) {
       return `${cl} minuti (${cl * 10} turni)`;
     }
-    if (lower.includes('ora/livello') || lower.includes('ore/livello') || lower.includes('ora per livello')) {
+    if (d.includes('10 min/livello') || d.includes('10 min./livello')) {
+      return `${cl * 10} minuti`;
+    }
+    if (d.includes('ora/livello') || d.includes('ore/livello') || d.includes('hour/level')) {
       return `${cl} ore`;
     }
-    if (lower.includes('giorn')) {
-      return `${cl} giorni`;
-    }
-
-    return durStr;
+    if (d.includes('istantaneo') || d.includes('instantaneous')) return 'Istantaneo';
+    return duration;
   }
 
-  getCalculatedMetrics(spell: Spell | null | undefined): CalculatedMetric[] {
-    if (!spell) return [];
+  getQuickCardMetric(sp: Spell): string | null {
+    const desc = (sp.full_description || sp.short_description || '').toLowerCase();
     const cl = this.casterLevel();
-    const metrics: CalculatedMetric[] = [];
-    const text = ((spell.full_description || '') + ' ' + (spell.short_description || '')).toLowerCase();
-    const sName = spell.name.toLowerCase();
 
-    metrics.push({
-      icon: '📏',
-      label: 'Raggio Effettivo',
-      value: this.getCalculatedRange(spell.range),
-      highlight: true
-    });
-
-    metrics.push({
-      icon: '⏳',
-      label: 'Durata Effettiva',
-      value: this.getCalculatedDuration(spell.duration),
-      highlight: true
-    });
-
-    if (spell.spell_res && spell.spell_res.toLowerCase().trim() !== 'no') {
-      metrics.push({
-        icon: '🎲',
-        label: 'Superamento RI',
-        value: `1d20 + ${cl} (LI)`,
-        highlight: false
-      });
+    if (desc.includes('1d6 per livello') || desc.includes('1d6 danni per livello')) {
+      const cap = desc.includes('massimo 5d6') ? 5 : desc.includes('massimo 10d6') ? 10 : 15;
+      return `Danni scalati: ${Math.min(cl, cap)}d6`;
     }
-
-    // Incantesimi specifici con scaling aperto (senza blocco Math.min per talenti come Intensificati)
-    if (sName.includes('dardo incantato') || sName.includes('magic missile')) {
-      const missiles = 1 + Math.floor((cl - 1) / 2);
-      metrics.push({
-        icon: '✨',
-        label: 'Dardi Creati',
-        value: `${missiles} Dardi (${missiles}d4 + ${missiles}) • base max 5`,
-        highlight: true
-      });
-    } else if (sName.includes('raggio rovente') || sName.includes('scorching ray')) {
-      const rays = 1 + Math.floor(Math.max(0, cl - 3) / 4);
-      metrics.push({
-        icon: '🔥',
-        label: 'Raggi di Fuoco',
-        value: `${rays} Raggi (${rays * 4}d6 fuoco) • base max 3`,
-        highlight: true
-      });
-    } else if (sName.includes('cura ferite leggere')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `1d8 + ${cl} PF (base max +5)`, highlight: true });
-    } else if (sName.includes('cura ferite moderate')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `2d8 + ${cl} PF (base max +10)`, highlight: true });
-    } else if (sName.includes('cura ferite gravi')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `3d8 + ${cl} PF (base max +15)`, highlight: true });
-    } else if (sName.includes('cura ferite critiche')) {
-      metrics.push({ icon: '💚', label: 'Cura Effettiva', value: `4d8 + ${cl} PF (base max +20)`, highlight: true });
-    } else if (sName.includes('stretta folgorante') || sName.includes('shocking grasp')) {
-      metrics.push({
-        icon: '⚡',
-        label: 'Danno Elettrico',
-        value: `${cl}d6 (base max 5d6, superabile con Incantesimi Intensificati)`,
-        highlight: true
-      });
-    } else {
-      // Danno generico da testo
-      const matchDiceMax = text.match(/(\d+)d(\d+)[^.;\n]*?(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*(\d+)d\d+\)/);
-      if (matchDiceMax) {
-        const dicePerLvl = parseInt(matchDiceMax[1], 10);
-        const faces = matchDiceMax[2];
-        const maxDice = parseInt(matchDiceMax[3], 10);
-        const actualDice = cl * dicePerLvl; // Scala liberamente con il LI
-        metrics.push({
-          icon: '💥',
-          label: 'Danno Scalato',
-          value: `${actualDice}d${faces} (base max ${maxDice}d${faces})`,
-          highlight: true
-        });
-      } else {
-        const matchDiceSimple = text.match(/(\d+)d(\d+)\s*(?:danni|danno)?\s*(?:per|\/)\s*livello/);
-        if (matchDiceSimple) {
-          const actualDice = cl * parseInt(matchDiceSimple[1], 10);
-          metrics.push({
-            icon: '💥',
-            label: 'Danno Scalato',
-            value: `${actualDice}d${matchDiceSimple[2]}`,
-            highlight: true
-          });
-        }
-      }
-
-      // Bonus numerici
-      const matchBonus = text.match(/\+\s*1\s*(?:per|\/)\s*livello[^\(.;\n]*?\((?:massimo\vert{}max)\s*\+(\d+)\)/);
-      if (matchBonus) {
-        const maxB = parseInt(matchBonus[1], 10);
-        metrics.push({
-          icon: '➕',
-          label: 'Bonus Numerico',
-          value: `+${cl} (base max +${maxB})`,
-          highlight: true
-        });
-      }
+    if (desc.includes('1d4 per livello') || desc.includes('1d4+1')) {
+      return `Danni scalati: ${Math.min(cl, 5)}d4+${Math.min(cl, 5)}`;
     }
-
-    if (text.includes('1 creatura/livello') || text.includes('un bersaglio per livello') || text.includes('una creatura per livello')) {
-      metrics.push({
-        icon: '👥',
-        label: 'Bersagli Massimi',
-        value: `${cl} creature (entro 9 m l'una dall'altra)`,
-        highlight: false
-      });
-    }
-
-    return metrics;
-  }
-
-  getQuickCardMetric(spell: Spell): string | null {
-    const list = this.getCalculatedMetrics(spell);
-    const power = list.find(m => m.label.includes('Danno') || m.label.includes('Cura') || m.label.includes('Dardi') || m.label.includes('Raggi'));
-    if (power) return `${power.icon} ${power.label}: ${power.value}`;
     return null;
   }
 
-  resetSpellFilters(): void {
-    this.spellSearch.set('');
-    this.selectedSpellLevel.set('all');
-    this.onlyTouch.set(false);
-    this.onlyNoSave.set(false);
-    this.onlyNoSpellRes.set(false);
-    this.onlySwiftAction.set(false);
-    this.selectedSchool.set('Tutte');
-    this.selectedSavingThrow.set('Tutti');
+  getCalculatedMetrics(sp: Spell | null): CalculatedMetric[] {
+    if (!sp) return [];
+    const cl = this.casterLevel();
+    const metrics: CalculatedMetric[] = [
+      { icon: '📏', label: 'Gittata a LI attuale', value: this.getCalculatedRange(sp.range), highlight: true },
+      { icon: '⏳', label: 'Durata a LI attuale', value: this.getCalculatedDuration(sp.duration), highlight: true }
+    ];
+
+    const quick = this.getQuickCardMetric(sp);
+    if (quick) {
+      metrics.push({ icon: '💥', label: 'Formula Potenziata', value: quick, highlight: true });
+    }
+
+    return metrics;
   }
 }
