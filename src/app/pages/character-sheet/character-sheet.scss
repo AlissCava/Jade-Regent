@@ -1485,5 +1485,33 @@ $text-muted: #94a3b8;
     color: $gold;
   }
 }
+.modal-footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
 
+  .btn-delete-char {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    color: #fca5a5 !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    padding: 0 0.95rem !important;
+    height: 44px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #ef4444 !important;
+      color: #fff !important;
+    }
+  }
+
+  .right-footer-btns {
+    display: flex;
+    gap: 0.6rem;
+  }
+}
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }

@@ -6,13 +6,23 @@
     <p class="subtitle">Seleziona un personaggio per aprire la scheda interattiva e gestire le statistiche.</p>
   </header>
 
-  <!-- GRIGLIA EROI (2 COLONNE SU MOBILE, 3 SU DESKTOP) -->
+  <!-- GRIGLIA EROI -->
   <div class="modules-grid">
     <a 
       *ngFor="let hero of characters()" 
       [routerLink]="['/characters', hero.slug]" 
       class="module-card">
       
+      <!-- PULSANTE CESTINO PER ELIMINARE LA SCHEDA -->
+      <button 
+        type="button" 
+        class="btn-delete-card" 
+        (click)="deleteCharacter(hero.slug, hero.name, $event)" 
+        title="Elimina definitivamente la scheda di {{ hero.name }}"
+        aria-label="Elimina scheda">
+        🗑️
+      </button>
+
       <!-- ICONA COLORATA -->
       <div class="card-icon-wrap" [ngClass]="hero.theme">
         <span class="icon">{{ hero.icon }}</span>
@@ -20,11 +30,11 @@
 
       <!-- CONTENUTO SCHEDA -->
       <div class="card-content">
-        <div class="card-tag">Livello {{ hero.level }} • {{ hero.race }}</div>
+        <div class="card-tag">Livello {{ hero.level }} • {{ hero.race || 'Razza non impostata' }}</div>
         <h2 class="card-title">
           {{ hero.name }} <span class="kanji" *ngIf="hero.kanji">({{ hero.kanji }})</span>
         </h2>
-        <div class="card-class">{{ hero.className }}</div>
+        <div class="card-class">{{ hero.className || 'Classe da definire' }}</div>
         <p class="card-desc">{{ hero.subtitle }}</p>
       </div>
 

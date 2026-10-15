@@ -510,10 +510,17 @@
       </div>
 
       <footer class="modal-footer-actions">
-        <button type="button" class="btn-cancel" (click)="showLevelUpModal.set(false)">Annulla</button>
-        <button type="button" class="btn-save" [disabled]="saving()" (click)="saveLevelUp()">
-          {{ saving() ? 'Salvataggio...' : (saveSuccess() ? '✓ Salvato!' : '💾 Salva su Neon') }}
+        <!-- PULSANTE ELIMINA SCHEDA -->
+        <button type="button" class="btn-delete-char" (click)="deleteCurrentCharacter()" [disabled]="saving()">
+          🗑️ Elimina Scheda
         </button>
+
+        <div class="right-footer-btns">
+          <button type="button" class="btn-cancel" (click)="showLevelUpModal.set(false)">Annulla</button>
+          <button type="button" class="btn-save" [disabled]="saving()" (click)="saveLevelUp()">
+            {{ saving() ? 'Salvataggio...' : (saveSuccess() ? '✓ Salvato!' : '💾 Salva su Neon') }}
+          </button>
+        </div>
       </footer>
     </div>
   </div>

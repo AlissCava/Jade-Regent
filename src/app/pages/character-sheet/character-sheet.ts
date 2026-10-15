@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
 import { CharacterRecord, CharacterSheetData, SkillItem, WeaponItem, FeatItem, SpecialResourceItem } from '../../models/character.model';
-
+import { Router } from '@angular/router';
 export interface RollResult {
   title: string;
   d20: number;
@@ -26,6 +26,7 @@ export interface RollResult {
 export class CharacterSheetComponent implements OnInit {
   private charService = inject(CharacterService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   characterSlug = 'ryoujin';
   loading = signal<boolean>(true);
@@ -399,6 +400,35 @@ export class CharacterSheetComponent implements OnInit {
       isCrit: r === 20,
       isFumble: r === 1,
       breakdown: `Dado: ${r}`
+    });
+  }
+
+  // ELIMINA SCHEDA DIRETTAMENTE DALL'INTERNO
+  deleteCurrentCharacter(): void {
+    const name = this.editName || this.characterSlug;
+    if (!confirm(`Sei sicura di voler eliminare definitivamente la scheda di "${name}"? I dati verranno rimossi da Neon DB.`)) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.charService.deleteCharacter(this.characterSlug).subscribe({
+      next: () => {
+        try {
+          const raw = localStorage.getItem('jade_regent_deleted_slugs');
+          const set: string[] = raw ? JSON.parse(raw) : [];
+          if (!set.includes(this.characterSlug)) set.push(this.characterSlug);
+          localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(set));
+        } catch {}
+
+        this.saving.set(false);
+        this.showLevelUpModal.set(false);
+        this.router.navigate(['/characters']);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.showLevelUpModal.set(false);
+        this.router.navigate(['/characters']);
+      }
     });
   }
 }
