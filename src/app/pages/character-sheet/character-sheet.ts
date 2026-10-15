@@ -16,6 +16,22 @@ export interface RollResult {
   breakdown: string;
 }
 
+export interface ParsedAttackRow {
+  label: string;
+  bonus: number;
+  critMin: number;
+  isCritConf: boolean;
+  critBonus?: number;
+}
+
+export interface ParsedDamageRow {
+  label: string;
+  diceCount: number;
+  diceFaces: number;
+  baseMod: number;
+  isElemental?: boolean;
+}
+
 const DEFAULT_RYOUJIN_SKILLS: SkillItem[] = [
   { name: 'Acrobazia', stat: 'DES', bonus: -3 },
   { name: 'Addestrare animali', stat: 'CAR', bonus: 10 },
@@ -92,11 +108,14 @@ export class CharacterSheetComponent implements OnInit {
   charRecord = signal<CharacterRecord | null>(null);
   activeTab = signal<'main' | 'companion' | 'roller'>('main');
 
-  // Identifica se la scheda visualizzata è Ryoujin
-  isRyoujin = computed(() => this.characterSlug.toLowerCase() === 'ryoujin');
+  // Identifica con certezza se è Ryoujin (tramite slug del record o URL)
+  get isRyoujin(): boolean {
+    const s = (this.charRecord()?.slug || this.characterSlug || '').toLowerCase();
+    return s === 'ryoujin' || s === 'pc_ryoujin';
+  }
 
-  // ROULETTE & LANCIATORE DADI
-  rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
+  // ROLLER
+  rollerChar = signal<'main' | 'companion'>('main');
   rollerSection = signal<'combat' | 'damage' | 'saves' | 'skills'>('combat');
 
   // MODIFICATORI ROLL CHECKBOX
@@ -121,7 +140,7 @@ export class CharacterSheetComponent implements OnInit {
   editClass = '';
   editData!: CharacterSheetData;
 
-  // Campi inserimento generico al volo
+  // Campi per inserimento rapido nelle altre schede
   newSkillName = '';
   newSkillStat = 'DES';
   newWpnName = '';
@@ -142,47 +161,49 @@ export class CharacterSheetComponent implements OnInit {
   powerAttack = signal<boolean>(false);
   powerAttackHisui = signal<boolean>(false);
 
-  // ==================== CALCOLI SPECIFICI RYOUJIN (100% DINAMICI) ====================
-  get ryoujinLevel(): number { return this.charRecord()?.level ?? 7; }
-  get ryoujinBab(): number { return this.charRecord()?.data.character.bab ?? 7; }
-  get ryoujinStrMod(): number {
-    const str = this.charRecord()?.data.character.str ?? 22;
+  // ==================== CALCOLI 100% DINAMICI BASATI SUI DATI SALVATI ====================
+  get charLevel(): number { return this.charRecord()?.level ?? 7; }
+  get charBab(): number { return this.charRecord()?.data.character.bab ?? 7; }
+  get charStrMod(): number {
+    const str = this.charRecord()?.data.character.str ?? (this.isRyoujin ? 22 : 10);
     return Math.floor((str - 10) / 2);
   }
-  get ryoujinDexMod(): number {
-    const dex = this.charRecord()?.data.character.dex ?? 15;
+  get charDexMod(): number {
+    const dex = this.charRecord()?.data.character.dex ?? (this.isRyoujin ? 15 : 10);
     return Math.floor((dex - 10) / 2);
   }
 
-  get powerAtkPenalty(): number { return 1 + Math.floor(this.ryoujinBab / 4); }
+  // Calcoli specifici Samurai Ryoujin
+  get powerAtkPenalty(): number { return 1 + Math.floor(this.charBab / 4); }
   get powerAtkDmgTwoHand(): number { return this.powerAtkPenalty * 3; }
 
-  get maxResolve(): number { return Math.max(1, Math.floor(this.ryoujinLevel / 2)); }
+  get maxResolve(): number { return Math.max(1, Math.floor(this.charLevel / 2)); }
   get resolvePips(): number[] { return Array.from({ length: this.maxResolve }, (_, i) => i); }
 
-  get maxChallenge(): number { return Math.max(1, Math.ceil(this.ryoujinLevel / 3)); }
+  get maxChallenge(): number { return Math.max(1, Math.ceil(this.charLevel / 3)); }
   get challengePips(): number[] { return Array.from({ length: this.maxChallenge }, (_, i) => i); }
 
-  get katana1TxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
+  // Armi dinamiche Ryoujin collegate a BAB e FOR
+  get katana1TxC(): number { return this.charBab + this.charStrMod + 1; }
   get katana1CritTxC(): number { return this.katana1TxC + 2; }
-  get katana2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty; }
+  get katana2TxC(): number { return Math.max(0, this.charBab - 5) + this.charStrMod + 1 - this.powerAtkPenalty; }
   get katana2CritTxC(): number { return this.katana2TxC + 2; }
 
-  get suishen1TxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 2; }
+  get suishen1TxC(): number { return this.charBab + this.charStrMod + 2; }
   get suishen1CritTxC(): number { return this.suishen1TxC + 2; }
-  get suishen2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 2 - this.powerAtkPenalty; }
+  get suishen2TxC(): number { return Math.max(0, this.charBab - 5) + this.charStrMod + 2 - this.powerAtkPenalty; }
   get suishen2CritTxC(): number { return this.suishen2TxC + 2; }
 
-  get bow1TxC(): number { return this.ryoujinBab + this.ryoujinDexMod + 1; }
-  get bow2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinDexMod + 1; }
+  get bow1TxC(): number { return this.charBab + this.charDexMod + 1; }
+  get bow2TxC(): number { return Math.max(0, this.charBab - 5) + this.charDexMod + 1; }
 
-  get bmcTxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
+  get bmcTxC(): number { return this.charBab + this.charStrMod + 1; }
 
-  get katanaPodDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand; }
-  get suishenDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand; }
-  get bowDmg(): number { return Math.min(this.ryoujinStrMod, 2) + 1; }
+  get katanaPodDmg(): number { return Math.floor(this.charStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand; }
+  get suishenDmg(): number { return Math.floor(this.charStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand; }
+  get bowDmg(): number { return Math.min(this.charStrMod, 2) + 1; }
 
-  // Statistiche Lupo Hisui
+  // Statistiche dinamiche Lupo Hisui
   get hisuiStrMod(): number {
     const str = this.charRecord()?.data.companion?.str ?? 25;
     return Math.floor((str - 10) / 2);
@@ -197,7 +218,7 @@ export class CharacterSheetComponent implements OnInit {
     let mod = 0;
     if (this.inspireCourage()) mod += 2;
     if (this.flanking()) mod += 2;
-    if (this.isRyoujin()) {
+    if (this.isRyoujin) {
       if (this.bannerActive()) mod += 1;
       if (this.challengeActive()) mod += 2;
       if (this.divineFavorActive()) mod += 2;
@@ -209,9 +230,8 @@ export class CharacterSheetComponent implements OnInit {
   damageMod = computed(() => {
     let mod = 0;
     if (this.inspireCourage()) mod += 2;
-    if (this.isRyoujin()) {
-      const lvl = this.charRecord()?.level || 7;
-      if (this.challengeActive()) mod += lvl;
+    if (this.isRyoujin) {
+      if (this.challengeActive()) mod += this.charLevel;
       if (this.divineFavorActive()) mod += 2;
       if (this.powerAttack()) mod += 6;
     }
@@ -249,7 +269,7 @@ export class CharacterSheetComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        // Se non esiste ancora su Neon, genera scheda vuota (o ryoujin di default se slug ryoujin)
+        // Se non esiste ancora su Neon, genera scheda vuota o template
         const empty = this.generateTemplateFor(this.characterSlug);
 
         this.charService.createCharacter({
@@ -282,7 +302,7 @@ export class CharacterSheetComponent implements OnInit {
   }
 
   private setRecordData(rec: CharacterRecord): void {
-    if (this.isRyoujin()) {
+    if (this.isRyoujin) {
       if (!rec.data.character.skills || rec.data.character.skills.length === 0) {
         rec.data.character.skills = [...DEFAULT_RYOUJIN_SKILLS];
       }
@@ -305,7 +325,7 @@ export class CharacterSheetComponent implements OnInit {
   }
 
   private generateTemplateFor(slug: string): { name: string; class_name: string; level: number; data: CharacterSheetData } {
-    if (slug === 'ryoujin') {
+    if (slug === 'ryoujin' || slug === 'pc_ryoujin') {
       return {
         name: 'Ryoujin',
         class_name: 'Samurai (Ordine del Ronin)',
@@ -384,7 +404,7 @@ export class CharacterSheetComponent implements OnInit {
     };
   }
 
-  // --- MODIFICHE PUNTI FERITA ONLINE (SALVA SUBITO SU NEON) ---
+  // --- MODIFICA RAPIDA PUNTI FERITA (SALVA SU NEON) ---
   modifyHp(target: 'main' | 'companion', amount: number): void {
     const rec = this.charRecord();
     if (!rec) return;
@@ -427,14 +447,79 @@ export class CharacterSheetComponent implements OnInit {
     this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
   }
 
-  // --- COSTRUTTORE FORMULA E ROLLER DINAMICO RYOUJIN & HISUI ---
+  // --- PARSER DINAMICO ARMI PER IL LANCIADADI DI TUTTI GLI ALTRI PG ---
+  getDynamicAttacksFor(w: WeaponItem): ParsedAttackRow[] {
+    const rows: ParsedAttackRow[] = [];
+    const critMatch = (w.crit || '20').match(/(\d+)(?:-20)?/);
+    const critMin = critMatch ? parseInt(critMatch[1], 10) : 20;
+
+    // Estrae i bonus di attacco dall'input (es. "+9/+4" o "+8")
+    const numMatches = (w.attack_bonus || '').match(/[+-]?\d+/g);
+    let primary = 0;
+    let secondary: number | null = null;
+
+    if (numMatches && numMatches.length > 0) {
+      primary = parseInt(numMatches[0], 10);
+      if (numMatches.length > 1) {
+        secondary = parseInt(numMatches[1], 10);
+      }
+    } else {
+      // Calcolo automatico di default su BAB + FOR se non specificato
+      primary = this.charBab + this.charStrMod;
+    }
+
+    if (secondary === null && this.charBab >= 6) {
+      secondary = primary - 5;
+    }
+
+    // 1° Attacco & Conferma Critico
+    rows.push({ label: `${w.name} 1`, bonus: primary, critMin, isCritConf: false });
+    rows.push({ label: `${w.name} 1 crit`, bonus: primary, critMin: 20, isCritConf: true, critBonus: 2 });
+
+    // 2° Attacco Iterativo (se BAB >= 6 o inserito nell'arma)
+    if (secondary !== null) {
+      rows.push({ label: `${w.name} 2`, bonus: secondary, critMin, isCritConf: false });
+      rows.push({ label: `${w.name} 2 crit`, bonus: secondary, critMin: 20, isCritConf: true, critBonus: 2 });
+    }
+
+    return rows;
+  }
+
+  getDynamicDamagesFor(w: WeaponItem): ParsedDamageRow[] {
+    const rows: ParsedDamageRow[] = [];
+    const match = (w.damage || '').match(/(\d+)?d(\d+)(?:([+-]\d+))?/i);
+
+    let count = 1;
+    let faces = 6;
+    let baseMod = 0;
+
+    if (match) {
+      count = match[1] ? parseInt(match[1], 10) : 1;
+      faces = parseInt(match[2], 10);
+      baseMod = match[3] ? parseInt(match[3], 10) : 0;
+    } else {
+      baseMod = this.charStrMod;
+    }
+
+    rows.push({ label: `Danni ${w.name}`, diceCount: count, diceFaces: faces, baseMod });
+
+    // Se l'arma ha danni elementali o speciali (es. fiammeggiante, fuoco, furtivo)
+    const spec = (w.special || '').toLowerCase();
+    if (spec.includes('fuoco') || spec.includes('fiammeggiante') || spec.includes('elettric')) {
+      rows.push({ label: `Danno elementale ${w.name}`, diceCount: 1, diceFaces: 6, baseMod: 0, isElemental: true });
+    }
+
+    return rows;
+  }
+
+  // --- MOTORE COSTRUZIONE FORMULA DINAMICA ---
   getRollFormula(actionType: 'atk' | 'dmg' | 'save' | 'skill', diceStr: string, baseMod: number, isElemental = false, critBonus = 0): string {
     let parts = `${diceStr}${baseMod >= 0 ? '+' + baseMod : baseMod}`;
     if (critBonus > 0) parts += `+${critBonus}`;
 
     const extraParts: string[] = [];
     if (this.modBanner() && actionType === 'atk') extraParts.push('+1');
-    if (this.modChallenge() && actionType === 'dmg' && !isElemental) extraParts.push(`+${this.ryoujinLevel}`);
+    if (this.modChallenge() && actionType === 'dmg' && !isElemental) extraParts.push(`+${this.charLevel}`);
     if (this.modInspire() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental))) extraParts.push('+2');
     if (this.modDivineFavor() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental))) extraParts.push('+2');
     if (this.modFlank() && actionType === 'atk') extraParts.push('+2');
@@ -446,6 +531,7 @@ export class CharacterSheetComponent implements OnInit {
     return parts;
   }
 
+  // --- MOTORE LANCIO DADI 100% DINAMICO E REATTIVO AL LEVEL UP ---
   rollDynamicAction(
     name: string,
     diceCount: number,
@@ -473,7 +559,7 @@ export class CharacterSheetComponent implements OnInit {
       bonusParts.push('+1 Stendardo');
     }
     if (this.modChallenge() && isDmg && !isElemental) {
-      const challBonus = this.ryoujinLevel;
+      const challBonus = this.charLevel;
       extraMod += challBonus;
       bonusParts.push(`+${challBonus} Sfida`);
     }
@@ -530,39 +616,6 @@ export class CharacterSheetComponent implements OnInit {
 
     this.voiceAnnouncement.set(spokenPhrase);
     this.speakTTS(spokenPhrase);
-  }
-
-  // Tiri per schede generiche (Airyn, Nijena, ecc.)
-  rollGenericAction(title: string, diceCount: number, diceFaces: number, mod: number): void {
-    const rolls: number[] = [];
-    let sum = 0;
-    for (let i = 0; i < diceCount; i++) {
-      const r = Math.floor(Math.random() * diceFaces) + 1;
-      rolls.push(r);
-      sum += r;
-    }
-
-    let extraMod = 0;
-    if (this.modInspire()) extraMod += 2;
-    if (this.modFlank()) extraMod += 2;
-
-    const total = sum + mod + extraMod;
-    const d20 = diceFaces === 20 ? rolls[0] : 0;
-
-    this.lastResult.set({
-      title,
-      d20,
-      rolls,
-      formula: `${diceCount}d${diceFaces} + ${mod + extraMod}`,
-      total,
-      isCrit: d20 === 20,
-      isFumble: d20 === 1,
-      breakdown: `Dadi [${rolls.join(', ')}] + Mod: ${mod} ${extraMod ? '(+' + extraMod + ' buff)' : ''}`
-    });
-
-    const phrase = `${title}: risultato ${total}.`;
-    this.voiceAnnouncement.set(phrase);
-    this.speakTTS(phrase);
   }
 
   quickRoll(faces: number): void {
@@ -666,7 +719,7 @@ export class CharacterSheetComponent implements OnInit {
   saveLevelUp(): void {
     this.saving.set(true);
 
-    if (this.isRyoujin()) {
+    if (this.isRyoujin) {
       const newMaxResolve = Math.max(1, Math.floor(this.editLevel() / 2));
       const newMaxChallenge = Math.max(1, Math.ceil(this.editLevel() / 3));
       this.editData.character.resolve_max = newMaxResolve;
@@ -683,6 +736,7 @@ export class CharacterSheetComponent implements OnInit {
       this.editClass
     ).subscribe({
       next: (res) => {
+        // Aggiorna lo stato in memoria: tutti i calcoli e il lanciadadi si allineano istantaneamente
         this.setRecordData(res.character);
         this.saving.set(false);
         this.saveSuccess.set(true);

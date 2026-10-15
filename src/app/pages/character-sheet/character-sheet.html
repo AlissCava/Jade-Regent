@@ -47,14 +47,14 @@
       </div>
 
       <button type="button" class="level-up-btn" (click)="openLevelUp()" aria-label="Apri finestra di modifica e Level Up online">
-        ⚙️ {{ isRyoujin() ? 'Level Up Online' : 'Modifica / Level Up' }}
+        ⚙️ {{ isRyoujin ? 'Level Up Online' : 'Modifica / Level Up' }}
       </button>
     </div>
 
     <!-- ========================================================================= -->
     <!-- CASO A: LA VERA SCHEDA DI RYOUJIN (100% IDENTICA A PRIMA)                 -->
     <!-- ========================================================================= -->
-    <ng-container *ngIf="isRyoujin()">
+    <ng-container *ngIf="isRyoujin">
       <!-- VISTA 1: SCHEDA RYOUJIN -->
       <div *ngIf="activeTab() === 'main'" class="char-sheet" role="tabpanel">
         <header class="sheet-hero">
@@ -113,8 +113,8 @@
 
         <!-- CARATTERISTICHE RYOUJIN -->
         <div class="attributes-strip" role="group" aria-label="Punteggi Caratteristica">
-          <div class="attr-cell primary"><span class="attr-name">FOR</span><span class="attr-val">{{ rec.data.character.str }}</span><span class="attr-mod">+{{ ryoujinStrMod }}</span></div>
-          <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ rec.data.character.dex }}</span><span class="attr-mod">+{{ ryoujinDexMod }}</span></div>
+          <div class="attr-cell primary"><span class="attr-name">FOR</span><span class="attr-val">{{ rec.data.character.str }}</span><span class="attr-mod">+{{ charStrMod }}</span></div>
+          <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ rec.data.character.dex }}</span><span class="attr-mod">+{{ charDexMod }}</span></div>
           <div class="attr-cell"><span class="attr-name">COS</span><span class="attr-val">{{ rec.data.character.con }}</span><span class="attr-mod">+{{ (rec.data.character.con - 10) / 2 | number:'1.0-0' }}</span></div>
           <div class="attr-cell"><span class="attr-name">INT</span><span class="attr-val">{{ rec.data.character.int }}</span><span class="attr-mod">+{{ (rec.data.character.int - 10) / 2 | number:'1.0-0' }}</span></div>
           <div class="attr-cell"><span class="attr-name">SAG</span><span class="attr-val">{{ rec.data.character.wis }}</span><span class="attr-mod">+{{ (rec.data.character.wis - 10) / 2 | number:'1.0-0' }}</span></div>
@@ -471,281 +471,12 @@
           </div>
         </div>
       </div>
-
-      <!-- VISTA 3: LANCIATORE DADI 100% DINAMICO DI RYOUJIN & HISUI -->
-      <div *ngIf="activeTab() === 'roller'" class="roller-container" role="tabpanel">
-        <div class="roller-header-row">
-          <div class="roller-top-nav" role="tablist">
-            <button 
-              type="button" 
-              role="tab"
-              [attr.aria-selected]="rollerChar() === 'ryoujin'"
-              class="roller-char-btn" 
-              [class.active]="rollerChar() === 'ryoujin'" 
-              (click)="rollerChar.set('ryoujin')">
-              ⚔️ Ryoujin
-            </button>
-            <button 
-              type="button" 
-              role="tab"
-              [attr.aria-selected]="rollerChar() === 'hisui'"
-              class="roller-char-btn wolf" 
-              [class.active]="rollerChar() === 'hisui'" 
-              (click)="rollerChar.set('hisui')">
-              🐺 Hisui
-            </button>
-          </div>
-
-          <button 
-            type="button" 
-            class="voice-tts-toggle" 
-            [class.active]="ttsAudioEnabled()" 
-            (click)="ttsAudioEnabled.set(!ttsAudioEnabled())"
-            [attr.aria-label]="ttsAudioEnabled() ? 'Voce audio attiva' : 'Voce audio disattivata'">
-            {{ ttsAudioEnabled() ? '🔊 Voce Attiva' : '🔇 Voce Spenta' }}
-          </button>
-        </div>
-
-        <div class="roller-folders-bar" role="tablist">
-          <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'combat'" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">
-            🗡️ Attacchi
-          </button>
-          <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'damage'" class="folder-chip" [class.active]="rollerSection() === 'damage'" (click)="rollerSection.set('damage')">
-            💥 Danni
-          </button>
-          <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'saves'" class="folder-chip" [class.active]="rollerSection() === 'saves'" (click)="rollerSection.set('saves')">
-            🛡️ Tiri Salvezza
-          </button>
-          <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'skills'" class="folder-chip" [class.active]="rollerSection() === 'skills'" (click)="rollerSection.set('skills')">
-            📊 Abilità
-          </button>
-        </div>
-
-        <!-- MODIFIERS DINAMICI CON CHECKBOX RYOUJIN -->
-        <div class="roll-modifiers-box" aria-label="Modificatori di tiro attivi">
-          <div class="mod-box-header">
-            <span>ROLL MODIFIERS</span>
-            <button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modDivineFavor.set(false); modPrayer.set(false); modChallenge.set(false); modFlank.set(false); modBanner.set(false)">
-              Clear
-            </button>
-          </div>
-          <div class="mod-checkboxes-grid">
-            <label class="mod-check-label" [class.checked]="modInspire()">
-              <input type="checkbox" [ngModel]="modInspire()" (ngModelChange)="modInspire.set($event)" />
-              <span>Ispirare coraggio (+2)</span>
-            </label>
-            <label class="mod-check-label" [class.checked]="modDivineFavor()">
-              <input type="checkbox" [ngModel]="modDivineFavor()" (ngModelChange)="modDivineFavor.set($event)" />
-              <span>Favore divino (+2)</span>
-            </label>
-            <label class="mod-check-label" [class.checked]="modPrayer()">
-              <input type="checkbox" [ngModel]="modPrayer()" (ngModelChange)="modPrayer.set($event)" />
-              <span>Preghiera (+1)</span>
-            </label>
-            <label class="mod-check-label" [class.checked]="modChallenge()">
-              <input type="checkbox" [ngModel]="modChallenge()" (ngModelChange)="modChallenge.set($event)" />
-              <span>Sfida (+{{ ryoujinLevel }})</span>
-            </label>
-            <label class="mod-check-label" [class.checked]="modFlank()">
-              <input type="checkbox" [ngModel]="modFlank()" (ngModelChange)="modFlank.set($event)" />
-              <span>Fiancheggiamento (+2)</span>
-            </label>
-            <label class="mod-check-label" [class.checked]="modBanner()">
-              <input type="checkbox" [ngModel]="modBanner()" (ngModelChange)="modBanner.set($event)" />
-              <span>Stendardo (+1)</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- BANNER RISULTATO TIRO -->
-        <div class="roll-result-banner" *ngIf="lastResult() as res">
-          <div class="res-head">
-            <span class="res-title">{{ res.title }}</span>
-            <span class="res-formula">{{ res.formula }}</span>
-          </div>
-          <div class="res-main-row">
-            <div class="dice-badge" [class.crit]="res.isCrit" [class.fumble]="res.isFumble">
-              <span class="dice-label">DADO</span>
-              <span class="dice-num">{{ res.rolls.join(', ') }}</span>
-            </div>
-            <div class="total-badge">
-              <span class="total-label">TOTALE</span>
-              <span class="total-num">{{ res.total }}</span>
-            </div>
-          </div>
-          <div class="crit-warning" *ngIf="res.isCrit">✨ MINACCIA DI CRITICO! Clicca sulla riga di conferma critico!</div>
-          <div class="fumble-warning" *ngIf="res.isFumble">💀 FALLIMENTO AUTOMATICO (1 Naturale)!</div>
-          <div class="res-breakdown">{{ res.breakdown }}</div>
-        </div>
-
-        <!-- LISTA RIGHE DI TIRO DINAMICHE RYOUJIN & HISUI -->
-        <div class="dice-rolls-list" role="group" aria-label="Elenco tiri disponibili">
-          <!-- RYOUJIN: ATTACCHI -->
-          <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'combat'">
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 1', 1, 20, katana1TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Katana pod 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana1TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 1 crit', 1, 20, katana1TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Katana pod 1 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana1TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 2', 1, 20, katana2TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Katana pod 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana2TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 2 crit', 1, 20, katana2TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Katana pod 2 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana2TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 1', 1, 20, suishen1TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Suishen 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen1TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen crit 1', 1, 20, suishen1TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Suishen crit 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen1TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 2', 1, 20, suishen2TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Suishen 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen2TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 2 crit', 1, 20, suishen2TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Suishen 2 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen2TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Arco', 1, 20, bow1TxC, 'atk', 20)">
-              <div class="item-info"><span class="item-name">Arco</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bow1TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Arco 2', 1, 20, bow2TxC, 'atk', 20)">
-              <div class="item-info"><span class="item-name">Arco 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bow2TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('BMC', 1, 20, bmcTxC, 'atk')">
-              <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bmcTxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-          </ng-container>
-
-          <!-- RYOUJIN: DANNI -->
-          <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'damage'">
-            <div class="dice-item-row" (click)="rollDynamicAction('Danni katana pod', 1, 8, katanaPodDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danni katana pod</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', katanaPodDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Danno suishen', 1, 8, suishenDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danno suishen</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', suishenDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Danno suishen fiammeggianti', 1, 6, 0, 'dmg', 20, true)">
-              <div class="item-info"><span class="item-name">Danno suishen fiammeggianti</span><span class="item-sub">{{ getRollFormula('dmg', 'd6', 0, true) }}</span></div>
-              <button type="button" class="roll-btn fire">Fuoco 🔥</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Danno arco', 1, 8, bowDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danno arco</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', bowDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-          </ng-container>
-
-          <!-- RYOUJIN: TIRI SALVEZZA -->
-          <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'saves'">
-            <div class="dice-item-row" (click)="rollDynamicAction('Tempra', 1, 20, rec.data.character.fortitude, 'save')">
-              <div class="item-info"><span class="item-name">Tempra</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.fortitude) }}</span></div>
-              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Tempra 2 (Risoluto)', 1, 20, rec.data.character.fortitude, 'save')">
-              <div class="item-info"><span class="item-name">Tempra 2</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.fortitude) }}</span></div>
-              <button type="button" class="roll-btn save">Ritiro 🔄</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Riflessi', 1, 20, rec.data.character.reflex, 'save')">
-              <div class="item-info"><span class="item-name">Riflessi</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.reflex) }}</span></div>
-              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Volontà', 1, 20, rec.data.character.will, 'save')">
-              <div class="item-info"><span class="item-name">Volontà</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.will) }}</span></div>
-              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Volontà 2 (Fermezza)', 1, 20, rec.data.character.will, 'save')">
-              <div class="item-info"><span class="item-name">Volontà 2</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.will) }}</span></div>
-              <button type="button" class="roll-btn save">Ritiro 🔄</button>
-            </div>
-          </ng-container>
-
-          <!-- RYOUJIN: ABILITÀ -->
-          <ng-container *ngIf="rollerChar() === 'ryoujin' && rollerSection() === 'skills'">
-            <div class="dice-item-row" *ngFor="let sk of rec.data.character.skills" (click)="rollDynamicAction(sk.name, 1, 20, sk.bonus, 'skill')">
-              <div class="item-info"><span class="item-name">{{ sk.name }}</span><span class="item-sub">{{ getRollFormula('skill', 'd20', sk.bonus) }}</span></div>
-              <button type="button" class="roll-btn skill">Prova 📊</button>
-            </div>
-          </ng-container>
-
-          <!-- HISUI: ATTACCHI & DANNI -->
-          <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'combat'">
-            <div class="dice-item-row" (click)="rollDynamicAction('Morso', 1, 20, hisuiBiteTxC, 'atk', 20)">
-              <div class="item-info"><span class="item-name">Morso</span><span class="item-sub">{{ getRollFormula('atk', 'd20', hisuiBiteTxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Morso Pod', 1, 20, hisuiBitePodTxC, 'atk', 20)">
-              <div class="item-info"><span class="item-name">Morso Pod</span><span class="item-sub">{{ getRollFormula('atk', 'd20', hisuiBitePodTxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('BMC Sbilanciare', 1, 20, hisuiTripCmb, 'atk')">
-              <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', hisuiTripCmb) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-          </ng-container>
-
-          <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'damage'">
-            <div class="dice-item-row" (click)="rollDynamicAction('Danni morso pod', 1, 8, hisuiBitePodDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danni morso pod</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', hisuiBitePodDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Danni morso', 1, 8, hisuiBiteBaseDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danni morso</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', hisuiBiteBaseDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-          </ng-container>
-
-          <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'saves'">
-            <div class="dice-item-row" (click)="rollDynamicAction('Tempra Hisui', 1, 20, rec.data.companion?.fortitude || 10, 'save')">
-              <div class="item-info"><span class="item-name">Tempra</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.companion?.fortitude || 10) }}</span></div>
-              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Riflessi Hisui', 1, 20, rec.data.companion?.reflex || 8, 'save')">
-              <div class="item-info"><span class="item-name">Riflessi (Eludere)</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.companion?.reflex || 8) }}</span></div>
-              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Volontà Hisui', 1, 20, rec.data.companion?.will || 3, 'save')">
-              <div class="item-info"><span class="item-name">Volontà</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.companion?.will || 3) }}</span></div>
-              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
-            </div>
-          </ng-container>
-
-          <ng-container *ngIf="rollerChar() === 'hisui' && rollerSection() === 'skills'">
-            <div class="dice-item-row" *ngFor="let sk of rec.data.companion?.skills" (click)="rollDynamicAction(sk.name, 1, 20, sk.bonus, 'skill')">
-              <div class="item-info"><span class="item-name">{{ sk.name }}</span><span class="item-sub">{{ getRollFormula('skill', 'd20', sk.bonus) }}</span></div>
-              <button type="button" class="roll-btn skill">Prova 📊</button>
-            </div>
-          </ng-container>
-        </div>
-
-        <div class="quick-dice-bar">
-          <span class="qd-lbl">RAPIDI:</span>
-          <button type="button" (click)="quickRoll(20)">d20</button>
-          <button type="button" (click)="quickRoll(8)">d8</button>
-          <button type="button" (click)="quickRoll(6)">d6</button>
-          <button type="button" (click)="quickRoll(4)">d4</button>
-          <button type="button" (click)="quickRoll(100)">d%</button>
-        </div>
-      </div>
     </ng-container>
 
     <!-- ========================================================================= -->
-    <!-- CASO B: SCHEDA PERSONALIZZABILE PER LE ALTRE GIOCATRICI (AIRYN, NIJENA...) -->
+    <!-- CASO B: SCHEDA PULITA PERSONALIZZABILE PER LE ALTRE GIOCATRICI            -->
     <!-- ========================================================================= -->
-    <ng-container *ngIf="!isRyoujin()">
-      <!-- VISTA 1: SCHEDA PRINCIPALE -->
+    <ng-container *ngIf="!isRyoujin">
       <div *ngIf="activeTab() === 'main'" class="char-sheet" role="tabpanel">
         <header class="sheet-hero">
           <div class="hero-top">
@@ -802,15 +533,15 @@
 
         <!-- CARATTERISTICHE -->
         <div class="attributes-strip">
-          <div class="attr-cell"><span class="attr-name">FOR</span><span class="attr-val">{{ rec.data.character.str }}</span><span class="attr-mod">+{{ (rec.data.character.str - 10) / 2 | number:'1.0-0' }}</span></div>
-          <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ rec.data.character.dex }}</span><span class="attr-mod">+{{ (rec.data.character.dex - 10) / 2 | number:'1.0-0' }}</span></div>
+          <div class="attr-cell"><span class="attr-name">FOR</span><span class="attr-val">{{ rec.data.character.str }}</span><span class="attr-mod">+{{ charStrMod }}</span></div>
+          <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ rec.data.character.dex }}</span><span class="attr-mod">+{{ charDexMod }}</span></div>
           <div class="attr-cell"><span class="attr-name">COS</span><span class="attr-val">{{ rec.data.character.con }}</span><span class="attr-mod">+{{ (rec.data.character.con - 10) / 2 | number:'1.0-0' }}</span></div>
           <div class="attr-cell"><span class="attr-name">INT</span><span class="attr-val">{{ rec.data.character.int }}</span><span class="attr-mod">+{{ (rec.data.character.int - 10) / 2 | number:'1.0-0' }}</span></div>
           <div class="attr-cell"><span class="attr-name">SAG</span><span class="attr-val">{{ rec.data.character.wis }}</span><span class="attr-mod">+{{ (rec.data.character.wis - 10) / 2 | number:'1.0-0' }}</span></div>
           <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">{{ rec.data.character.cha }}</span><span class="attr-mod">+{{ (rec.data.character.cha - 10) / 2 | number:'1.0-0' }}</span></div>
         </div>
 
-        <!-- MODIFICATORI TATTICI: SOLO ISPIRARE CORAGGIO E FIANCHEGGIAMENTO -->
+        <!-- MODIFICATORI TATTICI DEL GRUPPO: SOLO ISPIRARE CORAGGIO E FIANCHEGGIAMENTO -->
         <div class="tactical-buffs-panel">
           <div class="buffs-header">
             <span>⚡ BUFF TATTICI DI SQUADRA</span>
@@ -874,62 +605,346 @@
           <ng-template #noSks><div class="empty-section-hint">Nessuna abilità registrata. Clicca su <strong>+ Aggiungi Abilità</strong>.</div></ng-template>
         </div>
       </div>
+    </ng-container>
 
-      <!-- VISTA 2: ROLLER PER ALTRE GIOCATRICI -->
-      <div *ngIf="activeTab() === 'roller'" class="roller-container" role="tabpanel">
-        <div class="roller-folders-bar" role="tablist">
-          <button type="button" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">🗡️ Attacchi</button>
-          <button type="button" class="folder-chip" [class.active]="rollerSection() === 'saves'" (click)="rollerSection.set('saves')">🛡️ Tiri Salvezza</button>
-          <button type="button" class="folder-chip" [class.active]="rollerSection() === 'skills'" (click)="rollerSection.set('skills')">📊 Abilità</button>
+    <!-- ========================================================================= -->
+    <!-- VISTA 3: LANCIATORE DADI UNIFICATO E 100% DINAMICO PER TUTTI               -->
+    <!-- ========================================================================= -->
+    <div *ngIf="activeTab() === 'roller'" class="roller-container" role="tabpanel">
+      <!-- 1. SELETTORE COMPAGNO & VOCE AUDIO -->
+      <div class="roller-header-row">
+        <div class="roller-top-nav" role="tablist">
+          <button 
+            type="button" 
+            role="tab"
+            [attr.aria-selected]="rollerChar() === 'main'"
+            class="roller-char-btn" 
+            [class.active]="rollerChar() === 'main'" 
+            (click)="rollerChar.set('main')">
+            ⚔️ {{ rec.name }}
+          </button>
+          <button 
+            *ngIf="rec.data.companion"
+            type="button" 
+            role="tab"
+            [attr.aria-selected]="rollerChar() === 'companion'"
+            class="roller-char-btn wolf" 
+            [class.active]="rollerChar() === 'companion'" 
+            (click)="rollerChar.set('companion')">
+            🐺 {{ rec.data.companion.name }}
+          </button>
         </div>
 
-        <div class="roll-modifiers-box">
-          <div class="mod-box-header"><span>BUFF ATTIVI</span><button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modFlank.set(false)">Clear</button></div>
-          <div class="mod-checkboxes-grid">
-            <label class="mod-check-label" [class.checked]="modInspire()"><input type="checkbox" [ngModel]="modInspire()" (ngModelChange)="modInspire.set($event)" /><span>🎺 Ispirare (+2)</span></label>
-            <label class="mod-check-label" [class.checked]="modFlank()"><input type="checkbox" [ngModel]="modFlank()" (ngModelChange)="modFlank.set($event)" /><span>👥 Fiancheggiamento (+2)</span></label>
+        <button 
+          type="button" 
+          class="voice-tts-toggle" 
+          [class.active]="ttsAudioEnabled()" 
+          (click)="ttsAudioEnabled.set(!ttsAudioEnabled())"
+          [attr.aria-label]="ttsAudioEnabled() ? 'Voce audio attiva' : 'Voce audio disattivata'">
+          {{ ttsAudioEnabled() ? '🔊 Voce Attiva' : '🔇 Voce Spenta' }}
+        </button>
+      </div>
+
+      <!-- 2. CARTELLE SEZIONI -->
+      <div class="roller-folders-bar" role="tablist">
+        <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'combat'" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">
+          🗡️ Attacchi
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'damage'" class="folder-chip" [class.active]="rollerSection() === 'damage'" (click)="rollerSection.set('damage')">
+          💥 Danni
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'saves'" class="folder-chip" [class.active]="rollerSection() === 'saves'" (click)="rollerSection.set('saves')">
+          🛡️ Tiri Salvezza
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'skills'" class="folder-chip" [class.active]="rollerSection() === 'skills'" (click)="rollerSection.set('skills')">
+          📊 Abilità
+        </button>
+      </div>
+
+      <!-- 3. ROLL MODIFIERS DINAMICI CON CHECKBOX -->
+      <div class="roll-modifiers-box" aria-label="Modificatori di tiro attivi">
+        <div class="mod-box-header">
+          <span>ROLL MODIFIERS</span>
+          <button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modDivineFavor.set(false); modPrayer.set(false); modChallenge.set(false); modFlank.set(false); modBanner.set(false)">
+            Clear
+          </button>
+        </div>
+        <div class="mod-checkboxes-grid">
+          <label class="mod-check-label" [class.checked]="modInspire()">
+            <input type="checkbox" [ngModel]="modInspire()" (ngModelChange)="modInspire.set($event)" />
+            <span>Ispirare coraggio (+2)</span>
+          </label>
+          <label class="mod-check-label" [class.checked]="modFlank()">
+            <input type="checkbox" [ngModel]="modFlank()" (ngModelChange)="modFlank.set($event)" />
+            <span>Fiancheggiamento (+2)</span>
+          </label>
+          <label class="mod-check-label" [class.checked]="modDivineFavor()">
+            <input type="checkbox" [ngModel]="modDivineFavor()" (ngModelChange)="modDivineFavor.set($event)" />
+            <span>Favore divino (+2)</span>
+          </label>
+          <label class="mod-check-label" [class.checked]="modPrayer()">
+            <input type="checkbox" [ngModel]="modPrayer()" (ngModelChange)="modPrayer.set($event)" />
+            <span>Preghiera (+1)</span>
+          </label>
+          <label class="mod-check-label" *ngIf="isRyoujin" [class.checked]="modChallenge()">
+            <input type="checkbox" [ngModel]="modChallenge()" (ngModelChange)="modChallenge.set($event)" />
+            <span>Sfida (+{{ charLevel }})</span>
+          </label>
+          <label class="mod-check-label" *ngIf="isRyoujin" [class.checked]="modBanner()">
+            <input type="checkbox" [ngModel]="modBanner()" (ngModelChange)="modBanner.set($event)" />
+            <span>Stendardo (+1)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 4. BANNER RISULTATO TIRO -->
+      <div class="roll-result-banner" *ngIf="lastResult() as res">
+        <div class="res-head">
+          <span class="res-title">{{ res.title }}</span>
+          <span class="res-formula">{{ res.formula }}</span>
+        </div>
+        <div class="res-main-row">
+          <div class="dice-badge" [class.crit]="res.isCrit" [class.fumble]="res.isFumble">
+            <span class="dice-label">DADO</span>
+            <span class="dice-num">{{ res.rolls.join(', ') }}</span>
+          </div>
+          <div class="total-badge">
+            <span class="total-label">TOTALE</span>
+            <span class="total-num">{{ res.total }}</span>
           </div>
         </div>
+        <div class="crit-warning" *ngIf="res.isCrit">✨ MINACCIA DI CRITICO! Clicca sulla riga di conferma critico!</div>
+        <div class="fumble-warning" *ngIf="res.isFumble">💀 FALLIMENTO AUTOMATICO (1 Naturale)!</div>
+        <div class="res-breakdown">{{ res.breakdown }}</div>
+      </div>
 
-        <div class="roll-result-banner" *ngIf="lastResult() as res">
-          <div class="res-head"><span class="res-title">{{ res.title }}</span><span class="res-formula">{{ res.formula }}</span></div>
-          <div class="res-main-row">
-            <div class="dice-badge" [class.crit]="res.isCrit" [class.fumble]="res.isFumble"><span class="dice-label">DADO</span><span class="dice-num">{{ res.rolls.join(', ') }}</span></div>
-            <div class="total-badge"><span class="total-label">TOTALE</span><span class="total-num">{{ res.total }}</span></div>
-          </div>
-          <div class="res-breakdown">{{ res.breakdown }}</div>
-        </div>
-
-        <div class="dice-rolls-list">
-          <ng-container *ngIf="rollerSection() === 'combat'">
-            <div class="dice-item-row" *ngFor="let w of rec.data.character.weapons" (click)="rollGenericAction(w.name, 1, 20, 0)">
-              <div class="item-info"><span class="item-name">{{ w.name }}</span><span class="item-sub">TxC {{ w.attack_bonus }} • Danno {{ w.damage }}</span></div>
+      <!-- 5. LISTA RIGHE DI TIRO DINAMICHE -->
+      <div class="dice-rolls-list" role="group" aria-label="Elenco tiri disponibili">
+        
+        <!-- ===== SEZIONE ATTACCHI ===== -->
+        <ng-container *ngIf="rollerChar() === 'main' && rollerSection() === 'combat'">
+          <!-- A: Righe specifiche per Ryoujin (Katana, Suishen, Arco, BMC) collegate a BAB e FOR -->
+          <ng-container *ngIf="isRyoujin">
+            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 1', 1, 20, katana1TxC, 'atk', 18)">
+              <div class="item-info"><span class="item-name">Katana pod 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana1TxC) }}</span></div>
               <button type="button" class="roll-btn">Tira 🎲</button>
             </div>
-            <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">Aggiungi armi nella scheda per tirarle qui.</div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 1 crit', 1, 20, katana1TxC, 'atk', 20, false, 2)">
+              <div class="item-info"><span class="item-name">Katana pod 1 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana1TxC, false, 2) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 2', 1, 20, katana2TxC, 'atk', 18)">
+              <div class="item-info"><span class="item-name">Katana pod 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana2TxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 2 crit', 1, 20, katana2TxC, 'atk', 20, false, 2)">
+              <div class="item-info"><span class="item-name">Katana pod 2 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana2TxC, false, 2) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 1', 1, 20, suishen1TxC, 'atk', 18)">
+              <div class="item-info"><span class="item-name">Suishen 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen1TxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Suishen crit 1', 1, 20, suishen1TxC, 'atk', 20, false, 2)">
+              <div class="item-info"><span class="item-name">Suishen crit 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen1TxC, false, 2) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 2', 1, 20, suishen2TxC, 'atk', 18)">
+              <div class="item-info"><span class="item-name">Suishen 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen2TxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 2 crit', 1, 20, suishen2TxC, 'atk', 20, false, 2)">
+              <div class="item-info"><span class="item-name">Suishen 2 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen2TxC, false, 2) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Arco', 1, 20, bow1TxC, 'atk', 20)">
+              <div class="item-info"><span class="item-name">Arco</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bow1TxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Arco 2', 1, 20, bow2TxC, 'atk', 20)">
+              <div class="item-info"><span class="item-name">Arco 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bow2TxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('BMC', 1, 20, bmcTxC, 'atk')">
+              <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bmcTxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+          </ng-container>
+
+          <!-- B: Per tutti gli altri PG: estrazione automatica di 1° e 2° attacco e critici da rec.data.character.weapons -->
+          <ng-container *ngIf="!isRyoujin">
+            <ng-container *ngFor="let w of rec.data.character.weapons">
+              <div 
+                class="dice-item-row" 
+                *ngFor="let atk of getDynamicAttacksFor(w)" 
+                (click)="rollDynamicAction(atk.label, 1, 20, atk.bonus, 'atk', atk.critMin, false, atk.critBonus || 0)">
+                <div class="item-info">
+                  <span class="item-name">{{ atk.label }}</span>
+                  <span class="item-sub">{{ getRollFormula('atk', 'd20', atk.bonus, false, atk.critBonus || 0) }}</span>
+                </div>
+                <button type="button" class="roll-btn">Tira 🎲</button>
+              </div>
+            </ng-container>
+
+            <!-- BMC per tutti i PG -->
+            <div class="dice-item-row" (click)="rollDynamicAction('BMC', 1, 20, charBab + charStrMod, 'atk')">
+              <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', charBab + charStrMod) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+
+            <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">
+              Nessuna arma registrata. Inserisci le tue armi per vederle qui con i tiri automatici!
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <!-- ===== SEZIONE DANNI ===== -->
+        <ng-container *ngIf="rollerChar() === 'main' && rollerSection() === 'damage'">
+          <!-- Ryoujin Danni -->
+          <ng-container *ngIf="isRyoujin">
+            <div class="dice-item-row" (click)="rollDynamicAction('Danni katana pod', 1, 8, katanaPodDmg, 'dmg', 20, false)">
+              <div class="item-info"><span class="item-name">Danni katana pod</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', katanaPodDmg, false) }}</span></div>
+              <button type="button" class="roll-btn dmg">Danno 💥</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Danno suishen', 1, 8, suishenDmg, 'dmg', 20, false)">
+              <div class="item-info"><span class="item-name">Danno suishen</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', suishenDmg, false) }}</span></div>
+              <button type="button" class="roll-btn dmg">Danno 💥</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Danno suishen fiammeggianti', 1, 6, 0, 'dmg', 20, true)">
+              <div class="item-info"><span class="item-name">Danno suishen fiammeggianti</span><span class="item-sub">{{ getRollFormula('dmg', 'd6', 0, true) }}</span></div>
+              <button type="button" class="roll-btn fire">Fuoco 🔥</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Danno arco', 1, 8, bowDmg, 'dmg', 20, false)">
+              <div class="item-info"><span class="item-name">Danno arco</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', bowDmg, false) }}</span></div>
+              <button type="button" class="roll-btn dmg">Danno 💥</button>
+            </div>
+          </ng-container>
+
+          <!-- Altri PG Danni (Dinamico da rec.data.character.weapons) -->
+          <ng-container *ngIf="!isRyoujin">
+            <ng-container *ngFor="let w of rec.data.character.weapons">
+              <div 
+                class="dice-item-row" 
+                *ngFor="let dmg of getDynamicDamagesFor(w)" 
+                (click)="rollDynamicAction(dmg.label, dmg.diceCount, dmg.diceFaces, dmg.baseMod, 'dmg', 20, dmg.isElemental || false)">
+                <div class="item-info">
+                  <span class="item-name">{{ dmg.label }}</span>
+                  <span class="item-sub">{{ getRollFormula('dmg', dmg.diceCount + 'd' + dmg.diceFaces, dmg.baseMod, dmg.isElemental || false) }}</span>
+                </div>
+                <button type="button" class="roll-btn dmg" [class.fire]="dmg.isElemental">Danno 💥</button>
+              </div>
+            </ng-container>
+
+            <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">
+              Nessuna arma registrata. Inserisci le tue armi per calcolare automaticamente il danno!
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <!-- ===== SEZIONE TIRI SALVEZZA ===== -->
+        <ng-container *ngIf="rollerChar() === 'main' && rollerSection() === 'saves'">
+          <div class="dice-item-row" (click)="rollDynamicAction('Tempra', 1, 20, rec.data.character.fortitude, 'save')">
+            <div class="item-info"><span class="item-name">Tempra</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.fortitude) }}</span></div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+          <div class="dice-item-row" (click)="rollDynamicAction('Tempra 2 (Ritiro)', 1, 20, rec.data.character.fortitude, 'save')">
+            <div class="item-info"><span class="item-name">Tempra 2</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.fortitude) }}</span></div>
+            <button type="button" class="roll-btn save">Ritiro 🔄</button>
+          </div>
+          <div class="dice-item-row" (click)="rollDynamicAction('Riflessi', 1, 20, rec.data.character.reflex, 'save')">
+            <div class="item-info"><span class="item-name">Riflessi</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.reflex) }}</span></div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+          <div class="dice-item-row" (click)="rollDynamicAction('Volontà', 1, 20, rec.data.character.will, 'save')">
+            <div class="item-info"><span class="item-name">Volontà</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.will) }}</span></div>
+            <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+          </div>
+          <div class="dice-item-row" (click)="rollDynamicAction('Volontà 2 (Ritiro)', 1, 20, rec.data.character.will, 'save')">
+            <div class="item-info"><span class="item-name">Volontà 2</span><span class="item-sub">{{ getRollFormula('save', 'd20', rec.data.character.will) }}</span></div>
+            <button type="button" class="roll-btn save">Ritiro 🔄</button>
+          </div>
+        </ng-container>
+
+        <!-- ===== SEZIONE ABILITÀ ===== -->
+        <ng-container *ngIf="rollerChar() === 'main' && rollerSection() === 'skills'">
+          <div 
+            class="dice-item-row" 
+            *ngFor="let sk of rec.data.character.skills" 
+            (click)="rollDynamicAction(sk.name, 1, 20, sk.bonus, 'skill')">
+            <div class="item-info">
+              <span class="item-name">{{ sk.name }}</span>
+              <span class="item-sub">{{ getRollFormula('skill', 'd20', sk.bonus) }}</span>
+            </div>
+            <button type="button" class="roll-btn skill">Prova 📊</button>
+          </div>
+
+          <div *ngIf="!rec.data.character.skills || rec.data.character.skills.length === 0" class="empty-section-hint">
+            Nessuna abilità registrata.
+          </div>
+        </ng-container>
+
+        <!-- ===== COMPAGNO (HISUI O COMPAGNO ANIMALE) ===== -->
+        <ng-container *ngIf="rollerChar() === 'companion' && rec.data.companion as comp">
+          <ng-container *ngIf="rollerSection() === 'combat'">
+            <div class="dice-item-row" (click)="rollDynamicAction('Morso', 1, 20, hisuiBiteTxC, 'atk', 20)">
+              <div class="item-info"><span class="item-name">Morso</span><span class="item-sub">{{ getRollFormula('atk', 'd20', hisuiBiteTxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Morso Pod', 1, 20, hisuiBitePodTxC, 'atk', 20)">
+              <div class="item-info"><span class="item-name">Morso Pod</span><span class="item-sub">{{ getRollFormula('atk', 'd20', hisuiBitePodTxC) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('BMC Sbilanciare', 1, 20, hisuiTripCmb, 'atk')">
+              <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', hisuiTripCmb) }}</span></div>
+              <button type="button" class="roll-btn">Tira 🎲</button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="rollerSection() === 'damage'">
+            <div class="dice-item-row" (click)="rollDynamicAction('Danni morso pod', 1, 8, hisuiBitePodDmg, 'dmg', 20, false)">
+              <div class="item-info"><span class="item-name">Danni morso pod</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', hisuiBitePodDmg, false) }}</span></div>
+              <button type="button" class="roll-btn dmg">Danno 💥</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Danni morso', 1, 8, hisuiBiteBaseDmg, 'dmg', 20, false)">
+              <div class="item-info"><span class="item-name">Danni morso</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', hisuiBiteBaseDmg, false) }}</span></div>
+              <button type="button" class="roll-btn dmg">Danno 💥</button>
+            </div>
           </ng-container>
 
           <ng-container *ngIf="rollerSection() === 'saves'">
-            <div class="dice-item-row" (click)="rollGenericAction('Tempra', 1, 20, rec.data.character.fortitude)"><div class="item-info"><span class="item-name">Tempra</span><span class="item-sub">+{{ rec.data.character.fortitude }}</span></div><button type="button" class="roll-btn save">Salvezza 🛡️</button></div>
-            <div class="dice-item-row" (click)="rollGenericAction('Riflessi', 1, 20, rec.data.character.reflex)"><div class="item-info"><span class="item-name">Riflessi</span><span class="item-sub">+{{ rec.data.character.reflex }}</span></div><button type="button" class="roll-btn save">Salvezza 🛡️</button></div>
-            <div class="dice-item-row" (click)="rollGenericAction('Volontà', 1, 20, rec.data.character.will)"><div class="item-info"><span class="item-name">Volontà</span><span class="item-sub">+{{ rec.data.character.will }}</span></div><button type="button" class="roll-btn save">Salvezza 🛡️</button></div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Tempra Lupo', 1, 20, comp.fortitude || 10, 'save')">
+              <div class="item-info"><span class="item-name">Tempra</span><span class="item-sub">{{ getRollFormula('save', 'd20', comp.fortitude || 10) }}</span></div>
+              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Riflessi Lupo (Eludere)', 1, 20, comp.reflex || 8, 'save')">
+              <div class="item-info"><span class="item-name">Riflessi (Eludere)</span><span class="item-sub">{{ getRollFormula('save', 'd20', comp.reflex || 8) }}</span></div>
+              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+            </div>
+            <div class="dice-item-row" (click)="rollDynamicAction('Volontà Lupo', 1, 20, comp.will || 3, 'save')">
+              <div class="item-info"><span class="item-name">Volontà</span><span class="item-sub">{{ getRollFormula('save', 'd20', comp.will || 3) }}</span></div>
+              <button type="button" class="roll-btn save">Salvezza 🛡️</button>
+            </div>
           </ng-container>
 
           <ng-container *ngIf="rollerSection() === 'skills'">
-            <div class="dice-item-row" *ngFor="let sk of rec.data.character.skills" (click)="rollGenericAction(sk.name, 1, 20, sk.bonus)"><div class="item-info"><span class="item-name">{{ sk.name }}</span><span class="item-sub">+{{ sk.bonus }}</span></div><button type="button" class="roll-btn skill">Prova 📊</button></div>
-            <div *ngIf="!rec.data.character.skills || rec.data.character.skills.length === 0" class="empty-section-hint">Nessuna abilità registrata.</div>
+            <div class="dice-item-row" *ngFor="let sk of comp.skills" (click)="rollDynamicAction(sk.name, 1, 20, sk.bonus, 'skill')">
+              <div class="item-info"><span class="item-name">{{ sk.name }}</span><span class="item-sub">{{ getRollFormula('skill', 'd20', sk.bonus) }}</span></div>
+              <button type="button" class="roll-btn skill">Prova 📊</button>
+            </div>
           </ng-container>
-        </div>
-
-        <div class="quick-dice-bar">
-          <span class="qd-lbl">RAPIDI:</span>
-          <button type="button" (click)="quickRoll(20)">d20</button>
-          <button type="button" (click)="quickRoll(8)">d8</button>
-          <button type="button" (click)="quickRoll(6)">d6</button>
-          <button type="button" (click)="quickRoll(4)">d4</button>
-        </div>
+        </ng-container>
       </div>
-    </ng-container>
+
+      <!-- 6. DADI RAPIDI -->
+      <div class="quick-dice-bar">
+        <span class="qd-lbl">RAPIDI:</span>
+        <button type="button" (click)="quickRoll(20)">d20</button>
+        <button type="button" (click)="quickRoll(8)">d8</button>
+        <button type="button" (click)="quickRoll(6)">d6</button>
+        <button type="button" (click)="quickRoll(4)">d4</button>
+        <button type="button" (click)="quickRoll(100)">d%</button>
+      </div>
+    </div>
   </ng-container>
 
   <!-- ==================== MODALE LEVEL UP ONLINE (SALVA SU NEON) ==================== -->
@@ -946,10 +961,10 @@
         <div class="modal-tab-bar" role="tablist">
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'general'" class="tab-chip" [class.active]="modalTab() === 'general'" (click)="modalTab.set('general')">🎖️ Info</button>
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'stats'" class="tab-chip" [class.active]="modalTab() === 'stats'" (click)="modalTab.set('stats')">💪 Stat & TS</button>
-          <button *ngIf="!isRyoujin()" type="button" class="tab-chip" [class.active]="modalTab() === 'weapons'" (click)="modalTab.set('weapons')">🗡️ Armi</button>
-          <button *ngIf="!isRyoujin()" type="button" class="tab-chip" [class.active]="modalTab() === 'feats'" (click)="modalTab.set('feats')">🥋 Talenti</button>
+          <button *ngIf="!isRyoujin" type="button" class="tab-chip" [class.active]="modalTab() === 'weapons'" (click)="modalTab.set('weapons')">🗡️ Armi</button>
+          <button *ngIf="!isRyoujin" type="button" class="tab-chip" [class.active]="modalTab() === 'feats'" (click)="modalTab.set('feats')">🥋 Talenti</button>
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'skills'" class="tab-chip" [class.active]="modalTab() === 'skills'" (click)="modalTab.set('skills')">📊 Abilità</button>
-          <button *ngIf="isRyoujin()" type="button" role="tab" [attr.aria-selected]="modalTab() === 'companion'" class="tab-chip" [class.active]="modalTab() === 'companion'" (click)="modalTab.set('companion')">🐺 Hisui</button>
+          <button *ngIf="isRyoujin" type="button" role="tab" [attr.aria-selected]="modalTab() === 'companion'" class="tab-chip" [class.active]="modalTab() === 'companion'" (click)="modalTab.set('companion')">🐺 Hisui</button>
         </div>
       </header>
 
@@ -1012,7 +1027,7 @@
         </div>
 
         <!-- TAB ARMI (PER ALTRE SCHEDE) -->
-        <div *ngIf="modalTab() === 'weapons' && !isRyoujin()" class="tab-content">
+        <div *ngIf="modalTab() === 'weapons' && !isRyoujin" class="tab-content">
           <div class="form-section">
             <h3>🗡️ Armi in Dotazione</h3>
             <div class="items-edit-list" *ngIf="editData.character.weapons">
@@ -1035,7 +1050,7 @@
         </div>
 
         <!-- TAB TALENTI (PER ALTRE SCHEDE) -->
-        <div *ngIf="modalTab() === 'feats' && !isRyoujin()" class="tab-content">
+        <div *ngIf="modalTab() === 'feats' && !isRyoujin" class="tab-content">
           <div class="form-section">
             <h3>🥋 Talenti</h3>
             <div class="items-edit-list" *ngIf="editData.character.feats">
@@ -1122,7 +1137,7 @@
       </div>
 
       <footer class="modal-footer-actions">
-        <button *ngIf="!isRyoujin()" type="button" class="btn-delete-char" (click)="deleteCurrentCharacter()" [disabled]="saving()">
+        <button *ngIf="!isRyoujin" type="button" class="btn-delete-char" (click)="deleteCurrentCharacter()" [disabled]="saving()">
           🗑️ Elimina Scheda
         </button>
 
