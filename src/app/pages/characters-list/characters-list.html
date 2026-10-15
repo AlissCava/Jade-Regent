@@ -9,7 +9,7 @@
   <!-- GRIGLIA EROI (2 COLONNE SU MOBILE, 3 SU DESKTOP) -->
   <div class="modules-grid">
     <a 
-      *ngFor="let hero of characters" 
+      *ngFor="let hero of characters()" 
       [routerLink]="['/characters', hero.slug]" 
       class="module-card">
       
@@ -30,5 +30,60 @@
 
       <div class="card-action-hint">Apri Scheda ➔</div>
     </a>
+
+    <!-- CARD SPECIALE: + AGGIUNGI NUOVO EROE O PNG -->
+    <button type="button" class="module-card add-hero-card" (click)="openCreateModal()">
+      <div class="card-icon-wrap gold-wrap">
+        <span class="icon">➕</span>
+      </div>
+      <div class="card-content">
+        <div class="card-tag">Nuova Scheda</div>
+        <h2 class="card-title">Aggiungi Eroe / PNG</h2>
+        <div class="card-class">Crea da zero</div>
+        <p class="card-desc">Crea e salva una scheda personalizzata su Neon DB.</p>
+      </div>
+      <div class="card-action-hint gold-hint">+ Crea Scheda</div>
+    </button>
+  </div>
+
+  <!-- MODALE CREAZIONE NUOVO PERSONAGGIO -->
+  <div class="modal-backdrop" *ngIf="showCreateModal()" (click)="showCreateModal.set(false)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <header class="modal-head">
+        <div class="modal-badge">DATABASE NEON</div>
+        <h2 class="modal-title">Crea Nuova Scheda</h2>
+        <button type="button" class="btn-close" (click)="showCreateModal.set(false)">✕</button>
+      </header>
+
+      <form (ngSubmit)="createNewCharacter()" class="modal-form">
+        <div class="field-group">
+          <label>Nome del Personaggio *</label>
+          <input type="text" [(ngModel)]="newName" name="charName" placeholder="es. Ameiko, Shalelu, Kenji..." required />
+        </div>
+
+        <div class="fields-row">
+          <div class="field-group">
+            <label>Classe</label>
+            <input type="text" [(ngModel)]="newClass" name="charClass" placeholder="es. Barda, Ladro, Chierico" required />
+          </div>
+          <div class="field-group">
+            <label>Razza</label>
+            <input type="text" [(ngModel)]="newRace" name="charRace" placeholder="es. Umano, Elfo, Kitsune" required />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Livello Iniziale</label>
+          <input type="number" [(ngModel)]="newLevel" name="charLevel" min="1" max="20" required />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="showCreateModal.set(false)">Annulla</button>
+          <button type="submit" class="btn-submit" [disabled]="!newName.trim() || isCreating()">
+            {{ isCreating() ? 'Creazione...' : '✨ Inizializza Scheda' }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

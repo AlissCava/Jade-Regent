@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
-import { CharacterRecord, CharacterSheetData, SkillItem } from '../../models/character.model';
+import { CharacterRecord, CharacterSheetData, SkillItem, WeaponItem, FeatItem, SpecialResourceItem } from '../../models/character.model';
 
 export interface RollResult {
   title: string;
@@ -36,14 +36,6 @@ const DEFAULT_RYOUJIN_SKILLS: SkillItem[] = [
   { name: 'Nuotare', stat: 'FOR', bonus: 7 }
 ];
 
-const DEFAULT_HISUI_SKILLS: SkillItem[] = [
-  { name: 'Acrobazia', stat: 'DES', bonus: 8 },
-  { name: 'Furtività', stat: 'DES', bonus: 8 },
-  { name: 'Percezione', stat: 'SAG', bonus: 7 },
-  { name: 'Sopravvivenza', stat: 'SAG', bonus: 6 },
-  { name: 'Intimidire', stat: 'CAR', bonus: 5 }
-];
-
 @Component({
   selector: 'app-character-sheet',
   standalone: true,
@@ -57,16 +49,17 @@ export class CharacterSheetComponent implements OnInit {
 
   characterSlug = 'ryoujin';
   loading = signal<boolean>(true);
+  notFound = signal<boolean>(false);
   saving = signal<boolean>(false);
   saveSuccess = signal<boolean>(false);
 
   charRecord = signal<CharacterRecord | null>(null);
-  activeTab = signal<'main' | 'companion' | 'roller'>('roller');
+  activeTab = signal<'main' | 'companion' | 'roller'>('main');
 
-  rollerChar = signal<'ryoujin' | 'hisui'>('ryoujin');
+  rollerChar = signal<string>('main');
   rollerSection = signal<'combat' | 'damage' | 'saves' | 'skills'>('combat');
 
-  // MODIFICATORI DI LANCIO CHECKBOX (STILE APP DADI)
+  // MODIFICATORI DI LANCIO CHECKBOX
   modInspire = signal<boolean>(false);
   modDivineFavor = signal<boolean>(false);
   modPrayer = signal<boolean>(false);
@@ -76,17 +69,29 @@ export class CharacterSheetComponent implements OnInit {
 
   lastResult = signal<RollResult | null>(null);
 
-  // ACCESSIBILITÀ & SINTESI VOCALE
+  // ACCESSIBILITÀ SCREEN READER & TTS
   voiceAnnouncement = signal<string>('');
   ttsAudioEnabled = signal<boolean>(false);
 
-  // MODALE LEVEL UP
+  // MODALE MODIFICA & LEVEL UP
   showLevelUpModal = signal<boolean>(false);
-  modalTab = signal<'general' | 'stats' | 'skills' | 'companion'>('general');
+  modalTab = signal<'general' | 'stats' | 'weapons' | 'feats' | 'skills' | 'companion'>('general');
   editLevel = signal<number>(7);
+  editName = '';
+  editClass = '';
   editData!: CharacterSheetData;
+
+  // Moduli per inserimento al volo
   newSkillName = '';
   newSkillStat = 'DES';
+  newWpnName = '';
+  newWpnAtk = '+10/+5';
+  newWpnDmg = '1d8+4';
+  newWpnCrit = '20/x2';
+  newWpnSpecial = '';
+  newFeatTitle = '';
+  newFeatTag = 'Generale';
+  newFeatDesc = '';
 
   // BUFF TATTICI SCHEDA
   inspireCourage = signal<boolean>(false);
@@ -95,62 +100,29 @@ export class CharacterSheetComponent implements OnInit {
   flanking = signal<boolean>(false);
   divineFavorActive = signal<boolean>(false);
   powerAttack = signal<boolean>(false);
-  powerAttackHisui = signal<boolean>(false);
 
-  // ==================== CALCOLI 100% DINAMICI ====================
-  get ryoujinLevel(): number { return this.charRecord()?.level ?? 7; }
-  get ryoujinBab(): number { return this.charRecord()?.data.character.bab ?? 7; }
-  get ryoujinStrMod(): number {
-    const str = this.charRecord()?.data.character.str ?? 22;
+  // CALCOLI STATISTICHE DINAMICHE
+  get charLevel(): number { return this.charRecord()?.level ?? 7; }
+  get charBab(): number { return this.charRecord()?.data.character.bab ?? 7; }
+  get charStrMod(): number {
+    const str = this.charRecord()?.data.character.str ?? 10;
     return Math.floor((str - 10) / 2);
   }
-  get ryoujinDexMod(): number {
-    const dex = this.charRecord()?.data.character.dex ?? 15;
+  get charDexMod(): number {
+    const dex = this.charRecord()?.data.character.dex ?? 10;
     return Math.floor((dex - 10) / 2);
   }
 
-  // Progressione Attacco Poderoso (-2 al BAB 4-7, -3 al BAB 8-11...)
-  get powerAtkPenalty(): number { return 1 + Math.floor(this.ryoujinBab / 4); }
-  get powerAtkDmgTwoHand(): number { return this.powerAtkPenalty * 3; }
-
-  // Risorse del Ronin
-  get maxResolve(): number { return Math.max(1, Math.floor(this.ryoujinLevel / 2)); }
-  get resolvePips(): number[] { return Array.from({ length: this.maxResolve }, (_, i) => i); }
-
-  get maxChallenge(): number { return Math.max(1, Math.ceil(this.ryoujinLevel / 3)); }
-  get challengePips(): number[] { return Array.from({ length: this.maxChallenge }, (_, i) => i); }
-
-  // Attacchi Ryoujin dinamici
-  get katana1TxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
-  get katana1CritTxC(): number { return this.katana1TxC + 2; }
-  get katana2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 1 - this.powerAtkPenalty; }
-  get katana2CritTxC(): number { return this.katana2TxC + 2; }
-
-  get suishen1TxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 2; }
-  get suishen1CritTxC(): number { return this.suishen1TxC + 2; }
-  get suishen2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinStrMod + 2 - this.powerAtkPenalty; }
-  get suishen2CritTxC(): number { return this.suishen2TxC + 2; }
-
-  get bow1TxC(): number { return this.ryoujinBab + this.ryoujinDexMod + 1; }
-  get bow2TxC(): number { return Math.max(0, this.ryoujinBab - 5) + this.ryoujinDexMod + 1; }
-
-  get bmcTxC(): number { return this.ryoujinBab + this.ryoujinStrMod + 1; }
-
-  // Danni Ryoujin dinamici
-  get katanaPodDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 1 + this.powerAtkDmgTwoHand; }
-  get suishenDmg(): number { return Math.floor(this.ryoujinStrMod * 1.5) + 2 + this.powerAtkDmgTwoHand; }
-  get bowDmg(): number { return Math.min(this.ryoujinStrMod, 2) + 1; }
-
-  // Statistiche Hisui dinamiche
-  get hisuiStrMod(): number {
-    const str = this.charRecord()?.data.companion?.str ?? 25;
-    return Math.floor((str - 10) / 2);
+  // Risorse dinamiche
+  get resolvePips(): number[] {
+    const max = this.charRecord()?.data.character.resolve_max || Math.max(1, Math.floor(this.charLevel / 2));
+    return Array.from({ length: max }, (_, i) => i);
   }
-  get hisuiBiteTxC(): number { return this.charRecord()?.data.companion?.attack_bonus ?? 11; }
-  get hisuiBitePodTxC(): number { return this.hisuiBiteTxC - 2; }
-  get hisuiTripCmb(): number { return this.charRecord()?.data.companion?.trip_cmb ?? 11; }
-  get hisuiBitePodDmg(): number { return Math.floor(this.hisuiStrMod * 1.5) + 6; }
-  get hisuiBiteBaseDmg(): number { return Math.floor(this.hisuiStrMod * 1.5); }
+
+  get challengePips(): number[] {
+    const max = this.charRecord()?.data.character.challenge_max || Math.max(1, Math.ceil(this.charLevel / 3));
+    return Array.from({ length: max }, (_, i) => i);
+  }
 
   attackMod = computed(() => {
     let mod = 0;
@@ -173,164 +145,514 @@ export class CharacterSheetComponent implements OnInit {
     return mod;
   });
 
-  attackModHisui = computed(() => {
-    let mod = 0;
-    if (this.inspireCourage()) mod += 2;
-    if (this.bannerActive()) mod += 1;
-    if (this.flanking()) mod += 2;
-    if (this.powerAttackHisui()) mod -= 2;
-    return mod;
-  });
-
-  damageModHisui = computed(() => {
-    let mod = 0;
-    if (this.inspireCourage()) mod += 2;
-    if (this.powerAttackHisui()) mod += 6;
-    return mod;
-  });
-
   ngOnInit(): void {
     const paramSlug = this.route.snapshot.paramMap.get('slug');
-    if (paramSlug) this.characterSlug = paramSlug;
+    if (paramSlug) this.characterSlug = paramSlug.toLowerCase();
     this.loadCharacter();
   }
 
   loadCharacter(): void {
     this.loading.set(true);
+    this.notFound.set(false);
+
     this.charService.getCharacter(this.characterSlug).subscribe({
       next: (rec) => {
+        // Se la scheda esiste già nel DB Neon, caricala
         if (!rec.data.character.skills || rec.data.character.skills.length === 0) {
-          rec.data.character.skills = [...DEFAULT_RYOUJIN_SKILLS];
+          rec.data.character.skills = this.getDefaultSkillsFor(rec.slug);
         }
-        if (rec.data.companion && (!rec.data.companion.skills || rec.data.companion.skills.length === 0)) {
-          rec.data.companion.skills = [...DEFAULT_HISUI_SKILLS];
-        }
-
         this.charRecord.set(rec);
         this.editLevel.set(rec.level);
+        this.editName = rec.name;
+        this.editClass = rec.class_name;
         this.editData = JSON.parse(JSON.stringify(rec.data));
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: (err) => {
+        // SE NON ESISTE SUL DATABASE: AUTO-INIZIALIZZA IL TEMPLATE CORRETTO E SALVA SUBITO ONLINE!
+        console.warn(`Scheda per "${this.characterSlug}" non trovata su Neon DB. Inizializzazione automatica in corso...`);
+        const template = this.generateDefaultTemplate(this.characterSlug);
+
+        this.charService.createCharacter({
+          slug: this.characterSlug,
+          name: template.name,
+          class_name: template.class_name,
+          level: template.level,
+          data: template.data
+        }).subscribe({
+          next: (res) => {
+            this.charRecord.set(res.character);
+            this.editLevel.set(res.character.level);
+            this.editName = res.character.name;
+            this.editClass = res.character.class_name;
+            this.editData = JSON.parse(JSON.stringify(res.character.data));
+            this.loading.set(false);
+          },
+          error: (saveErr) => {
+            console.error('Errore durante il salvataggio automatico del template:', saveErr);
+            // Mostra comunque il template in locale per non bloccare l'utente
+            const mockRecord: CharacterRecord = {
+              id: Date.now(),
+              slug: this.characterSlug,
+              name: template.name,
+              class_name: template.class_name,
+              level: template.level,
+              data: template.data,
+              updated_at: new Date().toISOString()
+            };
+            this.charRecord.set(mockRecord);
+            this.editLevel.set(template.level);
+            this.editName = template.name;
+            this.editClass = template.class_name;
+            this.editData = JSON.parse(JSON.stringify(template.data));
+            this.loading.set(false);
+          }
+        });
+      }
     });
   }
 
-  // ==================== COSTRUTTORE FORMULA DINAMICA ====================
-  getRollFormula(actionType: 'atk' | 'dmg' | 'save' | 'skill', diceStr: string, baseMod: number, isElemental = false, critBonus = 0): string {
-    let parts = `${diceStr}${baseMod >= 0 ? '+' + baseMod : baseMod}`;
-    if (critBonus > 0) {
-      parts += `+${critBonus}`;
-    }
+  // --- CREAZIONE SCHEDA CON TEMPLATE PRECONFEZIONATI ---
+  createCharacterFromTemplate(): void {
+    const template = this.generateDefaultTemplate(this.characterSlug);
+    this.saving.set(true);
 
-    const extraParts: string[] = [];
-    if (this.modBanner() && actionType === 'atk') extraParts.push('+1');
-    if (this.modChallenge() && actionType === 'dmg' && !isElemental) extraParts.push(`+${this.ryoujinLevel}`);
-    if (this.modInspire() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental))) extraParts.push('+2');
-    if (this.modDivineFavor() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental))) extraParts.push('+2');
-    if (this.modFlank() && actionType === 'atk') extraParts.push('+2');
-    if (this.modPrayer() && (actionType === 'atk' || (actionType === 'dmg' && !isElemental) || actionType === 'save' || actionType === 'skill')) {
-      extraParts.push('+1');
-    }
-
-    if (extraParts.length > 0) {
-      return `${parts} ${extraParts.join(' ')}`;
-    }
-    return parts;
+    this.charService.createCharacter({
+      slug: this.characterSlug,
+      name: template.name,
+      class_name: template.class_name,
+      level: template.level,
+      data: template.data
+    }).subscribe({
+      next: (res) => {
+        this.charRecord.set(res.character);
+        this.editLevel.set(res.character.level);
+        this.editName = res.character.name;
+        this.editClass = res.character.class_name;
+        this.editData = JSON.parse(JSON.stringify(res.character.data));
+        this.notFound.set(false);
+        this.saving.set(false);
+      },
+      error: (err) => {
+        console.error('Errore creazione scheda:', err);
+        this.saving.set(false);
+      }
+    });
   }
 
-  // ==================== MOTORE LANCIO DADI 100% DINAMICO ====================
-  rollDynamicAction(
-    name: string,
-    diceCount: number,
-    diceFaces: number,
-    baseMod: number,
-    type: 'atk' | 'dmg' | 'save' | 'skill',
-    critMin = 20,
-    isElemental = false,
-    critBonus = 0
-  ): void {
-    const isAtk = type === 'atk';
-    const isDmg = type === 'dmg';
-    const isSave = type === 'save';
-    const isSkill = type === 'skill';
+  private generateDefaultTemplate(slug: string): { name: string; class_name: string; level: number; data: CharacterSheetData } {
+    switch (slug) {
+      case 'airyn':
+        return {
+          name: 'Airyn',
+          class_name: 'Druido',
+          level: 7,
+          data: {
+            character: {
+              race: 'Silfide',
+              alignment: 'Neutrale',
+              quote: '«Il vento e la natura rispondono alla mia voce.»',
+              hp_max: 52,
+              hp_current: 52,
+              ac_total: 19,
+              ac_touch: 14,
+              ac_flat_footed: 16,
+              initiative: 4,
+              speed_meters: 9,
+              speed_squares: 6,
+              bab: 5,
+              fortitude: 7,
+              reflex: 5,
+              will: 9,
+              str: 10,
+              dex: 16,
+              con: 14,
+              int: 12,
+              wis: 18,
+              cha: 10,
+              weapons: [
+                { name: 'Scimitarra +1', attack_bonus: '+9', damage: '1d6+1', crit: '18-20/x2', special: 'Tagliente' },
+                { name: 'Bastone Ferrato', attack_bonus: '+5', damage: '1d6', crit: '20/x2', special: 'Contundente' }
+              ],
+              feats: [
+                { name: 'Incantesimi Naturali', tag: 'Druido', description: 'Permette di lanciare incantesimi mentre si è in Forma Selvatica.' },
+                { name: 'Schivare', tag: 'Difesa', description: '+1 bonus di schivare alla CA.' }
+              ],
+              special_resources: [
+                { name: 'Forma Selvatica', icon: '🐾', current: 3, max: 3, description: 'Usi giornalieri di trasformazione animale.' }
+              ],
+              skills: [
+                { name: 'Conoscenze (Natura)', stat: 'INT', bonus: 11 },
+                { name: 'Percezione', stat: 'SAG', bonus: 14 },
+                { name: 'Sapienza Magica', stat: 'INT', bonus: 11 },
+                { name: 'Sopravvivenza', stat: 'SAG', bonus: 14 }
+              ]
+            }
+          }
+        };
 
-    let extraMod = 0;
-    const bonusParts: string[] = [];
+      case 'nijena':
+        return {
+          name: 'Nijena',
+          class_name: 'Barda',
+          level: 7,
+          data: {
+            character: {
+              race: 'Aasimar',
+              alignment: 'Caotico Buono',
+              quote: '«Una melodia può sollevare un esercito o spezzare un cuore.»',
+              hp_max: 48,
+              hp_current: 48,
+              ac_total: 18,
+              ac_touch: 13,
+              ac_flat_footed: 15,
+              initiative: 3,
+              speed_meters: 9,
+              speed_squares: 6,
+              bab: 5,
+              fortitude: 4,
+              reflex: 8,
+              will: 5,
+              str: 10,
+              dex: 16,
+              con: 14,
+              int: 12,
+              wis: 10,
+              cha: 20,
+              weapons: [
+                { name: 'Stocco +1', attack_bonus: '+9', damage: '1d6+1', crit: '18-20/x2', special: 'Perforante' },
+                { name: 'Arco Corto', attack_bonus: '+8', damage: '1d6', crit: '20/x3', special: 'Gittata 18m' }
+              ],
+              feats: [
+                { name: 'Arma Accurata', tag: 'Combattimento', description: 'Usa il modificatore di Destrezza per i TxC con armi leggere.' },
+                { name: 'Esibizione Straordinaria', tag: 'Bardo', description: 'Bonus alle esibizioni artistiche.' }
+              ],
+              special_resources: [
+                { name: 'Esibizione Bardica', icon: '🎵', current: 21, max: 21, description: 'Round di musica e canti bardici al giorno.' }
+              ],
+              skills: [
+                { name: 'Intrattenere (Canto)', stat: 'CAR', bonus: 15 },
+                { name: 'Diplomazia', stat: 'CAR', bonus: 15 },
+                { name: 'Raggirare', stat: 'CAR', bonus: 15 },
+                { name: 'Percezione', stat: 'SAG', bonus: 10 }
+              ]
+            }
+          }
+        };
 
-    if (critBonus > 0) {
-      extraMod += critBonus;
-      bonusParts.push(`+${critBonus} Maestria`);
+      case 'kaede':
+        return {
+          name: 'Kaede',
+          class_name: 'Ninja',
+          level: 7,
+          data: {
+            character: {
+              race: 'Kitsune',
+              alignment: 'Neutrale',
+              quote: '«Colpisci dall’ombra prima che si accorgano che sei lì.»',
+              hp_max: 52,
+              hp_current: 52,
+              ac_total: 20,
+              ac_touch: 15,
+              ac_flat_footed: 15,
+              initiative: 6,
+              speed_meters: 9,
+              speed_squares: 6,
+              bab: 5,
+              fortitude: 4,
+              reflex: 10,
+              will: 2,
+              str: 10,
+              dex: 20,
+              con: 14,
+              int: 12,
+              wis: 10,
+              cha: 16,
+              weapons: [
+                { name: 'Wakizashi Perfetto', attack_bonus: '+11', damage: '1d6', crit: '18-20/x2', special: '+4d6 Furtivo' },
+                { name: 'Shuriken', attack_bonus: '+10', damage: '1d2', crit: '20/x2', special: '+4d6 Furtivo a distanza' }
+              ],
+              feats: [
+                { name: 'Arma Accurata', tag: 'Combattimento', description: 'Usa la DES per il TxC.' },
+                { name: 'Iniziativa Migliorata', tag: 'Combattimento', description: '+4 ai tiri di iniziativa.' }
+              ],
+              special_resources: [
+                { name: 'Riserva Ki', icon: '🌀', current: 6, max: 6, description: 'Punti Ki per attacchi extra, velocità o invisibilità.' }
+              ],
+              skills: [
+                { name: 'Furtività', stat: 'DES', bonus: 15 },
+                { name: 'Acrobazia', stat: 'DES', bonus: 15 },
+                { name: 'Disattivare Congegni', stat: 'DES', bonus: 15 },
+                { name: 'Rapidità di Mano', stat: 'DES', bonus: 14 }
+              ]
+            }
+          }
+        };
+
+      case 'azoi':
+        return {
+          name: 'Azoi',
+          class_name: 'Magus',
+          level: 7,
+          data: {
+            character: {
+              race: 'Umano',
+              alignment: 'Legale Neutrale',
+              quote: '«La lama conduce l’acciaio, l’arcano consuma il nemico.»',
+              hp_max: 55,
+              hp_current: 55,
+              ac_total: 20,
+              ac_touch: 13,
+              ac_flat_footed: 17,
+              initiative: 3,
+              speed_meters: 9,
+              speed_squares: 6,
+              bab: 5,
+              fortitude: 7,
+              reflex: 5,
+              will: 5,
+              str: 14,
+              dex: 16,
+              con: 14,
+              int: 18,
+              wis: 10,
+              cha: 10,
+              weapons: [
+                { name: 'Scimitarra +1', attack_bonus: '+10', damage: '1d6+3', crit: '18-20/x2', special: 'Canalizzabile con Spellstrike' }
+              ],
+              feats: [
+                { name: 'Colpo Arcano', tag: 'Magus', description: '+2 ai danni con le armi come azione veloce.' },
+                { name: 'Incantesimi in Combattimento', tag: 'Magus', description: '+4 alle prove di concentrazione per lanciare sulla difensiva.' }
+              ],
+              special_resources: [
+                { name: 'Riserva Arcana', icon: '🔮', current: 7, max: 7, description: 'Punti per incantare temporaneamente la lama.' }
+              ],
+              skills: [
+                { name: 'Sapienza Magica', stat: 'INT', bonus: 14 },
+                { name: 'Conoscenze (Arcane)', stat: 'INT', bonus: 14 },
+                { name: 'Cavalcare', stat: 'DES', bonus: 10 },
+                { name: 'Percezione', stat: 'SAG', bonus: 8 }
+              ]
+            }
+          }
+        };
+
+      default:
+        return {
+          name: slug.charAt(0).toUpperCase() + slug.slice(1),
+          class_name: 'Avventuriero',
+          level: 7,
+          data: {
+            character: {
+              race: 'Umano',
+              alignment: 'Neutrale',
+              quote: '«In viaggio con la carovana di Sandpoint.»',
+              hp_max: 50,
+              hp_current: 50,
+              ac_total: 18,
+              ac_touch: 12,
+              ac_flat_footed: 16,
+              initiative: 2,
+              speed_meters: 9,
+              speed_squares: 6,
+              bab: 5,
+              fortitude: 6,
+              reflex: 6,
+              will: 6,
+              str: 14,
+              dex: 14,
+              con: 14,
+              int: 12,
+              wis: 12,
+              cha: 12,
+              weapons: [
+                { name: 'Spada Lunga', attack_bonus: '+8', damage: '1d8+2', crit: '19-20/x2', special: 'Versatile' }
+              ],
+              feats: [],
+              special_resources: [],
+              skills: [
+                { name: 'Percezione', stat: 'SAG', bonus: 8 },
+                { name: 'Furtività', stat: 'DES', bonus: 8 }
+              ]
+            }
+          }
+        };
+    }
+  }
+
+  private getDefaultSkillsFor(slug: string): SkillItem[] {
+    if (slug === 'ryoujin') return [...DEFAULT_RYOUJIN_SKILLS];
+    return [
+      { name: 'Percezione', stat: 'SAG', bonus: 7 },
+      { name: 'Furtività', stat: 'DES', bonus: 5 },
+      { name: 'Acrobazia', stat: 'DES', bonus: 5 }
+    ];
+  }
+
+  // --- MODIFICA RAPIDA PUNTI FERITA (SALVA SU NEON) ---
+  modifyHp(target: 'main' | 'companion', amount: number): void {
+    const rec = this.charRecord();
+    if (!rec) return;
+
+    if (target === 'main') {
+      const cur = rec.data.character.hp_current;
+      const max = rec.data.character.hp_max;
+      rec.data.character.hp_current = Math.max(0, Math.min(max, cur + amount));
+      this.voiceAnnouncement.set(`Punti ferita: ${rec.data.character.hp_current} su ${max}`);
+    } else if (rec.data.companion) {
+      const cur = rec.data.companion.hp_current;
+      const max = rec.data.companion.hp_max;
+      rec.data.companion.hp_current = Math.max(0, Math.min(max, cur + amount));
+      this.voiceAnnouncement.set(`Punti ferita compagno: ${rec.data.companion.hp_current} su ${max}`);
     }
 
-    if (this.modBanner() && isAtk) {
-      extraMod += 1;
-      bonusParts.push('+1 Stendardo');
-    }
+    this.charRecord.set({ ...rec });
+    this.charService.saveCharacter(rec.slug, rec.level, rec.data).subscribe();
+  }
 
-    if (this.modChallenge() && isDmg && !isElemental) {
-      const challBonus = this.ryoujinLevel;
-      extraMod += challBonus;
-      bonusParts.push(`+${challBonus} Sfida`);
+  toggleResource(res: SpecialResourceItem, index: number): void {
+    res.current = res.current > index ? index : index + 1;
+    const rec = this.charRecord();
+    if (rec) {
+      this.charService.saveCharacter(rec.slug, rec.level, rec.data).subscribe();
     }
+  }
 
-    if (this.modInspire() && (isAtk || (isDmg && !isElemental))) {
-      extraMod += 2;
-      bonusParts.push('+2 Ispirare');
-    }
+  // --- MODALE LEVEL UP & MODIFICA GENERALE ---
+  openLevelUp(): void {
+    const rec = this.charRecord();
+    if (!rec) return;
 
-    if (this.modDivineFavor() && (isAtk || (isDmg && !isElemental))) {
-      extraMod += 2;
-      bonusParts.push('+2 Favore');
-    }
+    this.editLevel.set(rec.level);
+    this.editName = rec.name;
+    this.editClass = rec.class_name;
+    this.editData = JSON.parse(JSON.stringify(rec.data));
 
-    if (this.modFlank() && isAtk) {
-      extraMod += 2;
-      bonusParts.push('+2 Fiancheggio');
-    }
+    if (!this.editData.character.weapons) this.editData.character.weapons = [];
+    if (!this.editData.character.feats) this.editData.character.feats = [];
+    if (!this.editData.character.special_resources) this.editData.character.special_resources = [];
 
-    if (this.modPrayer() && (isAtk || (isDmg && !isElemental) || isSave || isSkill)) {
-      extraMod += 1;
-      bonusParts.push('+1 Preghiera');
-    }
+    this.modalTab.set('general');
+    this.showLevelUpModal.set(true);
+  }
 
+  addWeapon(): void {
+    if (!this.newWpnName.trim()) return;
+    this.editData.character.weapons?.push({
+      name: this.newWpnName.trim(),
+      attack_bonus: this.newWpnAtk.trim(),
+      damage: this.newWpnDmg.trim(),
+      crit: this.newWpnCrit.trim(),
+      special: this.newWpnSpecial.trim()
+    });
+    this.newWpnName = '';
+    this.newWpnSpecial = '';
+  }
+
+  removeWeapon(index: number): void {
+    this.editData.character.weapons?.splice(index, 1);
+  }
+
+  addFeat(): void {
+    if (!this.newFeatTitle.trim()) return;
+    this.editData.character.feats?.push({
+      name: this.newFeatTitle.trim(),
+      tag: this.newFeatTag.trim(),
+      description: this.newFeatDesc.trim()
+    });
+    this.newFeatTitle = '';
+    this.newFeatDesc = '';
+  }
+
+  removeFeat(index: number): void {
+    this.editData.character.feats?.splice(index, 1);
+  }
+
+  adjustSkill(skill: SkillItem, delta: number): void {
+    skill.bonus += delta;
+  }
+
+  addCustomSkill(): void {
+    if (!this.newSkillName.trim()) return;
+    this.editData.character.skills?.push({
+      name: this.newSkillName.trim(),
+      stat: this.newSkillStat,
+      bonus: 1
+    });
+    this.newSkillName = '';
+  }
+
+  removeSkill(index: number): void {
+    this.editData.character.skills?.splice(index, 1);
+  }
+
+  saveLevelUp(): void {
+    this.saving.set(true);
+
+    this.charService.saveCharacter(
+      this.characterSlug,
+      this.editLevel(),
+      this.editData,
+      this.editName,
+      this.editClass
+    ).subscribe({
+      next: (res) => {
+        this.charRecord.set(res.character);
+        this.saving.set(false);
+        this.saveSuccess.set(true);
+        setTimeout(() => {
+          this.saveSuccess.set(false);
+          this.showLevelUpModal.set(false);
+        }, 500);
+      },
+      error: (err) => {
+        console.error('Errore salvataggio scheda:', err);
+        this.saving.set(false);
+      }
+    });
+  }
+
+  // --- LANCIATORE DADI DINAMICO ---
+  rollAction(title: string, diceCount: number, diceFaces: number, mod: number, critMin = 20): void {
     const rolls: number[] = [];
-    let diceSum = 0;
+    let sum = 0;
     for (let i = 0; i < diceCount; i++) {
       const r = Math.floor(Math.random() * diceFaces) + 1;
       rolls.push(r);
-      diceSum += r;
+      sum += r;
     }
 
-    const total = diceSum + baseMod + extraMod;
+    let extraMod = 0;
+    if (this.modInspire()) extraMod += 2;
+    if (this.modBanner()) extraMod += 1;
+    if (this.modFlank()) extraMod += 2;
+    if (this.modDivineFavor()) extraMod += 2;
+    if (this.modPrayer()) extraMod += 1;
+
+    const total = sum + mod + extraMod;
     const d20 = diceFaces === 20 ? rolls[0] : 0;
     const isCrit = d20 >= critMin;
     const isFumble = d20 === 1;
 
-    const diceStr = diceFaces === 0 ? '' : `${diceCount > 1 ? diceCount : ''}d${diceFaces}`;
-    const fullFormula = this.getRollFormula(type, diceStr, baseMod, isElemental, critBonus);
-
-    let breakdown = `Dado: [${rolls.join(', ')}] + Base: ${baseMod}`;
-    if (bonusParts.length > 0) {
-      breakdown += ' ' + bonusParts.join(' ');
-    }
-
     this.lastResult.set({
-      title: name,
+      title,
       d20,
       rolls,
-      formula: fullFormula,
+      formula: `${diceCount}d${diceFaces} + ${mod + extraMod}`,
       total,
       isCrit,
       isFumble,
-      breakdown
+      breakdown: `Dadi [${rolls.join(', ')}] + Mod: ${mod} ${extraMod ? '(+' + extraMod + ' buff)' : ''}`
     });
 
-    let spokenPhrase = `${name}: dado ${rolls.join(', ')}. Totale ${total}.`;
-    if (isCrit) spokenPhrase = `Minaccia di critico! ${spokenPhrase}`;
-    if (isFumble) spokenPhrase = `Fallimento automatico! ${spokenPhrase}`;
-
-    this.voiceAnnouncement.set(spokenPhrase);
-    this.speakTTS(spokenPhrase);
+    const phrase = `${title}: risultato ${total}.`;
+    this.voiceAnnouncement.set(phrase);
+    if (this.ttsAudioEnabled() && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(phrase);
+      u.lang = 'it-IT';
+      window.speechSynthesis.speak(u);
+    }
   }
 
   quickRoll(faces: number): void {
@@ -344,121 +666,6 @@ export class CharacterSheetComponent implements OnInit {
       isCrit: r === 20,
       isFumble: r === 1,
       breakdown: `Dado: ${r}`
-    });
-
-    const phrase = `Dado da ${faces}: risultato ${r}`;
-    this.voiceAnnouncement.set(phrase);
-    this.speakTTS(phrase);
-  }
-
-  private speakTTS(text: string): void {
-    if (!this.ttsAudioEnabled()) return;
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'it-IT';
-      utterance.rate = 1.15;
-      utterance.pitch = 1.0;
-      window.speechSynthesis.speak(utterance);
-    }
-  }
-
-  modifyHp(target: 'main' | 'companion', amount: number): void {
-    const rec = this.charRecord();
-    if (!rec) return;
-
-    if (target === 'main') {
-      const cur = rec.data.character.hp_current;
-      const max = rec.data.character.hp_max;
-      rec.data.character.hp_current = Math.max(0, Math.min(max, cur + amount));
-      this.voiceAnnouncement.set(`Punti ferita Ryoujin: ${rec.data.character.hp_current} su ${max}`);
-    } else if (rec.data.companion) {
-      const cur = rec.data.companion.hp_current;
-      const max = rec.data.companion.hp_max;
-      rec.data.companion.hp_current = Math.max(0, Math.min(max, cur + amount));
-      this.voiceAnnouncement.set(`Punti ferita Hisui: ${rec.data.companion.hp_current} su ${max}`);
-    }
-
-    this.charRecord.set({ ...rec });
-    this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
-  }
-
-  toggleResolve(index: number): void {
-    const rec = this.charRecord();
-    if (!rec) return;
-    const cur = rec.data.character.resolve_current;
-    rec.data.character.resolve_current = cur > index ? index : index + 1;
-    rec.data.character.resolve_max = this.maxResolve;
-    this.charRecord.set({ ...rec });
-    this.voiceAnnouncement.set(`Fermezza: ${rec.data.character.resolve_current} su ${this.maxResolve}`);
-    this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
-  }
-
-  toggleChallenge(index: number): void {
-    const rec = this.charRecord();
-    if (!rec) return;
-    const cur = rec.data.character.challenge_current;
-    rec.data.character.challenge_current = cur > index ? index : index + 1;
-    rec.data.character.challenge_max = this.maxChallenge;
-    this.charRecord.set({ ...rec });
-    this.voiceAnnouncement.set(`Sfide del Ronin: ${rec.data.character.challenge_current} su ${this.maxChallenge}`);
-    this.charService.saveCharacter(this.characterSlug, rec.level, rec.data).subscribe();
-  }
-
-  openLevelUp(): void {
-    const rec = this.charRecord();
-    if (!rec) return;
-    this.editLevel.set(rec.level);
-    this.editData = JSON.parse(JSON.stringify(rec.data));
-    this.modalTab.set('general');
-    this.showLevelUpModal.set(true);
-  }
-
-  adjustSkill(skill: SkillItem, delta: number): void {
-    skill.bonus += delta;
-  }
-
-  addCustomSkill(target: 'main' | 'companion'): void {
-    if (!this.newSkillName.trim()) return;
-    const list = target === 'main' ? this.editData.character.skills : this.editData.companion?.skills;
-    if (list) {
-      list.push({ name: this.newSkillName.trim(), stat: this.newSkillStat, bonus: 1 });
-      this.newSkillName = '';
-    }
-  }
-
-  removeSkill(target: 'main' | 'companion', index: number): void {
-    const list = target === 'main' ? this.editData.character.skills : this.editData.companion?.skills;
-    if (list) list.splice(index, 1);
-  }
-
-  saveLevelUp(): void {
-    this.saving.set(true);
-    const newMaxResolve = Math.max(1, Math.floor(this.editLevel() / 2));
-    const newMaxChallenge = Math.max(1, Math.ceil(this.editLevel() / 3));
-
-    this.editData.character.resolve_max = newMaxResolve;
-    this.editData.character.challenge_max = newMaxChallenge;
-    this.editData.character.resolve_current = Math.min(
-      this.editData.character.resolve_current ?? newMaxResolve,
-      newMaxResolve
-    );
-    this.editData.character.challenge_current = Math.min(
-      this.editData.character.challenge_current ?? newMaxChallenge,
-      newMaxChallenge
-    );
-
-    this.charService.saveCharacter(this.characterSlug, this.editLevel(), this.editData).subscribe({
-      next: (res) => {
-        this.charRecord.set(res.character);
-        this.saving.set(false);
-        this.saveSuccess.set(true);
-        setTimeout(() => {
-          this.saveSuccess.set(false);
-          this.showLevelUpModal.set(false);
-        }, 600);
-      },
-      error: () => this.saving.set(false)
     });
   }
 }

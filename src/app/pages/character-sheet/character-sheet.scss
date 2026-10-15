@@ -1330,4 +1330,113 @@ $text-muted: #94a3b8;
   font-size: clamp(1.7rem, 4vw, 2.3rem);
 }
 
+/* SCHERMATA CREAZIONE DA ZERO SE IL PG NON ESISTE ANCORA */
+.empty-sheet-card {
+  background: #0d1527;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border-radius: 18px;
+  padding: 3rem 1.5rem;
+  max-width: 520px;
+  margin: 3rem auto;
+  text-align: center;
+
+  .empty-icon { font-size: 3.5rem; margin-bottom: 0.5rem; }
+  .empty-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 3px 10px;
+    border-radius: 9999px;
+    margin-bottom: 0.8rem;
+  }
+  .empty-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    color: #fff;
+    margin: 0 0 0.6rem;
+  }
+  .empty-desc {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-bottom: 1.8rem;
+  }
+  .btn-create-sheet {
+    background: #f59e0b;
+    color: #000;
+    font-size: 1rem;
+    font-weight: 800;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+    transition: transform 0.1s ease, filter 0.15s ease;
+
+    &:hover { filter: brightness(1.15); }
+    &:active { transform: scale(0.97); }
+  }
+}
+
+/* LISTE MODIFICA ARMI & TALENTI NELLA MODALE */
+.items-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+
+  .item-edit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0d1424;
+    border: 1px solid #1a283f;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+
+    .item-main-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      strong { font-size: 0.95rem; color: #fff; }
+      small { font-size: 0.78rem; color: #94a3b8; }
+      .mini-desc { font-size: 0.8rem; color: #cbd5e1; margin: 4px 0 0; }
+    }
+  }
+}
+
+.add-box-section {
+  background: #050811;
+  border: 1px dashed #22324f;
+  border-radius: 12px;
+  padding: 0.85rem;
+  margin-top: 0.75rem;
+
+  h4 {
+    font-size: 0.82rem;
+    color: #f59e0b;
+    margin: 0 0 0.6rem;
+    text-transform: uppercase;
+  }
+
+  .btn-add-action {
+    margin-top: 0.75rem;
+    width: 100%;
+    height: 38px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid #10b981;
+    color: #6ee7b7;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    &:hover { background: #10b981; color: #000; }
+  }
+}
+
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }

@@ -4,10 +4,33 @@ export interface SkillItem {
   bonus: number;
 }
 
+export interface WeaponItem {
+  name: string;
+  attack_bonus: string;
+  damage: string;
+  crit: string;
+  special?: string;
+}
+
+export interface FeatItem {
+  name: string;
+  tag?: string;
+  description: string;
+}
+
+export interface SpecialResourceItem {
+  name: string;
+  icon?: string;
+  current: number;
+  max: number;
+  description?: string;
+}
+
 export interface CharacterSheetData {
   character: {
     race: string;
     alignment: string;
+    quote?: string;
     hp_max: number;
     hp_current: number;
     ac_total: number;
@@ -26,10 +49,13 @@ export interface CharacterSheetData {
     int: number;
     wis: number;
     cha: number;
-    resolve_max: number;
-    resolve_current: number;
-    challenge_max: number;
-    challenge_current: number;
+    resolve_max?: number;
+    resolve_current?: number;
+    challenge_max?: number;
+    challenge_current?: number;
+    weapons?: WeaponItem[];
+    feats?: FeatItem[];
+    special_resources?: SpecialResourceItem[];
     skills?: SkillItem[];
     notes?: string;
   };

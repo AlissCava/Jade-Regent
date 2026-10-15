@@ -184,4 +184,159 @@ $text-muted: #94a3b8;
       letter-spacing: 0.02em;
     }
   }
+  
+}
+
+/* CARD PER AGGIUNGERE UN NUOVO EROE */
+.add-hero-card {
+  border: 1px dashed rgba($gold, 0.45) !important;
+  background: rgba(245, 158, 11, 0.04) !important;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    border-color: $gold !important;
+    background: rgba(245, 158, 11, 0.1) !important;
+    transform: translateY(-2px);
+  }
+
+  .gold-wrap {
+    background: rgba($gold, 0.18) !important;
+    border: 1px solid rgba($gold, 0.4) !important;
+  }
+
+  .gold-hint {
+    color: $gold !important;
+    font-weight: 800;
+  }
+}
+
+/* MODALE DI CREAZIONE */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+
+  .modal-card {
+    background: #0d1527;
+    border: 1px solid rgba($gold, 0.4);
+    border-radius: 16px;
+    padding: 1.25rem;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      position: relative;
+
+      .modal-badge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: $gold;
+        background: rgba($gold, 0.12);
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+
+      .modal-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.25rem;
+        color: #fff;
+        margin: 0;
+      }
+
+      .btn-close {
+        background: #15223c;
+        border: 1px solid #283958;
+        color: #cbd5e1;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+    }
+
+    .modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+
+        label {
+          font-size: 0.76rem;
+          font-weight: 700;
+          color: $text-muted;
+          text-transform: uppercase;
+        }
+
+        input {
+          background: #060a14;
+          border: 1px solid #22324f;
+          border-radius: 8px;
+          color: #fff;
+          font-size: 0.92rem;
+          padding: 8px 10px;
+          outline: none;
+
+          &:focus {
+            border-color: $gold;
+          }
+        }
+      }
+
+      .fields-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.6rem;
+        margin-top: 0.5rem;
+
+        button {
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 0.88rem;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .btn-cancel {
+          background: #15223c;
+          border: 1px solid #283958;
+          color: #cbd5e1;
+        }
+
+        .btn-submit {
+          background: $gold;
+          border: none;
+          color: #000;
+          font-weight: 800;
+
+          &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
 }
