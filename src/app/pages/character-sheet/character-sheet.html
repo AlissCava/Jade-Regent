@@ -4,28 +4,14 @@
     {{ voiceAnnouncement() }}
   </div>
 
-  <!-- STATO 1: CARICAMENTO -->
+  <!-- STATO CARICAMENTO -->
   <div *ngIf="loading()" class="loading-state" role="status">
     <div class="spinner"></div>
     <span>Caricamento scheda dal database...</span>
   </div>
 
-  <!-- STATO 2: SCHEDA NON ANCORA ESISTENTE SUL DATABASE (CREA DA ZERO) -->
-  <div *ngIf="!loading() && notFound()" class="empty-sheet-card">
-    <div class="empty-icon">⛩️</div>
-    <div class="empty-badge">Nuovo Eroe della Carovana</div>
-    <h1 class="empty-title">Scheda di {{ characterSlug | uppercase }}</h1>
-    <p class="empty-desc">
-      Questa scheda non è ancora stata registrata online sul database.<br>
-      Puoi generarla subito con le statistiche ottimali di 7° livello e personalizzarla a piacimento.
-    </p>
-    <button type="button" class="btn-create-sheet" [disabled]="saving()" (click)="createCharacterFromTemplate()">
-      {{ saving() ? 'Creazione in corso...' : '✨ Inizializza Scheda Online' }}
-    </button>
-  </div>
-
-  <!-- STATO 3: SCHEDA PRESENTE ED ATTIVA -->
-  <ng-container *ngIf="!loading() && !notFound() && charRecord() as rec">
+  <!-- SCHEDA PRESENTE -->
+  <ng-container *ngIf="!loading() && charRecord() as rec">
     <!-- BARRA AZIONI & TABS -->
     <div class="sheet-action-bar" role="navigation" aria-label="Navigazione Scheda">
       <div class="char-nav-tabs" role="tablist">
@@ -61,8 +47,8 @@
         </button>
       </div>
 
-      <!-- BOTTONE MODIFICA & LEVEL UP -->
-      <button type="button" class="level-up-btn" (click)="openLevelUp()" aria-label="Modifica scheda e statistiche">
+      <!-- BOTTONE MODIFICA SCHEDA -->
+      <button type="button" class="level-up-btn" (click)="openLevelUp()" aria-label="Compila e modifica scheda">
         ⚙️ Modifica / Level Up
       </button>
     </div>
@@ -72,11 +58,11 @@
       <!-- HEADER HERO -->
       <header class="sheet-hero">
         <div class="hero-top">
-          <span class="race-tag">{{ rec.data.character.race }}</span>
-          <span class="class-tag">{{ rec.class_name }} • Livello {{ rec.level }}</span>
+          <span class="race-tag" *ngIf="rec.data.character.race">{{ rec.data.character.race }}</span>
+          <span class="class-tag">{{ rec.class_name || 'Classe non impostata' }} • Livello {{ rec.level }}</span>
         </div>
         <h1 class="char-title">{{ rec.name }}</h1>
-        <p class="char-quote">{{ rec.data.character.quote || '«In cammino attraverso la via della Giada.»' }}</p>
+        <p class="char-quote" *ngIf="rec.data.character.quote">{{ rec.data.character.quote }}</p>
       </header>
 
       <!-- STATUS BAR (HP, CA, INIZIATIVA, TS) -->
@@ -84,7 +70,7 @@
         <div class="status-card hp-card">
           <span class="status-label">Punti Ferita</span>
           <div class="hp-display" [attr.aria-label]="'Punti ferita: ' + rec.data.character.hp_current + ' su ' + rec.data.character.hp_max">
-            <span class="hp-current" [class.low-hp]="rec.data.character.hp_current < 25">{{ rec.data.character.hp_current }}</span>
+            <span class="hp-current" [class.low-hp]="rec.data.character.hp_current < 10">{{ rec.data.character.hp_current }}</span>
             <span class="hp-divider">/</span>
             <span class="hp-max">{{ rec.data.character.hp_max }} PF</span>
           </div>
@@ -136,7 +122,7 @@
       <!-- MODIFICATORI TATTICI -->
       <div class="tactical-buffs-panel">
         <div class="buffs-header">
-          <span>⚡ BUFF & CONDIZIONI TATTICHE ATTIVE</span>
+          <span>⚡ BUFF & CONDIZIONI TATTICHE</span>
           <span class="buff-sum">TxC: <strong>{{ attackMod() >= 0 ? '+' + attackMod() : attackMod() }}</strong> | Danni: <strong>{{ damageMod() >= 0 ? '+' + damageMod() : damageMod() }}</strong></span>
         </div>
         <div class="buff-chips">
@@ -145,18 +131,22 @@
           <button type="button" class="buff-chip" [class.active]="challengeActive()" (click)="challengeActive.set(!challengeActive())">⚔️ Sfida (+2 TxC / +{{ rec.level }} Danni)</button>
           <button type="button" class="buff-chip" [class.active]="flanking()" (click)="flanking.set(!flanking())">👥 Fiancheggiamento (+2 TxC)</button>
           <button type="button" class="buff-chip" [class.active]="divineFavorActive()" (click)="divineFavorActive.set(!divineFavorActive())">✨ Favore Divino (+2/+2)</button>
-          <button type="button" class="buff-chip power-atk" [class.active]="powerAttack()" (click)="powerAttack.set(!powerAttack())">💥 Attacco Poderoso (-2/+6)</button>
+          <button type="button" class="buff-chip power-atk" [class.active]="powerAttack()" (click)="powerAttack.set(!powerAttack())">💥 Attacco Poderoso (-2/+4)</button>
         </div>
       </div>
 
-      <!-- ARMI & AZIONI DI ATTACCO -->
-      <div class="section-card" *ngIf="rec.data.character.weapons && rec.data.character.weapons.length > 0">
-        <h2 class="section-title">🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }})</h2>
-        <div class="weapons-grid">
+      <!-- SEZIONE ARMI & ATTACCHI -->
+      <div class="section-card">
+        <div class="section-title-row">
+          <h2 class="section-title">🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }})</h2>
+          <button type="button" class="btn-quick-add" (click)="openLevelUpTab('weapons')">+ Aggiungi Arma</button>
+        </div>
+
+        <div class="weapons-grid" *ngIf="rec.data.character.weapons && rec.data.character.weapons.length > 0; else noWeapons">
           <div class="weapon-card" *ngFor="let w of rec.data.character.weapons">
             <div class="wpn-top">
               <div>
-                <span class="wpn-badge">Arma da Combattimento</span>
+                <span class="wpn-badge">Arma</span>
                 <h3 class="wpn-name">{{ w.name }}</h3>
               </div>
               <div class="wpn-crit">Critico: {{ w.crit }}</div>
@@ -172,42 +162,25 @@
               </div>
             </div>
             <div class="wpn-special-powers" *ngIf="w.special">
-              <span>✨ <strong>Note & Proprietà:</strong> {{ w.special }}</span>
+              <span>✨ <strong>Proprietà:</strong> {{ w.special }}</span>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- RISORSE SPECIALI DELLA CLASSE -->
-      <div class="section-card powers-section" *ngIf="rec.data.character.special_resources && rec.data.character.special_resources.length > 0">
-        <h2 class="section-title">⛩️ Risorse & Capacità Speciali</h2>
-        <div class="resources-row">
-          <div class="resource-box" *ngFor="let res of rec.data.character.special_resources">
-            <div class="res-head">
-              <div class="res-title-group">
-                <span class="res-icon">{{ res.icon || '✨' }}</span>
-                <span class="res-title">{{ res.name }}</span>
-              </div>
-              <span class="res-val">{{ res.current }} / {{ res.max }}</span>
-            </div>
-            <p class="res-desc">{{ res.description }}</p>
-            <div class="use-pips">
-              <button 
-                type="button" 
-                *ngFor="let p of [].constructor(res.max); let idx = index" 
-                class="pip" 
-                [class.filled]="idx < res.current" 
-                (click)="toggleResource(res, idx)">
-              </button>
-            </div>
+        <ng-template #noWeapons>
+          <div class="empty-section-hint">
+            Nessuna arma registrata. Clicca su <strong>+ Aggiungi Arma</strong> per inserire le tue armi da mischia o a distanza.
           </div>
-        </div>
+        </ng-template>
       </div>
 
       <!-- TALENTI -->
-      <div class="section-card" *ngIf="rec.data.character.feats && rec.data.character.feats.length > 0">
-        <h2 class="section-title">🥋 Talenti & Maestrie</h2>
-        <div class="feats-grid">
+      <div class="section-card">
+        <div class="section-title-row">
+          <h2 class="section-title">🥋 Talenti & Maestrie</h2>
+          <button type="button" class="btn-quick-add" (click)="openLevelUpTab('feats')">+ Aggiungi Talento</button>
+        </div>
+
+        <div class="feats-grid" *ngIf="rec.data.character.feats && rec.data.character.feats.length > 0; else noFeats">
           <div class="feat-card" *ngFor="let f of rec.data.character.feats">
             <div class="feat-header">
               <span class="feat-tag">{{ f.tag || 'Talento' }}</span>
@@ -216,15 +189,24 @@
             <p class="feat-desc">{{ f.description }}</p>
           </div>
         </div>
+        <ng-template #noFeats>
+          <div class="empty-section-hint">
+            Nessun talento registrato. Clicca su <strong>+ Aggiungi Talento</strong> per inserire i tuoi talenti di classe e razza.
+          </div>
+        </ng-template>
       </div>
 
       <!-- ABILITÀ ADDESTRATE -->
-      <div class="section-card" *ngIf="rec.data.character.skills && rec.data.character.skills.length > 0">
-        <div class="skills-card-header">
-          <h2 class="section-title">📊 Abilità Addestrate</h2>
-          <span class="skills-count">{{ rec.data.character.skills.length }} Abilità</span>
+      <div class="section-card">
+        <div class="section-title-row">
+          <div class="skills-card-header">
+            <h2 class="section-title">📊 Abilità Addestrate</h2>
+            <span class="skills-count">{{ rec.data.character.skills?.length || 0 }} Abilità</span>
+          </div>
+          <button type="button" class="btn-quick-add" (click)="openLevelUpTab('skills')">+ Aggiungi Abilità</button>
         </div>
-        <div class="skills-grid-layout">
+
+        <div class="skills-grid-layout" *ngIf="rec.data.character.skills && rec.data.character.skills.length > 0; else noSkills">
           <div class="skill-tile" *ngFor="let sk of rec.data.character.skills">
             <div class="skill-meta">
               <span class="stat-badge" [ngClass]="sk.stat.toLowerCase()">{{ sk.stat }}</span>
@@ -235,6 +217,11 @@
             </div>
           </div>
         </div>
+        <ng-template #noSkills>
+          <div class="empty-section-hint">
+            Nessuna abilità registrata. Clicca su <strong>+ Aggiungi Abilità</strong> per inserire Percezione, Furtività, Conoscenze e le altre competenze del tuo personaggio.
+          </div>
+        </ng-template>
       </div>
     </div>
 
@@ -263,27 +250,9 @@
             <button type="button" class="hp-btn heal" (click)="modifyHp('companion', 5)">+5</button>
           </div>
         </div>
-
         <div class="status-card ca-card">
           <span class="status-label">Classe Armatura</span>
           <div class="ca-main-val">{{ comp.ac_total }}</div>
-        </div>
-
-        <div class="status-card init-card">
-          <span class="status-label">Iniziativa & Moto</span>
-          <div class="stat-dual-row">
-            <div><span class="sub-lbl">Iniziativa</span><div class="highlight-val">+{{ comp.initiative }}</div></div>
-            <div><span class="sub-lbl">Velocità</span><div class="highlight-val">{{ comp.speed_meters }} m</div></div>
-          </div>
-        </div>
-
-        <div class="status-card saves-card">
-          <span class="status-label">Tiri Salvezza</span>
-          <div class="saves-grid">
-            <div class="save-box fort"><span class="s-name">Tempra</span><span class="s-val">+{{ comp.fortitude }}</span></div>
-            <div class="save-box ref"><span class="s-name">Riflessi</span><span class="s-val">+{{ comp.reflex }}</span></div>
-            <div class="save-box will"><span class="s-name">Volontà</span><span class="s-val">+{{ comp.will }}</span></div>
-          </div>
         </div>
       </div>
     </div>
@@ -320,14 +289,17 @@
 
       <!-- LISTA TIRI -->
       <div class="dice-rolls-list">
-        <!-- Tiri Armi -->
+        <!-- Tiri Armi registrate -->
         <ng-container *ngIf="rollerSection() === 'combat'">
-          <div class="dice-item-row" *ngFor="let w of rec.data.character.weapons" (click)="rollAction(w.name, 1, 20, 8)">
+          <div class="dice-item-row" *ngFor="let w of rec.data.character.weapons" (click)="rollAction(w.name, 1, 20, 0)">
             <div class="item-info">
               <span class="item-name">{{ w.name }}</span>
               <span class="item-sub">TxC {{ w.attack_bonus }} • Danno {{ w.damage }}</span>
             </div>
             <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+          <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">
+            Aggiungi le tue armi per poterle lanciare qui con un click.
           </div>
         </ng-container>
 
@@ -353,6 +325,9 @@
             <div class="item-info"><span class="item-name">{{ sk.name }}</span><span class="item-sub">+{{ sk.bonus }}</span></div>
             <button type="button" class="roll-btn skill">Prova 📊</button>
           </div>
+          <div *ngIf="!rec.data.character.skills || rec.data.character.skills.length === 0" class="empty-section-hint">
+            Nessuna abilità registrata.
+          </div>
         </ng-container>
       </div>
 
@@ -373,8 +348,8 @@
       <header class="modal-header">
         <div class="modal-title-row">
           <div>
-            <h2 class="modal-title">⚙️ Modifica Scheda & Level Up</h2>
-            <p class="modal-sub">Salvataggio automatico su Neon in tempo reale</p>
+            <h2 class="modal-title">⚙️ Compila Scheda & Level Up</h2>
+            <p class="modal-sub">Salvataggio online in tempo reale su Neon DB</p>
           </div>
           <button type="button" class="close-x-btn" (click)="showLevelUpModal.set(false)">✕</button>
         </div>
@@ -394,9 +369,9 @@
             <h3>Identità & Ruolo</h3>
             <div class="mobile-fields-grid">
               <div class="form-group"><label>Nome Personaggio</label><input type="text" [(ngModel)]="editName" /></div>
-              <div class="form-group"><label>Classe</label><input type="text" [(ngModel)]="editClass" /></div>
-              <div class="form-group"><label>Razza</label><input type="text" [(ngModel)]="editData.character.race" /></div>
-              <div class="form-group"><label>Citazione / Motto</label><input type="text" [(ngModel)]="editData.character.quote" /></div>
+              <div class="form-group"><label>Classe</label><input type="text" [(ngModel)]="editClass" placeholder="es. Druido, Barda, Magus" /></div>
+              <div class="form-group"><label>Razza</label><input type="text" [(ngModel)]="editData.character.race" placeholder="es. Umano, Silfide, Kitsune" /></div>
+              <div class="form-group"><label>Motto / Citazione</label><input type="text" [(ngModel)]="editData.character.quote" placeholder="Citazione o descrizione breve" /></div>
             </div>
           </div>
           <div class="form-section">
@@ -458,7 +433,7 @@
         <div *ngIf="modalTab() === 'weapons'" class="tab-content">
           <div class="form-section">
             <h3>🗡️ Armi in Dotazione</h3>
-            <div class="items-edit-list" *ngIf="editData.character.weapons">
+            <div class="items-edit-list" *ngIf="editData.character.weapons && editData.character.weapons.length > 0">
               <div class="item-edit-row" *ngFor="let w of editData.character.weapons; let i = index">
                 <div class="item-main-info">
                   <strong>{{ w.name }}</strong>
@@ -472,7 +447,7 @@
               <h4>+ Inserisci Nuova Arma</h4>
               <div class="mobile-fields-grid">
                 <div class="form-group"><label>Nome Arma</label><input type="text" [(ngModel)]="newWpnName" placeholder="es. Scimitarra +1" /></div>
-                <div class="form-group"><label>TxC</label><input type="text" [(ngModel)]="newWpnAtk" placeholder="es. +10/+5" /></div>
+                <div class="form-group"><label>TxC (Bonus Attacco)</label><input type="text" [(ngModel)]="newWpnAtk" placeholder="es. +9/+4" /></div>
                 <div class="form-group"><label>Danno</label><input type="text" [(ngModel)]="newWpnDmg" placeholder="es. 1d6+3" /></div>
                 <div class="form-group"><label>Critico</label><input type="text" [(ngModel)]="newWpnCrit" placeholder="es. 18-20/x2" /></div>
               </div>
@@ -486,7 +461,7 @@
         <div *ngIf="modalTab() === 'feats'" class="tab-content">
           <div class="form-section">
             <h3>🥋 Talenti & Maestrie</h3>
-            <div class="items-edit-list" *ngIf="editData.character.feats">
+            <div class="items-edit-list" *ngIf="editData.character.feats && editData.character.feats.length > 0">
               <div class="item-edit-row" *ngFor="let f of editData.character.feats; let i = index">
                 <div class="item-main-info">
                   <strong>{{ f.name }}</strong> <small>({{ f.tag }})</small>
@@ -524,7 +499,7 @@
               </div>
             </div>
             <div class="add-skill-box">
-              <input type="text" [(ngModel)]="newSkillName" placeholder="Nuova abilità..." />
+              <input type="text" [(ngModel)]="newSkillName" placeholder="Nuova abilità (es. Percezione)..." />
               <select [(ngModel)]="newSkillStat">
                 <option value="FOR">FOR</option><option value="DES">DES</option><option value="COS">COS</option><option value="INT">INT</option><option value="SAG">SAG</option><option value="CAR">CAR</option>
               </select>

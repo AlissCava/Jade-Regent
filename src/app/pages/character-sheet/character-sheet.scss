@@ -1439,4 +1439,51 @@ $text-muted: #94a3b8;
   }
 }
 
+/* INTESTAZIONE CON PULSANTE RAPIDO */
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .section-title {
+    margin: 0 !important;
+  }
+
+  .btn-quick-add {
+    background: rgba($gold, 0.12);
+    border: 1px solid rgba($gold, 0.35);
+    color: #fde68a;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.35rem 0.7rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: $gold;
+      color: #000;
+    }
+  }
+}
+
+/* AVVISO QUANDO UNA SEZIONE È VUOTA */
+.empty-section-hint {
+  background: #090e1a;
+  border: 1px dashed #1e2c48;
+  border-radius: 10px;
+  padding: 1.1rem 1rem;
+  font-size: 0.84rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  text-align: center;
+
+  strong {
+    color: $gold;
+  }
+}
+
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
