@@ -62,7 +62,7 @@ export class SessionService {
         }
       };
 
-      xhr.onerror = () => reject(new Error('Errore di rete durante il caricamento'));
+      xhr.onerror = () => reject(new Error('Errore di rete durante il caricamento del file audio'));
       xhr.send(file);
     });
   }
@@ -74,24 +74,28 @@ export class SessionService {
     const rawFile = fileUri.includes('files/') ? fileUri.substring(fileUri.indexOf('files/')) : fileUri;
     const resourceName = rawFile.startsWith('files/') ? rawFile : `files/${rawFile}`;
 
-    // 1. Polling eseguito dal browser (nessun limite di 60 secondi)
+    // 1. Polling stato elaborazione file audio
     let isReady = false;
     for (let i = 0; i < 40; i++) {
-      const check = await fetch(`https://generativelanguage.googleapis.com/v1beta/${resourceName}?key=${apiKey}`);
-      if (check.ok) {
-        const fileInfo = await check.json();
-        if (fileInfo.state === 'ACTIVE') {
-          isReady = true;
-          break;
+      try {
+        const check = await fetch(`https://generativelanguage.googleapis.com/v1beta/${resourceName}?key=${apiKey}`);
+        if (check.ok) {
+          const fileInfo = await check.json();
+          if (fileInfo.state === 'ACTIVE') {
+            isReady = true;
+            break;
+          }
+          if (fileInfo.state === 'FAILED') throw new Error('Elaborazione del file audio fallita su Google');
         }
-        if (fileInfo.state === 'FAILED') throw new Error('Elaborazione del file audio fallita su Google');
+      } catch (err: any) {
+        if (err.message?.includes('fallita')) throw err;
+        console.warn(`[Polling] Errore temporaneo controllo stato:`, err);
       }
       await new Promise(r => setTimeout(r, 3000));
     }
 
     if (!isReady) throw new Error('Timeout: il file audio impiega troppo tempo ad elaborarsi su Google');
 
-    // 2. Chiamata Gemini direttamente dal browser con gestione automatica di sovraccarico (errore 503)
     const promptText = `
 Sei il Cronista della carovana della campagna di Pathfinder 1E "Jade Regent".
 Ascolta questa registrazione audio della sessione di gioco di ruolo.
@@ -111,54 +115,73 @@ REGOLE CRITICHE:
 }
 `;
 
+    // 2. Fallback a cascata su modelli diversi se uno è saturo (503/429)
+    const fallbackModels = [
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash'
+    ];
+
     let geminiRes: Response | null = null;
-    const maxRetries = 3;
-    const retryDelays = [3000, 6000, 10000]; // Pause progressive: 3s, 6s, 10s
+    let successfulModel = '';
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  { 
-                    fileData: { 
-                      mimeType: mimeType || 'audio/mp3', 
-                      fileUri: `https://generativelanguage.googleapis.com/v1beta/${resourceName}` 
-                    } 
-                  },
-                  { text: promptText }
-                ]
-              }
-            ],
-            generationConfig: { responseMimeType: 'application/json' }
-          })
+    for (const model of fallbackModels) {
+      try {
+        console.info(`[Gemini] Tentativo elaborazione con modello: ${model}`);
+        geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    { 
+                      fileData: { 
+                        mimeType: mimeType || 'audio/mp3', 
+                        fileUri: `https://generativelanguage.googleapis.com/v1beta/${resourceName}` 
+                      } 
+                    },
+                    { text: promptText }
+                  ]
+                }
+              ],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          }
+        );
+
+        if (geminiRes.ok) {
+          successfulModel = model;
+          break; // Elaborazione riuscita con successo
         }
-      );
 
-      // Se Google risponde 503 (sovraccarico temporaneo), attende con backoff e ritenta
-      if (geminiRes.status === 503 && attempt < maxRetries) {
-        console.warn(`[Gemini 503] Modello saturo. Riprovo (tentativo ${attempt + 1}/${maxRetries}) tra ${retryDelays[attempt] / 1000}s...`);
-        await new Promise(r => setTimeout(r, retryDelays[attempt]));
-        continue;
+        // Se il modello è saturo o in rate limit, logga ed effettua fallback sul modello successivo
+        if (geminiRes.status === 503 || geminiRes.status === 429) {
+          console.warn(`[Gemini ${geminiRes.status}] Il modello ${model} è saturo. Scalo sul modello successivo...`);
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+
+        // Se l'errore è un 400 (sintassi/prompt), interrompi il ciclo
+        break;
+      } catch (networkErr: any) {
+        console.warn(`[Network/CORS] Errore su ${model}: ${networkErr.message}. Tento il fallback...`);
+        await new Promise(r => setTimeout(r, 2000));
       }
-
-      break;
     }
 
     if (!geminiRes || !geminiRes.ok) {
       if (geminiRes?.status === 503) {
-        throw new Error('I server di Google sono temporaneamente saturi (errore 503). Attendi un paio di minuti e riprova.');
+        throw new Error('Tutti i cluster Gemini sono momentaneamente congestionati. Attendi un paio di minuti e riprova.');
       }
-      const err = await geminiRes?.text();
+      const err = await geminiRes?.text().catch(() => 'Nessun dettaglio');
       throw new Error(`Errore risposta Gemini: ${err}`);
     }
 
+    console.info(`[Gemini] Risposta generata con successo da: ${successfulModel}`);
     const geminiData = await geminiRes.json();
     const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
@@ -177,7 +200,7 @@ REGOLE CRITICHE:
       };
     }
 
-    // 3. Salva su Neon DB tramite /api/sessions (impiega solo ~50ms)
+    // 3. Salvataggio su Neon DB
     const saved = await firstValueFrom(
       this.http.post<SessionRecord>('/api/sessions', {
         sessionNumber,
