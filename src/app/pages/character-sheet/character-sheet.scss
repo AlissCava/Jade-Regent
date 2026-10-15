@@ -10,10 +10,18 @@ $text-muted: #94a3b8;
   box-sizing: border-box;
 }
 
+:host {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .char-page-container {
   max-width: 1150px;
+  width: 100%;
   margin: 0 auto;
   padding: 0.5rem 0.65rem 3.5rem;
+  overflow-x: clip;
 }
 
 /* ACCESSIBILITÀ SCREEN READER */
@@ -61,6 +69,7 @@ $text-muted: #94a3b8;
 
   .char-nav-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.45rem;
 
     .char-tab-btn {
@@ -154,10 +163,11 @@ $text-muted: #94a3b8;
 
   .char-title {
     font-family: 'Cinzel', serif;
-    font-size: 2.3rem;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
     font-weight: 700;
     color: #fff;
     margin: 0.25rem 0;
+    overflow-wrap: anywhere;
   }
   .char-quote {
     font-size: 0.95rem;
@@ -167,15 +177,12 @@ $text-muted: #94a3b8;
   }
 }
 
-/* GRIGLIA STATUS COMBATTIMENTO */
+/* STATUS GRID */
 .combat-status-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
   gap: 0.85rem;
   margin-bottom: 1.15rem;
-
-  @media (min-width: 600px) { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 992px) { grid-template-columns: repeat(4, 1fr); }
 
   .status-card {
     background: $bg-card;
@@ -202,6 +209,7 @@ $text-muted: #94a3b8;
       display: flex;
       align-items: baseline;
       gap: 0.45rem;
+      flex-wrap: wrap;
       .hp-current {
         font-family: 'Cinzel', serif;
         font-size: 2.35rem;
@@ -210,7 +218,7 @@ $text-muted: #94a3b8;
         line-height: 1;
         &.low-hp { color: #f87171; animation: pulse 1.5s infinite; }
       }
-      .hp-divider, .hp-max { color: $text-muted; font-size: 1.05rem; }
+      .hp-divider, .hp-max { color: $text-muted; font-size: 1.05rem; white-space: nowrap; }
     }
 
     .hp-stepper {
@@ -246,6 +254,7 @@ $text-muted: #94a3b8;
   .ca-card .ca-sub-pills {
     display: flex;
     gap: 0.45rem;
+    flex-wrap: wrap;
     .ca-pill {
       font-size: 0.8rem;
       color: $text-muted;
@@ -260,12 +269,15 @@ $text-muted: #94a3b8;
     display: flex;
     justify-content: space-around;
     text-align: center;
-    .sub-lbl { font-size: 0.78rem; text-transform: uppercase; color: $text-muted; }
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    .sub-lbl { font-size: 0.78rem; text-transform: uppercase; color: $text-muted; display: block; }
     .highlight-val {
       font-family: 'Cinzel', serif;
       font-size: 1.75rem;
       font-weight: 700;
       color: $gold;
+      white-space: nowrap;
       &.wolf-spd { color: $blue; }
       small { font-size: 0.85rem; color: $text-muted; }
     }
@@ -274,7 +286,7 @@ $text-muted: #94a3b8;
   .saves-card {
     .saves-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
       gap: 0.4rem;
       .save-box {
         display: flex;
@@ -284,15 +296,15 @@ $text-muted: #94a3b8;
         border: 1px solid #233452;
         padding: 0.4rem 0.25rem;
         border-radius: 8px;
-        .s-name { font-size: 0.72rem; text-transform: uppercase; color: $text-muted; }
+        .s-name { font-size: 0.68rem; text-transform: uppercase; color: $text-muted; }
         .s-val { font-size: 1.25rem; font-weight: 700; color: #fff; }
       }
     }
-    .save-note { font-size: 0.76rem; color: $text-muted; margin-top: 0.45rem; text-align: center; }
+    .save-note { font-size: 0.76rem; color: $text-muted; margin-top: 0.45rem; text-align: center; overflow-wrap: anywhere; }
   }
 }
 
-/* STRISCIA CARATTERISTICHE */
+/* CARATTERISTICHE */
 .attributes-strip {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -302,6 +314,8 @@ $text-muted: #94a3b8;
   border-radius: 14px;
   padding: 0.65rem 0.5rem;
   margin-bottom: 1.15rem;
+
+  @media (max-width: 480px) { grid-template-columns: repeat(3, 1fr); }
 
   .attr-cell {
     display: flex;
@@ -315,7 +329,7 @@ $text-muted: #94a3b8;
   }
 }
 
-/* PANNELLO BUFF TATTICI */
+/* BUFF TATTICI */
 .tactical-buffs-panel {
   background: #0e172a;
   border: 1px solid rgba($gold, 0.4);
@@ -331,6 +345,8 @@ $text-muted: #94a3b8;
     font-weight: 800;
     color: $gold;
     margin-bottom: 0.7rem;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
     .buff-sum { font-size: 0.92rem; strong { color: #fde68a; } }
   }
 
@@ -360,7 +376,43 @@ $text-muted: #94a3b8;
   border-radius: 16px;
   padding: 1.25rem;
   margin-bottom: 1.15rem;
+  min-width: 0;
+
   .section-title { font-family: 'Cinzel', serif; font-size: 1.28rem; color: #fff; margin: 0 0 0.95rem; }
+
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .section-title { margin: 0 !important; }
+    .btn-quick-add {
+      background: rgba($gold, 0.12);
+      border: 1px solid rgba($gold, 0.35);
+      color: #fde68a;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.35rem 0.7rem;
+      border-radius: 8px;
+      cursor: pointer;
+      &:hover { background: $gold; color: #000; }
+    }
+  }
+}
+
+.empty-section-hint {
+  background: #090e1a;
+  border: 1px dashed #1e2c48;
+  border-radius: 10px;
+  padding: 1.1rem 1rem;
+  font-size: 0.84rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  text-align: center;
+  strong { color: $gold; }
 }
 
 .weapons-grid {
@@ -373,6 +425,7 @@ $text-muted: #94a3b8;
     border: 1px solid #233452;
     border-radius: 14px;
     padding: 1rem;
+    min-width: 0;
     &.legendary { border-color: rgba($gold, 0.5); background: linear-gradient(135deg, rgba($gold, 0.09), #0d1424); }
     &.wolf-card { border-color: rgba($blue, 0.4); }
 
@@ -380,6 +433,8 @@ $text-muted: #94a3b8;
       display: flex;
       justify-content: space-between;
       margin-bottom: 0.65rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
       .wpn-badge {
         font-size: 0.75rem;
         text-transform: uppercase;
@@ -388,12 +443,12 @@ $text-muted: #94a3b8;
         &.wolf { color: $blue; }
       }
       .wpn-name { font-family: 'Cinzel', serif; font-size: 1.2rem; color: #fff; margin: 0.15rem 0 0; }
-      .wpn-crit { font-size: 0.82rem; color: $text-muted; background: #131c2e; padding: 0.25rem 0.6rem; border-radius: 8px; }
+      .wpn-crit { font-size: 0.82rem; color: $text-muted; background: #131c2e; padding: 0.25rem 0.6rem; border-radius: 8px; white-space: nowrap; }
     }
 
     .wpn-stats-row {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 0.6rem;
       background: #080d18;
       border: 1px solid #1a283f;
@@ -403,7 +458,7 @@ $text-muted: #94a3b8;
         display: flex;
         flex-direction: column;
         .lbl { font-size: 0.74rem; text-transform: uppercase; color: $text-muted; font-weight: 700; }
-        .val.highlight { font-size: 1.22rem; font-weight: 800; color: #fde68a; }
+        .val.highlight { font-size: 1.22rem; font-weight: 800; color: #fde68a; overflow-wrap: anywhere; }
       }
     }
 
@@ -419,18 +474,16 @@ $text-muted: #94a3b8;
   }
 }
 
-/* POTERI, RISORSE & TRATTI */
+/* POTERI & RISORSE */
 .powers-section {
   background: linear-gradient(180deg, #131c2e, #0e1626);
 }
 
 .resources-row {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 0.85rem;
   margin-bottom: 1.15rem;
-
-  @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
 
   .resource-box {
     background: #090e1a;
@@ -440,6 +493,7 @@ $text-muted: #94a3b8;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-width: 0;
 
     &.resolve-box { border-color: rgba($gold, 0.4); background: linear-gradient(135deg, rgba($gold, 0.08), #090e1a); }
     &.challenge-box { border-color: rgba($crimson, 0.4); background: linear-gradient(135deg, rgba($crimson, 0.08), #090e1a); }
@@ -449,6 +503,8 @@ $text-muted: #94a3b8;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0.45rem;
+      flex-wrap: wrap;
+      gap: 0.4rem;
 
       .res-title-group {
         display: flex;
@@ -480,6 +536,7 @@ $text-muted: #94a3b8;
       display: flex;
       gap: 0.65rem;
       align-items: center;
+      flex-wrap: wrap;
 
       .pip {
         width: 32px;
@@ -541,14 +598,11 @@ $text-muted: #94a3b8;
   }
 }
 
-/* GRIGLIA TALENTI */
+/* TALENTI */
 .feats-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 0.75rem;
-
-  @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
 
   .feat-card {
     background: #090e1a;
@@ -558,12 +612,14 @@ $text-muted: #94a3b8;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+    min-width: 0;
 
     .feat-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 0.45rem;
+      flex-wrap: wrap;
 
       .feat-title {
         font-family: 'Cinzel', serif;
@@ -598,12 +654,14 @@ $text-muted: #94a3b8;
   }
 }
 
-/* GRIGLIA ABILITÀ ADDESTRATE */
+/* ABILITÀ */
 .skills-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.95rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   .section-title { margin: 0; }
   .skills-count {
     font-size: 0.82rem;
@@ -618,11 +676,8 @@ $text-muted: #94a3b8;
 
 .skills-grid-layout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
   gap: 0.55rem;
-
-  @media (min-width: 580px) { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 960px) { grid-template-columns: repeat(3, 1fr); }
 
   .skill-tile {
     display: flex;
@@ -632,6 +687,7 @@ $text-muted: #94a3b8;
     border: 1px solid #18253c;
     border-radius: 10px;
     padding: 0.6rem 0.75rem;
+    min-width: 0;
 
     .skill-meta {
       display: flex;
@@ -646,7 +702,6 @@ $text-muted: #94a3b8;
         padding: 0.2rem 0.45rem;
         border-radius: 6px;
         flex-shrink: 0;
-
         &.des { color: #67e8f9; background: rgba(6, 182, 212, 0.18); }
         &.car { color: #fde68a; background: rgba(245, 158, 11, 0.18); }
         &.sag { color: #a7f3d0; background: rgba(16, 185, 129, 0.18); }
@@ -685,7 +740,7 @@ $text-muted: #94a3b8;
   }
 }
 
-/* HISUI COMPONENTI SPECIALI */
+/* HISUI COMPONENTI */
 .wolf-theme-card {
   border-color: rgba($blue, 0.3);
   background: linear-gradient(180deg, #101a2e, #0c1322);
@@ -710,12 +765,10 @@ $text-muted: #94a3b8;
 
 .maneuvers-summary-row {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   gap: 0.75rem;
   border-top: 1px solid #1a283f;
   padding-top: 0.95rem;
-
-  @media (min-width: 600px) { grid-template-columns: 1fr 1fr; }
 
   .maneuver-box {
     background: #080d18;
@@ -727,6 +780,7 @@ $text-muted: #94a3b8;
     align-items: center;
     text-align: center;
     gap: 0.25rem;
+    min-width: 0;
 
     .m-lbl { font-size: 0.76rem; text-transform: uppercase; font-weight: 800; color: $text-muted; }
     .m-val { font-family: 'Cinzel', serif; font-size: 1.85rem; font-weight: 700; color: #67e8f9; line-height: 1.1; }
@@ -967,7 +1021,6 @@ $text-muted: #94a3b8;
       display: flex;
       flex-direction: column;
       gap: 0.2rem;
-
       .item-name { font-size: 1.05rem; font-weight: 700; color: #fff; }
       .item-sub { font-size: 0.84rem; color: #94a3b8; font-weight: 500; }
     }
@@ -1020,7 +1073,7 @@ $text-muted: #94a3b8;
   }
 }
 
-/* ==================== MODALE LEVEL UP ONLINE ==================== */
+/* MODALE LEVEL UP & COMPILAZIONE */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1112,7 +1165,6 @@ $text-muted: #94a3b8;
         border: 1px solid #1a283f;
         border-radius: 12px;
         padding: 0.85rem;
-
         h3 { font-size: 0.86rem; font-weight: 700; color: $gold; text-transform: uppercase; margin: 0 0 0.55rem; }
       }
 
@@ -1205,6 +1257,48 @@ $text-muted: #94a3b8;
         select { width: 100%; height: 38px; background: #0f172a; border: 1px solid #283958; border-radius: 8px; color: #fff; font-size: 0.85rem; }
         .add-btn { height: 38px; background: rgba($emerald, 0.2); border: 1px solid $emerald; color: #6ee7b7; border-radius: 8px; padding: 0 0.75rem; font-weight: 700; font-size: 0.84rem; cursor: pointer; }
       }
+
+      .items-edit-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        margin-bottom: 1rem;
+        .item-edit-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: #0d1424;
+          border: 1px solid #1a283f;
+          border-radius: 10px;
+          padding: 0.6rem 0.8rem;
+          .item-main-info {
+            display: flex; flex-direction: column; gap: 2px;
+            strong { font-size: 0.95rem; color: #fff; }
+            small { font-size: 0.78rem; color: #94a3b8; }
+            .mini-desc { font-size: 0.8rem; color: #cbd5e1; margin: 4px 0 0; }
+          }
+        }
+      }
+
+      .add-box-section {
+        background: #050811;
+        border: 1px dashed #22324f;
+        border-radius: 12px;
+        padding: 0.85rem;
+        margin-top: 0.75rem;
+        h4 { font-size: 0.82rem; color: #f59e0b; margin: 0 0 0.6rem; text-transform: uppercase; }
+        .btn-add-action {
+          margin-top: 0.75rem;
+          width: 100%;
+          height: 38px;
+          background: rgba(16, 185, 129, 0.2);
+          border: 1px solid #10b981;
+          color: #6ee7b7;
+          font-weight: 700;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+      }
     }
 
     .modal-footer-actions {
@@ -1212,306 +1306,33 @@ $text-muted: #94a3b8;
       border-top: 1px solid #1c2a44;
       background: #080d18;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
       gap: 0.6rem;
       flex-shrink: 0;
 
-      button { height: 44px; padding: 0 1.25rem; border-radius: 10px; font-size: 0.92rem; font-weight: 700; cursor: pointer; }
-      .btn-cancel { background: #172338; border: 1px solid #2d4062; color: #cbd5e1; }
-      .btn-save { background: $emerald; border: none; color: #064e3b; font-weight: 800; }
+      .btn-delete-char {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0 0.95rem;
+        height: 44px;
+        border-radius: 10px;
+        cursor: pointer;
+        &:hover { background: #ef4444; color: #fff; }
+      }
+
+      .right-footer-btns {
+        display: flex;
+        gap: 0.6rem;
+        button { height: 44px; padding: 0 1.25rem; border-radius: 10px; font-size: 0.92rem; font-weight: 700; cursor: pointer; }
+        .btn-cancel { background: #172338; border: 1px solid #2d4062; color: #cbd5e1; }
+        .btn-save { background: $emerald; border: none; color: #064e3b; font-weight: 800; }
+      }
     }
   }
 }
 
-/* Permette al componente di restringersi dentro il layout con sidebar */
-:host {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.char-page-container {
-  width: 100%;
-  min-width: 0;
-  overflow-x: clip; /* rete di sicurezza: mai scroll orizzontale */
-}
-
-/* Tutti i figli di griglia/flex possono restringersi */
-.status-card,
-.section-card,
-.weapon-card,
-.resource-box,
-.feat-card,
-.skill-tile,
-.maneuver-box {
-  min-width: 0;
-}
-
-/* ---------- STATUS (PF, CA, Iniziativa, TS) ---------- */
-.combat-status-grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-
-  .hp-card .hp-display {
-    flex-wrap: wrap;
-    .hp-current, .hp-divider, .hp-max { white-space: nowrap; }
-  }
-
-  .ca-card .ca-sub-pills {
-    flex-wrap: wrap;
-    .ca-pill { white-space: nowrap; }
-  }
-
-  .init-card .stat-dual-row {
-    flex-wrap: wrap;
-    gap: 0.75rem 1.25rem;
-    .sub-lbl { display: block; }          /* era inline: "INIZIATIVAVELOCITÀ" */
-    .highlight-val { white-space: nowrap; }
-  }
-
-  .saves-card {
-    .saves-grid { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
-    .save-box .s-name { font-size: 0.68rem; }
-    .save-note { overflow-wrap: anywhere; }
-  }
-}
-
-/* ---------- CARATTERISTICHE ---------- */
-.attributes-strip {
-  @media (max-width: 480px) { grid-template-columns: repeat(3, 1fr); }
-}
-
-/* ---------- BUFF TATTICI ---------- */
-.tactical-buffs-panel .buffs-header {
-  flex-wrap: wrap;
-  gap: 0.35rem 1rem;
-}
-
-/* ---------- ARMI ---------- */
-.weapons-grid .weapon-card {
-  .wpn-top {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    .wpn-crit { white-space: nowrap; align-self: flex-start; }
-  }
-  .wpn-stats-row {
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    .stat-calc .val.highlight { overflow-wrap: anywhere; }
-  }
-}
-
-/* ---------- RISORSE / TALENTI / ABILITÀ / MANOVRE ---------- */
-.resources-row {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  .resource-box .res-head { flex-wrap: wrap; gap: 0.4rem; }
-  .use-pips { flex-wrap: wrap; }
-}
-
-.feats-grid {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-  .feat-card .feat-header { flex-wrap: wrap; }
-}
-
-.skills-grid-layout {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
-}
-
-.maneuvers-summary-row {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-}
-
-.skills-card-header { flex-wrap: wrap; gap: 0.5rem; }
-
-/* ---------- BARRA SCHEDE ---------- */
-.sheet-action-bar .char-nav-tabs { flex-wrap: wrap; }
-
-/* ---------- TITOLO ---------- */
-.sheet-hero .char-title {
-  overflow-wrap: anywhere;
-  font-size: clamp(1.7rem, 4vw, 2.3rem);
-}
-
-/* SCHERMATA CREAZIONE DA ZERO SE IL PG NON ESISTE ANCORA */
-.empty-sheet-card {
-  background: #0d1527;
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  border-radius: 18px;
-  padding: 3rem 1.5rem;
-  max-width: 520px;
-  margin: 3rem auto;
-  text-align: center;
-
-  .empty-icon { font-size: 3.5rem; margin-bottom: 0.5rem; }
-  .empty-badge {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #f59e0b;
-    background: rgba(245, 158, 11, 0.12);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    padding: 3px 10px;
-    border-radius: 9999px;
-    margin-bottom: 0.8rem;
-  }
-  .empty-title {
-    font-family: 'Cinzel', serif;
-    font-size: 1.8rem;
-    color: #fff;
-    margin: 0 0 0.6rem;
-  }
-  .empty-desc {
-    font-size: 0.9rem;
-    color: #94a3b8;
-    line-height: 1.5;
-    margin-bottom: 1.8rem;
-  }
-  .btn-create-sheet {
-    background: #f59e0b;
-    color: #000;
-    font-size: 1rem;
-    font-weight: 800;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
-    transition: transform 0.1s ease, filter 0.15s ease;
-
-    &:hover { filter: brightness(1.15); }
-    &:active { transform: scale(0.97); }
-  }
-}
-
-/* LISTE MODIFICA ARMI & TALENTI NELLA MODALE */
-.items-edit-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  margin-bottom: 1rem;
-
-  .item-edit-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #0d1424;
-    border: 1px solid #1a283f;
-    border-radius: 10px;
-    padding: 0.6rem 0.8rem;
-
-    .item-main-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      strong { font-size: 0.95rem; color: #fff; }
-      small { font-size: 0.78rem; color: #94a3b8; }
-      .mini-desc { font-size: 0.8rem; color: #cbd5e1; margin: 4px 0 0; }
-    }
-  }
-}
-
-.add-box-section {
-  background: #050811;
-  border: 1px dashed #22324f;
-  border-radius: 12px;
-  padding: 0.85rem;
-  margin-top: 0.75rem;
-
-  h4 {
-    font-size: 0.82rem;
-    color: #f59e0b;
-    margin: 0 0 0.6rem;
-    text-transform: uppercase;
-  }
-
-  .btn-add-action {
-    margin-top: 0.75rem;
-    width: 100%;
-    height: 38px;
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid #10b981;
-    color: #6ee7b7;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    &:hover { background: #10b981; color: #000; }
-  }
-}
-
-/* INTESTAZIONE CON PULSANTE RAPIDO */
-.section-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.85rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-
-  .section-title {
-    margin: 0 !important;
-  }
-
-  .btn-quick-add {
-    background: rgba($gold, 0.12);
-    border: 1px solid rgba($gold, 0.35);
-    color: #fde68a;
-    font-size: 0.78rem;
-    font-weight: 700;
-    padding: 0.35rem 0.7rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: $gold;
-      color: #000;
-    }
-  }
-}
-
-/* AVVISO QUANDO UNA SEZIONE È VUOTA */
-.empty-section-hint {
-  background: #090e1a;
-  border: 1px dashed #1e2c48;
-  border-radius: 10px;
-  padding: 1.1rem 1rem;
-  font-size: 0.84rem;
-  color: #94a3b8;
-  line-height: 1.5;
-  text-align: center;
-
-  strong {
-    color: $gold;
-  }
-}
-.modal-footer-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.6rem;
-
-  .btn-delete-char {
-    background: rgba(239, 68, 68, 0.15) !important;
-    border: 1px solid rgba(239, 68, 68, 0.4) !important;
-    color: #fca5a5 !important;
-    font-size: 0.85rem !important;
-    font-weight: 700 !important;
-    padding: 0 0.95rem !important;
-    height: 44px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: #ef4444 !important;
-      color: #fff !important;
-    }
-  }
-
-  .right-footer-btns {
-    display: flex;
-    gap: 0.6rem;
-  }
-}
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
