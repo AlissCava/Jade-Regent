@@ -119,19 +119,30 @@
         <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">{{ rec.data.character.cha }}</span><span class="attr-mod">+{{ (rec.data.character.cha - 10) / 2 | number:'1.0-0' }}</span></div>
       </div>
 
-      <!-- MODIFICATORI TATTICI -->
+      <!-- MODIFICATORI TATTICI DEL PARTY (SOLO ISPIRARE CORAGGIO E FIANCHEGGIAMENTO) -->
       <div class="tactical-buffs-panel">
         <div class="buffs-header">
           <span>⚡ BUFF & CONDIZIONI TATTICHE</span>
           <span class="buff-sum">TxC: <strong>{{ attackMod() >= 0 ? '+' + attackMod() : attackMod() }}</strong> | Danni: <strong>{{ damageMod() >= 0 ? '+' + damageMod() : damageMod() }}</strong></span>
         </div>
         <div class="buff-chips">
-          <button type="button" class="buff-chip" [class.active]="inspireCourage()" (click)="inspireCourage.set(!inspireCourage())">🎺 Ispirare Coraggio (+2/+2)</button>
-          <button type="button" class="buff-chip" [class.active]="bannerActive()" (click)="bannerActive.set(!bannerActive())">🎌 Stendardo (+1 TxC)</button>
-          <button type="button" class="buff-chip" [class.active]="challengeActive()" (click)="challengeActive.set(!challengeActive())">⚔️ Sfida (+2 TxC / +{{ rec.level }} Danni)</button>
-          <button type="button" class="buff-chip" [class.active]="flanking()" (click)="flanking.set(!flanking())">👥 Fiancheggiamento (+2 TxC)</button>
-          <button type="button" class="buff-chip" [class.active]="divineFavorActive()" (click)="divineFavorActive.set(!divineFavorActive())">✨ Favore Divino (+2/+2)</button>
-          <button type="button" class="buff-chip power-atk" [class.active]="powerAttack()" (click)="powerAttack.set(!powerAttack())">💥 Attacco Poderoso (-2/+4)</button>
+          <button 
+            type="button" 
+            class="buff-chip" 
+            [class.active]="inspireCourage()" 
+            (click)="inspireCourage.set(!inspireCourage())"
+            [attr.aria-pressed]="inspireCourage()">
+            🎺 Ispirare Coraggio (+2/+2)
+          </button>
+
+          <button 
+            type="button" 
+            class="buff-chip" 
+            [class.active]="flanking()" 
+            (click)="flanking.set(!flanking())"
+            [attr.aria-pressed]="flanking()">
+            👥 Fiancheggiamento (+2 TxC)
+          </button>
         </div>
       </div>
 
@@ -171,6 +182,32 @@
             Nessuna arma registrata. Clicca su <strong>+ Aggiungi Arma</strong> per inserire le tue armi da mischia o a distanza.
           </div>
         </ng-template>
+      </div>
+
+      <!-- RISORSE SPECIALI DELLA CLASSE -->
+      <div class="section-card powers-section" *ngIf="rec.data.character.special_resources && rec.data.character.special_resources.length > 0">
+        <h2 class="section-title">⛩️ Risorse & Capacità Speciali</h2>
+        <div class="resources-row">
+          <div class="resource-box" *ngFor="let res of rec.data.character.special_resources">
+            <div class="res-head">
+              <div class="res-title-group">
+                <span class="res-icon">{{ res.icon || '✨' }}</span>
+                <span class="res-title">{{ res.name }}</span>
+              </div>
+              <span class="res-val">{{ res.current }} / {{ res.max }}</span>
+            </div>
+            <p class="res-desc">{{ res.description }}</p>
+            <div class="use-pips">
+              <button 
+                type="button" 
+                *ngFor="let p of [].constructor(res.max); let idx = index" 
+                class="pip" 
+                [class.filled]="idx < res.current" 
+                (click)="toggleResource(res, idx)">
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- TALENTI -->
@@ -219,7 +256,7 @@
         </div>
         <ng-template #noSkills>
           <div class="empty-section-hint">
-            Nessuna abilità registrata. Clicca su <strong>+ Aggiungi Abilità</strong> per inserire Percezione, Furtività, Conoscenze e le altre competenze del tuo personaggio.
+            Nessuna abilità registrata. Clicca su <strong>+ Aggiungi Abilità</strong> per inserire le tue competenze.
           </div>
         </ng-template>
       </div>
@@ -264,6 +301,26 @@
         <button type="button" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">🗡️ Attacchi</button>
         <button type="button" class="folder-chip" [class.active]="rollerSection() === 'saves'" (click)="rollerSection.set('saves')">🛡️ Tiri Salvezza</button>
         <button type="button" class="folder-chip" [class.active]="rollerSection() === 'skills'" (click)="rollerSection.set('skills')">📊 Abilità</button>
+      </div>
+
+      <!-- ROLL MODIFIERS DINAMICI CON CHECKBOX (SOLO ISPIRARE E FIANCHEGGIARE) -->
+      <div class="roll-modifiers-box" aria-label="Modificatori di tiro attivi">
+        <div class="mod-box-header">
+          <span>BUFF ATTIVI</span>
+          <button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modFlank.set(false)">
+            Clear
+          </button>
+        </div>
+        <div class="mod-checkboxes-grid">
+          <label class="mod-check-label" [class.checked]="modInspire()">
+            <input type="checkbox" [ngModel]="modInspire()" (ngModelChange)="modInspire.set($event)" />
+            <span>🎺 Ispirare (+2)</span>
+          </label>
+          <label class="mod-check-label" [class.checked]="modFlank()">
+            <input type="checkbox" [ngModel]="modFlank()" (ngModelChange)="modFlank.set($event)" />
+            <span>👥 Fiancheggiamento (+2)</span>
+          </label>
+        </div>
       </div>
 
       <!-- BANNER RISULTATO -->
@@ -510,7 +567,6 @@
       </div>
 
       <footer class="modal-footer-actions">
-        <!-- PULSANTE ELIMINA SCHEDA -->
         <button type="button" class="btn-delete-char" (click)="deleteCurrentCharacter()" [disabled]="saving()">
           🗑️ Elimina Scheda
         </button>

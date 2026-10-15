@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
 import { CharacterRecord, CharacterSheetData, SkillItem, WeaponItem, FeatItem, SpecialResourceItem } from '../../models/character.model';
-import { Router } from '@angular/router';
+
 export interface RollResult {
   title: string;
   d20: number;
@@ -38,13 +38,9 @@ export class CharacterSheetComponent implements OnInit {
 
   rollerSection = signal<'combat' | 'saves' | 'skills'>('combat');
 
-  // MODIFICATORI DI LANCIO CHECKBOX
+  // MODIFICATORI GENERALI DI TIRO (UNIVERSALI PER IL PARTY)
   modInspire = signal<boolean>(false);
-  modDivineFavor = signal<boolean>(false);
-  modPrayer = signal<boolean>(false);
-  modChallenge = signal<boolean>(false);
   modFlank = signal<boolean>(false);
-  modBanner = signal<boolean>(false);
 
   lastResult = signal<RollResult | null>(null);
 
@@ -72,13 +68,9 @@ export class CharacterSheetComponent implements OnInit {
   newFeatTag = 'Generale';
   newFeatDesc = '';
 
-  // BUFF TATTICI SCHEDA
+  // BUFF TATTICI UNIVERSALI DEL PARTY
   inspireCourage = signal<boolean>(false);
-  bannerActive = signal<boolean>(false);
-  challengeActive = signal<boolean>(false);
   flanking = signal<boolean>(false);
-  divineFavorActive = signal<boolean>(false);
-  powerAttack = signal<boolean>(false);
 
   // CALCOLI STATISTICHE DINAMICHE
   get charLevel(): number { return this.charRecord()?.level ?? 1; }
@@ -92,24 +84,17 @@ export class CharacterSheetComponent implements OnInit {
     return Math.floor((dex - 10) / 2);
   }
 
+  // Modificatori calcolati in tempo reale (applicabili ad ogni personaggio)
   attackMod = computed(() => {
     let mod = 0;
     if (this.inspireCourage()) mod += 2;
-    if (this.bannerActive()) mod += 1;
-    if (this.challengeActive()) mod += 2;
     if (this.flanking()) mod += 2;
-    if (this.divineFavorActive()) mod += 2;
-    if (this.powerAttack()) mod -= 2;
     return mod;
   });
 
   damageMod = computed(() => {
     let mod = 0;
-    const lvl = this.charRecord()?.level || 1;
     if (this.inspireCourage()) mod += 2;
-    if (this.challengeActive()) mod += lvl;
-    if (this.divineFavorActive()) mod += 2;
-    if (this.powerAttack()) mod += 4;
     return mod;
   });
 
@@ -124,12 +109,11 @@ export class CharacterSheetComponent implements OnInit {
 
     this.charService.getCharacter(this.characterSlug).subscribe({
       next: (rec) => {
-        // Se la scheda esiste già nel DB Neon (es. Ryoujin o PG già salvati)
         this.setRecordData(rec);
         this.loading.set(false);
       },
       error: () => {
-        // Se non esiste ancora su Neon: crea una SCHEDA COMPLETAMENTE VUOTA e salvala!
+        // Se non esiste ancora sul DB, crea una scheda vuota
         const empty = this.generateEmptyTemplate(this.characterSlug);
 
         this.charService.createCharacter({
@@ -144,7 +128,6 @@ export class CharacterSheetComponent implements OnInit {
             this.loading.set(false);
           },
           error: () => {
-            // Fallback locale in caso di disconnessione
             const mockRecord: CharacterRecord = {
               id: Date.now(),
               slug: this.characterSlug,
@@ -175,7 +158,6 @@ export class CharacterSheetComponent implements OnInit {
     this.editData = JSON.parse(JSON.stringify(rec.data));
   }
 
-  // --- SCHEDA VUOTA DA COMPILARE DA ZERO ---
   private generateEmptyTemplate(slug: string): { name: string; class_name: string; level: number; data: CharacterSheetData } {
     const defaultName = slug.charAt(0).toUpperCase() + slug.slice(1);
     return {
@@ -219,7 +201,6 @@ export class CharacterSheetComponent implements OnInit {
     };
   }
 
-  // --- MODIFICA RAPIDA PUNTI FERITA (SALVA SU NEON) ---
   modifyHp(target: 'main' | 'companion', amount: number): void {
     const rec = this.charRecord();
     if (!rec) return;
@@ -247,7 +228,6 @@ export class CharacterSheetComponent implements OnInit {
     }
   }
 
-  // --- APRE LA MODALE DIRETTAMENTE SULLA SCHEDA GIUSTA ---
   openLevelUp(): void {
     this.openLevelUpTab('general');
   }
@@ -346,6 +326,34 @@ export class CharacterSheetComponent implements OnInit {
     });
   }
 
+  deleteCurrentCharacter(): void {
+    const name = this.editName || this.characterSlug;
+    if (!confirm(`Sei sicura di voler eliminare definitivamente la scheda di "${name}"? I dati verranno rimossi da Neon DB.`)) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.charService.deleteCharacter(this.characterSlug).subscribe({
+      next: () => {
+        try {
+          const raw = localStorage.getItem('jade_regent_deleted_slugs');
+          const set: string[] = raw ? JSON.parse(raw) : [];
+          if (!set.includes(this.characterSlug)) set.push(this.characterSlug);
+          localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(set));
+        } catch {}
+
+        this.saving.set(false);
+        this.showLevelUpModal.set(false);
+        this.router.navigate(['/characters']);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.showLevelUpModal.set(false);
+        this.router.navigate(['/characters']);
+      }
+    });
+  }
+
   // --- LANCIATORE DADI DINAMICO ---
   rollAction(title: string, diceCount: number, diceFaces: number, mod: number, critMin = 20): void {
     const rolls: number[] = [];
@@ -358,10 +366,7 @@ export class CharacterSheetComponent implements OnInit {
 
     let extraMod = 0;
     if (this.modInspire()) extraMod += 2;
-    if (this.modBanner()) extraMod += 1;
     if (this.modFlank()) extraMod += 2;
-    if (this.modDivineFavor()) extraMod += 2;
-    if (this.modPrayer()) extraMod += 1;
 
     const total = sum + mod + extraMod;
     const d20 = diceFaces === 20 ? rolls[0] : 0;
@@ -400,35 +405,6 @@ export class CharacterSheetComponent implements OnInit {
       isCrit: r === 20,
       isFumble: r === 1,
       breakdown: `Dado: ${r}`
-    });
-  }
-
-  // ELIMINA SCHEDA DIRETTAMENTE DALL'INTERNO
-  deleteCurrentCharacter(): void {
-    const name = this.editName || this.characterSlug;
-    if (!confirm(`Sei sicura di voler eliminare definitivamente la scheda di "${name}"? I dati verranno rimossi da Neon DB.`)) {
-      return;
-    }
-
-    this.saving.set(true);
-    this.charService.deleteCharacter(this.characterSlug).subscribe({
-      next: () => {
-        try {
-          const raw = localStorage.getItem('jade_regent_deleted_slugs');
-          const set: string[] = raw ? JSON.parse(raw) : [];
-          if (!set.includes(this.characterSlug)) set.push(this.characterSlug);
-          localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(set));
-        } catch {}
-
-        this.saving.set(false);
-        this.showLevelUpModal.set(false);
-        this.router.navigate(['/characters']);
-      },
-      error: () => {
-        this.saving.set(false);
-        this.showLevelUpModal.set(false);
-        this.router.navigate(['/characters']);
-      }
     });
   }
 }
