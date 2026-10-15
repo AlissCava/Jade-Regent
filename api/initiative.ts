@@ -10,11 +10,11 @@ const DEFAULT_PARTY = [
   { id: 'pc_airyn', name: 'Airyn', type: 'pc', initiative: 0, conditions: [] },
   { id: 'pc_kaede', name: 'Kaede', type: 'pc', initiative: 0, conditions: [] },
 
-  // PNG CAROVANA (Sempre in fondo al round in quest'ordine)
-  { id: 'npc_ameiko', name: 'Ameiko', type: 'npc', initiative: -100, conditions: [] },
-  { id: 'npc_zaya', name: 'Zaya', type: 'npc', initiative: -101, conditions: [] },
-  { id: 'npc_sandru', name: 'Sandru', type: 'npc', initiative: -102, conditions: [] },
-  { id: 'npc_shalelu', name: 'Shalelu', type: 'npc', initiative: -103, conditions: [] }
+  // PNG CAROVANA (Con tracking danni e KO per il Master)
+  { id: 'npc_ameiko', name: 'Ameiko', type: 'npc', initiative: -100, conditions: [], damage: 0, is_ko: false },
+  { id: 'npc_zaya', name: 'Zaya', type: 'npc', initiative: -101, conditions: [], damage: 0, is_ko: false },
+  { id: 'npc_sandru', name: 'Sandru', type: 'npc', initiative: -102, conditions: [], damage: 0, is_ko: false },
+  { id: 'npc_shalelu', name: 'Shalelu', type: 'npc', initiative: -103, conditions: [], damage: 0, is_ko: false }
 ];
 
 export default async function handler(req: any, res: any) {
@@ -34,7 +34,7 @@ export default async function handler(req: any, res: any) {
   const sql = neon(databaseUrl);
 
   try {
-    // GET: Recupera lo scontro attivo o ne inizializza uno con il party
+    // GET: Recupera lo scontro attivo o ne inizializza uno nuovo
     if (req.method === 'GET') {
       const rows = await sql`
         SELECT * FROM combat_encounters 
@@ -43,10 +43,17 @@ export default async function handler(req: any, res: any) {
       `;
 
       if (rows.length > 0) {
-        return res.status(200).json(rows[0]);
+        // Garantisce che anche i vecchi NPC nel DB abbiano i campi di danno inizializzati
+        const encounter = rows[0];
+        encounter.combatants = (encounter.combatants || []).map((c: any) => ({
+          ...c,
+          damage: c.damage ?? 0,
+          is_ko: c.is_ko ?? false
+        }));
+        return res.status(200).json(encounter);
       }
 
-      // Se non esiste ancora uno scontro, creane uno di default
+      // Se non esiste ancora uno scontro, ne inserisce uno di default
       const inserted = await sql`
         INSERT INTO combat_encounters (title, current_round, active_turn_index, is_active, combatants)
         VALUES ('Scontro della Carovana', 1, 0, TRUE, ${JSON.stringify(DEFAULT_PARTY)}::jsonb)
@@ -55,7 +62,7 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(inserted[0]);
     }
 
-    // PUT: Salva lo stato del combattimento (round, turno, danni nemici, modifiche)
+    // PUT: Salva lo stato del combattimento (round, turni, danni, nemici)
     if (req.method === 'PUT') {
       const { id, title, current_round, active_turn_index, combatants } = req.body;
 
@@ -78,7 +85,7 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(updated[0]);
     }
 
-    // POST: Reset scontro (ripristina Party e NPC e pulisce i nemici)
+    // POST: Reset scontro
     if (req.method === 'POST') {
       const { id } = req.body;
       const resetState = await sql`

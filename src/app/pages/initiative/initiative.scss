@@ -1,532 +1,438 @@
-$bg-card: #0d1527;
-$border-card: #1e2c48;
+$bg-dark: #070b14;
+$bg-card: #0c1426;
+$border-color: #1a2742;
 $gold: #f59e0b;
-$crimson: #ef4444;
-$emerald: #10b981;
 $blue: #38bdf8;
 $purple: #a855f7;
-$text-muted: #94a3b8;
+$crimson: #ef4444;
+$green: #10b981;
 
 .initiative-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 10px 10px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
-.initiative-header {
-  text-align: center;
-  margin-bottom: 12px;
-
-  .header-badge {
-    display: inline-block;
-    font-size: 0.68rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: $crimson;
-    background: rgba($crimson, 0.12);
-    border: 1px solid rgba($crimson, 0.35);
-    padding: 2px 8px;
-    border-radius: 9999px;
-  }
-
-  .header-title {
-    font-family: 'Cinzel', serif;
-    font-size: 1.55rem;
-    color: #fff;
-    margin: 4px 0 2px;
-  }
-
-  .header-sub {
-    font-size: 0.78rem;
-    color: $text-muted;
-    margin: 0;
-  }
-}
-
 /* ========================================================
-   CONTROLLI ROUND E TURNI
+   HEADER TRACKER & AZIONI ROUND
    ======================================================== */
-.round-control-card {
-  background: $bg-card;
-  border: 1px solid $border-card;
-  border-radius: 14px;
-  padding: 10px 14px;
+.tracker-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  margin-bottom: 12px;
+  background: #0b1324;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+  padding: 8px 12px;
 
-  .round-indicator {
-    display: flex;
-    align-items: baseline;
+  .round-badge {
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
-
-    .round-label {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: $text-muted;
-      letter-spacing: 0.05em;
-    }
-    .round-number {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: $gold;
-      font-family: 'Cinzel', serif;
-      line-height: 1;
-    }
-  }
-
-  .turn-actions {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-
-    button {
-      height: 36px;
-      padding: 0 12px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.82rem;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.12s ease;
-
-      &.prev {
-        background: #131d33;
-        border-color: #22324f;
-        color: #cbd5e1;
-      }
-      &.next {
-        background: $gold;
-        color: #000;
-        font-weight: 800;
-        border-color: #fbbf24;
-      }
-      &.btn-sort {
-        background: #101c33;
-        border-color: rgba($blue, 0.4);
-        color: $blue;
-      }
-      &.btn-reset {
-        background: transparent;
-        border-color: #334155;
-        color: #94a3b8;
-      }
-
-      &:active { transform: scale(0.96); }
-    }
-  }
-}
-
-/* ========================================================
-   PANNELLO AGGIUNGI NEMICO
-   ======================================================== */
-.add-enemy-panel {
-  background: #0d1527;
-  border: 1px solid rgba($crimson, 0.35);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
-
-  .panel-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.86rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    color: #fca5a5;
-    margin-bottom: 8px;
+    color: #e2e8f0;
+
+    .round-icon { font-size: 1.1rem; }
+    strong { color: $gold; font-size: 1.1rem; font-weight: 900; }
   }
 
-  .add-form {
+  .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 5px;
 
-    .input-name {
-      flex: 1 1 180px;
-      height: 36px;
-      background: #060a12;
-      border: 1px solid #1e2c48;
-      border-radius: 8px;
+    .btn-step, .btn-action, .btn-reset {
+      background: #111d38;
+      border: 1px solid $border-color;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover { border-color: $gold; color: #fff; }
+    }
+
+    .btn-next-highlight {
+      background: $gold;
+      color: #000;
+      font-weight: 800;
+      border-color: $gold;
+
+      &:hover { filter: brightness(1.1); transform: scale(1.02); }
+    }
+
+    .btn-reset {
+      color: #94a3b8;
+      &:hover { border-color: $crimson; color: $crimson; }
+    }
+  }
+}
+
+/* ========================================================
+   FORM INSERIMENTO NEMICO
+   ======================================================== */
+.enemy-creator-box {
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+
+  .box-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #fca5a5;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .enemy-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    input[type="text"] {
+      flex: 1;
+      background: #050811;
+      border: 1px solid $border-color;
       color: #fff;
-      padding: 0 10px;
-      font-size: 0.88rem;
+      font-size: 0.8rem;
+      padding: 6px 8px;
+      border-radius: 6px;
       outline: none;
+      min-width: 0;
 
       &:focus { border-color: $crimson; }
     }
 
-    .init-input-group {
+    .init-input-wrap {
       display: flex;
       align-items: center;
-      gap: 4px;
-      background: #060a12;
-      border: 1px solid #1e2c48;
-      border-radius: 8px;
-      padding: 0 8px;
-      height: 36px;
+      gap: 3px;
+      background: #050811;
+      border: 1px solid $border-color;
+      border-radius: 6px;
+      padding: 0 6px;
 
-      .init-label {
-        font-size: 0.72rem;
-        color: $text-muted;
-        font-weight: 700;
-      }
-
-      .input-init {
-        width: 42px;
-        height: 100%;
+      label { font-size: 0.7rem; color: #94a3b8; font-weight: 700; }
+      input {
+        width: 38px;
         background: transparent;
         border: none;
         color: $gold;
-        font-size: 0.92rem;
+        font-size: 0.82rem;
         font-weight: 800;
         text-align: center;
         outline: none;
+        padding: 5px 0;
       }
     }
 
-    .btn-add {
-      height: 36px;
-      padding: 0 14px;
-      background: $crimson;
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-weight: 800;
-      font-size: 0.82rem;
+    .btn-add-enemy {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid $crimson;
+      color: #fca5a5;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.12s ease;
+      white-space: nowrap;
 
-      &:hover { background: #dc2626; }
-      &:disabled { opacity: 0.4; cursor: not-allowed; }
-      &:active { transform: scale(0.96); }
+      &:hover { background: $crimson; color: #fff; }
     }
   }
 }
 
 /* ========================================================
-   LISTA SCHEDE COMBATTENTI
+   LISTA COMBATTENTI
    ======================================================== */
 .combatants-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
 
-  .combatant-card {
-    background: $bg-card;
-    border: 1px solid $border-card;
-    border-radius: 12px;
-    padding: 10px 12px;
-    box-sizing: border-box;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+.combatant-card {
+  background: $bg-card;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-    &.is-pc { border-left: 4px solid $blue; }
-    &.is-npc { border-left: 4px solid $purple; opacity: 0.9; }
-    &.is-enemy { border-left: 4px solid $crimson; }
+  &.card-pc { border-left: 3px solid $blue; }
+  &.card-npc { border-left: 3px solid $purple; }
+  &.card-enemy { border-left: 3px solid $crimson; }
 
-    /* TURNO ATTIVO CON BAGLIORE DORATO */
-    &.active-turn {
-      border-color: $gold;
-      border-left: 5px solid $gold;
-      box-shadow: 0 0 16px rgba($gold, 0.22);
-      background: #111a2f;
-    }
+  // Turno attivo evidenziato
+  &.active-turn {
+    border-color: $gold !important;
+    border-left-width: 4px !important;
+    background: #111a31;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+  }
 
-    /* RIGA INTESTAZIONE */
-    .combatant-main-row {
+  &.is-defeated {
+    opacity: 0.45;
+    filter: grayscale(0.8);
+  }
+
+  .card-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    .left-col {
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-height: 44px;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
 
-      /* COLONNA TURNO SEPARATA */
-      .turn-column {
-        width: 54px;
-        min-width: 54px;
-        flex-shrink: 0;
-        display: flex;
+      // IL PULSANTE ARANCIONE DEL TURNO CLICCABILE
+      .turn-badge-btn {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-
-        .turn-badge-active {
-          background: $gold;
-          color: #000;
-          font-weight: 900;
-          border-radius: 6px;
-          padding: 3px 6px;
-          display: flex;
-          align-items: center;
-          gap: 3px;
-          box-shadow: 0 0 8px rgba($gold, 0.35);
-
-          .turn-icon { font-size: 0.65rem; line-height: 1; }
-          .turn-text { font-size: 0.64rem; letter-spacing: 0.04em; line-height: 1; font-weight: 900; }
-        }
-
-        .turn-index-idle {
-          font-family: 'Cinzel', serif;
-          font-size: 1rem;
-          font-weight: 800;
-          color: #64748b;
-        }
-      }
-
-      /* DETTAGLI TESTUALI */
-      .info-block {
-        flex: 1 1 auto;
-        min-width: 0;
-
-        .name-line {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-
-          .name {
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
-            color: #ffffff;
-            margin: 0;
-            line-height: 1.2;
-          }
-
-          .type-badge {
-            font-size: 0.62rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 1px 6px;
-            border-radius: 4px;
-
-            &.pc { background: rgba($blue, 0.15); border: 1px solid rgba($blue, 0.35); color: $blue; }
-            &.npc { background: rgba($purple, 0.15); border: 1px solid rgba($purple, 0.35); color: #c084fc; }
-            &.enemy { background: rgba($crimson, 0.15); border: 1px solid rgba($crimson, 0.35); color: #f87171; }
-          }
-        }
-
-        .init-line {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin-top: 3px;
-
-          .init-label {
-            font-size: 0.72rem;
-            color: $text-muted;
-            font-weight: 600;
-          }
-
-          .init-input {
-            width: 44px;
-            height: 24px;
-            background: #060a12;
-            border: 1px solid #1e2c48;
-            border-radius: 5px;
-            color: $gold;
-            font-size: 0.85rem;
-            font-weight: 800;
-            text-align: center;
-            outline: none;
-
-            &:focus { border-color: $gold; }
-            &:disabled { opacity: 0.6; color: $text-muted; }
-          }
-
-          .npc-note {
-            font-size: 0.68rem;
-            color: #c084fc;
-            font-style: italic;
-          }
-        }
-      }
-
-      .btn-del {
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: 1px solid transparent;
+        gap: 4px;
+        background: $gold;
+        color: #000;
+        font-size: 0.68rem;
+        font-weight: 900;
+        padding: 3px 8px;
+        border: none;
         border-radius: 6px;
-        color: #64748b;
-        font-size: 0.95rem;
         cursor: pointer;
-        flex-shrink: 0;
-        transition: all 0.12s ease;
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        animation: pulseTurn 1.8s infinite;
+        transition: transform 0.1s ease, filter 0.15s ease;
 
         &:hover {
-          color: $crimson;
-          background: rgba($crimson, 0.1);
-          border-color: rgba($crimson, 0.3);
+          filter: brightness(1.15);
+          transform: scale(1.04);
+        }
+
+        &:active { transform: scale(0.96); }
+
+        .pulse-play { font-size: 0.65rem; }
+        .pass-hint {
+          font-size: 0.62rem;
+          font-weight: 700;
+          opacity: 0.8;
+          border-left: 1px solid rgba(0, 0, 0, 0.25);
+          padding-left: 4px;
+          margin-left: 2px;
+        }
+      }
+
+      .index-badge {
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: #64748b;
+        min-width: 22px;
+      }
+
+      .combatant-name {
+        font-family: 'Cinzel', serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #ffffff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .type-pill {
+        font-size: 0.58rem;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        letter-spacing: 0.04em;
+
+        &.pill-enemy { background: rgba($crimson, 0.15); color: #fca5a5; border: 1px solid rgba($crimson, 0.3); }
+        &.pill-pc { background: rgba($blue, 0.15); color: #7dd3fc; border: 1px solid rgba($blue, 0.3); }
+        &.pill-npc { background: rgba($purple, 0.15); color: #d8b4fe; border: 1px solid rgba($purple, 0.3); }
+      }
+    }
+
+    .right-col {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .init-value-box {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .init-lbl { font-size: 0.68rem; color: #94a3b8; font-weight: 600; }
+        .init-input {
+          width: 44px;
+          background: #050811;
+          border: 1px solid $border-color;
+          color: $gold;
+          font-size: 0.85rem;
+          font-weight: 800;
+          text-align: center;
+          padding: 3px 0;
+          border-radius: 6px;
+          outline: none;
+
+          &:focus { border-color: $gold; }
+        }
+      }
+
+      .btn-delete {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        font-size: 0.85rem;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        &:hover { color: $crimson; background: rgba(239, 68, 68, 0.1); }
+      }
+    }
+  }
+
+  .npc-note {
+    font-size: 0.7rem;
+    color: #a855f7;
+    margin-top: 4px;
+    margin-left: 28px;
+  }
+
+  /* ========================================================
+     PANNELLO DANNI (NEMICI ED NPC)
+     ======================================================== */
+  .damage-panel {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+
+    .damage-status-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+
+      .damage-counter {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+
+        .lbl {
+          font-size: 0.68rem;
+          font-weight: 800;
+          color: #94a3b8;
+          letter-spacing: 0.04em;
+        }
+
+        .val {
+          font-size: 1.15rem;
+          font-weight: 900;
+          color: #ffffff;
+        }
+      }
+
+      .ko-actions {
+        display: flex;
+        gap: 4px;
+
+        .btn-ko {
+          background: rgba($crimson, 0.15);
+          border: 1px solid rgba($crimson, 0.4);
+          color: #fca5a5;
+          font-size: 0.68rem;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 5px;
+          cursor: pointer;
+          &:hover { background: $crimson; color: #fff; }
+        }
+
+        .btn-revive {
+          background: rgba($green, 0.15);
+          border: 1px solid rgba($green, 0.4);
+          color: #6ee7b7;
+          font-size: 0.68rem;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 5px;
+          cursor: pointer;
+          &:hover { background: $green; color: #fff; }
         }
       }
     }
 
-    /* ========================================================
-       SEZIONE DANNI NEMICI (ANTI-METAGAME)
-       ======================================================== */
-    .enemy-damage-section {
-      margin-top: 10px;
-      padding: 10px 12px;
-      background: rgba(6, 10, 18, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
+    .damage-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
 
-      .damage-summary-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        flex-wrap: wrap;
-        gap: 6px;
+      .btn-dmg-quick {
+        flex: 1;
+        background: #101a30;
+        border: 1px solid $border-color;
+        color: #e2e8f0;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 5px 0;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.1s ease;
 
-        .damage-counter {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
+        &:hover { background: #18284d; border-color: $gold; }
 
-          .dmg-label {
-            font-size: 0.72rem;
-            color: $text-muted;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-          }
-
-          .dmg-val {
-            font-size: 1.35rem;
-            font-weight: 900;
-            color: #fca5a5;
-            line-height: 1;
-          }
-        }
-
-        .status-tags {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-
-          .status-pill {
-            font-size: 0.68rem;
-            font-weight: 800;
-            padding: 2px 7px;
-            border-radius: 5px;
-            background: rgba($gold, 0.15);
-            border: 1px solid rgba($gold, 0.3);
-            color: #fef08a;
-
-            &.ko {
-              background: rgba($crimson, 0.2);
-              border-color: $crimson;
-              color: #fca5a5;
-            }
-          }
-
-          .btn-toggle-ko {
-            background: #131d33;
-            border: 1px solid #233452;
-            color: #cbd5e1;
-            font-size: 0.68rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 5px;
-            cursor: pointer;
-
-            &:hover { border-color: $crimson; color: #f87171; }
-            &.is-ko { background: #7f1d1d; border-color: $crimson; color: #fff; }
-          }
+        &.btn-heal {
+          color: #6ee7b7;
+          &:hover { border-color: $green; background: rgba($green, 0.1); }
         }
       }
 
-      .damage-actions-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 8px;
+      .input-custom-dmg {
+        width: 38px;
+        background: #050811;
+        border: 1px solid $border-color;
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-align: center;
+        padding: 4px 0;
+        border-radius: 5px;
+        outline: none;
 
-        .quick-dmg-group {
-          display: flex;
-          gap: 4px;
+        &:focus { border-color: $crimson; }
+      }
 
-          .btn-dmg {
-            height: 30px;
-            min-width: 36px;
-            padding: 0 8px;
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 0.78rem;
-            cursor: pointer;
-            transition: transform 0.1s ease;
+      .btn-apply-dmg {
+        background: $crimson;
+        border: none;
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: filter 0.15s ease;
 
-            &.plus {
-              background: rgba($crimson, 0.15);
-              border: 1px solid rgba($crimson, 0.35);
-              color: #fca5a5;
-
-              &:hover { background: rgba($crimson, 0.28); color: #fff; }
-              &:active { transform: scale(0.95); }
-            }
-
-            &.minus {
-              background: #0f172a;
-              border: 1px solid #1e2c48;
-              color: #94a3b8;
-
-              &:hover { color: #fff; border-color: $blue; }
-              &:active { transform: scale(0.95); }
-            }
-          }
-        }
-
-        .manual-dmg-group {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-
-          .input-custom-dmg {
-            width: 52px;
-            height: 30px;
-            background: #060a12;
-            border: 1px solid #1e2c48;
-            border-radius: 6px;
-            color: #fff;
-            text-align: center;
-            font-size: 0.88rem;
-            font-weight: 700;
-            outline: none;
-
-            &:focus { border-color: $crimson; }
-          }
-
-          .btn-apply-dmg {
-            height: 30px;
-            padding: 0 12px;
-            background: $crimson;
-            border: none;
-            border-radius: 6px;
-            color: #fff;
-            font-weight: 800;
-            font-size: 0.76rem;
-            cursor: pointer;
-
-            &:hover { background: #dc2626; }
-            &:active { transform: scale(0.95); }
-          }
-        }
+        &:hover { filter: brightness(1.15); }
       }
     }
   }
 }
 
-.loading-state {
-  text-align: center;
-  padding: 2rem 1rem;
-  color: $text-muted;
-  font-size: 0.9rem;
+@keyframes pulseTurn {
+  0% { box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 14px rgba(245, 158, 11, 0.8); }
+  100% { box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
 }

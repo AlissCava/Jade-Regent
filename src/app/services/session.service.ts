@@ -74,7 +74,7 @@ export class SessionService {
     const rawFile = fileUri.includes('files/') ? fileUri.substring(fileUri.indexOf('files/')) : fileUri;
     const resourceName = rawFile.startsWith('files/') ? rawFile : `files/${rawFile}`;
 
-    // 1. Polling stato elaborazione file audio
+    // 1. Polling stato elaborazione file audio su Google
     let isReady = false;
     for (let i = 0; i < 40; i++) {
       try {
@@ -89,7 +89,7 @@ export class SessionService {
         }
       } catch (err: any) {
         if (err.message?.includes('fallita')) throw err;
-        console.warn(`[Polling] Errore temporaneo controllo stato:`, err);
+        console.warn(`[Polling] Errore temporaneo controllo stato file:`, err);
       }
       await new Promise(r => setTimeout(r, 3000));
     }
@@ -115,21 +115,17 @@ REGOLE CRITICHE:
 }
 `;
 
-    // 2. Fallback a cascata su modelli diversi se uno è saturo (503/429)
-    const fallbackModels = [
-      'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash'
-    ];
-
+    // 2. Chiamata a Gemini 3.8 Flash con auto-retry su congestione (503) e cadute di rete
     let geminiRes: Response | null = null;
-    let successfulModel = '';
+    let lastNetworkError: any = null;
+    const maxRetries = 3;
+    const retryDelays = [4000, 8000, 15000]; // Attese progressive: 4s, 8s, 15s
 
-    for (const model of fallbackModels) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        console.info(`[Gemini] Tentativo elaborazione con modello: ${model}`);
+        lastNetworkError = null;
         geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -153,35 +149,36 @@ REGOLE CRITICHE:
           }
         );
 
-        if (geminiRes.ok) {
-          successfulModel = model;
-          break; // Elaborazione riuscita con successo
-        }
-
-        // Se il modello è saturo o in rate limit, logga ed effettua fallback sul modello successivo
-        if (geminiRes.status === 503 || geminiRes.status === 429) {
-          console.warn(`[Gemini ${geminiRes.status}] Il modello ${model} è saturo. Scalo sul modello successivo...`);
-          await new Promise(r => setTimeout(r, 2000));
+        // Se Google risponde 503 (sovraccarico temporaneo) o 429 (rate limit), attende e ritenta
+        if ((geminiRes.status === 503 || geminiRes.status === 429) && attempt < maxRetries) {
+          console.warn(`[Gemini ${geminiRes.status}] Server saturi. Ritento (${attempt + 1}/${maxRetries}) tra ${retryDelays[attempt] / 1000}s...`);
+          await new Promise(r => setTimeout(r, retryDelays[attempt]));
           continue;
         }
 
-        // Se l'errore è un 400 (sintassi/prompt), interrompi il ciclo
         break;
       } catch (networkErr: any) {
-        console.warn(`[Network/CORS] Errore su ${model}: ${networkErr.message}. Tento il fallback...`);
-        await new Promise(r => setTimeout(r, 2000));
+        lastNetworkError = networkErr;
+        console.warn(`[Network/Fetch] Errore di connessione (${networkErr.message}). Ritento (${attempt + 1}/${maxRetries})...`);
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, retryDelays[attempt]));
+          continue;
+        }
       }
+    }
+
+    if (lastNetworkError && !geminiRes) {
+      throw new Error(`Connessione alle API Google interrotta. Disattiva eventuali AdBlocker o controlla la connessione.`);
     }
 
     if (!geminiRes || !geminiRes.ok) {
       if (geminiRes?.status === 503) {
-        throw new Error('Tutti i cluster Gemini sono momentaneamente congestionati. Attendi un paio di minuti e riprova.');
+        throw new Error('I server di Google sono temporaneamente saturi (errore 503). Attendi uno o due minuti e riprova.');
       }
       const err = await geminiRes?.text().catch(() => 'Nessun dettaglio');
       throw new Error(`Errore risposta Gemini: ${err}`);
     }
 
-    console.info(`[Gemini] Risposta generata con successo da: ${successfulModel}`);
     const geminiData = await geminiRes.json();
     const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 

@@ -1,150 +1,145 @@
 <div class="initiative-container">
-  <header class="initiative-header">
-    <div class="header-badge">Combat Tracker</div>
-    <h1 class="header-title">⏱️ Ordine d'Iniziativa</h1>
-    <p class="header-sub">Gestione turni e danni cumulati nemici (anti-spoiler)</p>
+  <!-- INTESTAZIONE: TITOLO ROUND E AZIONI RAPIDE -->
+  <header class="tracker-header">
+    <div class="round-badge">
+      <span class="round-icon">⏱️</span>
+      <span class="round-label">ROUND <strong>{{ currentRound() }}</strong></span>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn-step" (click)="prevTurn()" title="Turno precedente">◀ Prec</button>
+      <button type="button" class="btn-step btn-next-highlight" (click)="nextTurn()" title="Prossimo turno">Prossimo ➔</button>
+      <button type="button" class="btn-action" (click)="sortCombatants()" title="Riordina per iniziativa">⚡ Ordina</button>
+      <button type="button" class="btn-reset" (click)="resetCombat()" title="Azzera combattimento">🔄 Reset</button>
+    </div>
   </header>
 
-  <!-- CONTROLLI ROUND E TURNI -->
-  <div class="round-control-card" *ngIf="encounter()">
-    <div class="round-indicator">
-      <span class="round-label">ROUND</span>
-      <span class="round-number">{{ encounter()!.current_round }}</span>
-    </div>
-
-    <div class="turn-actions">
-      <button type="button" class="btn-turn prev" (click)="prevTurn()" title="Turno Precedente">◀ Prec</button>
-      <button type="button" class="btn-turn next" (click)="nextTurn()" title="Prossimo Turno">Prossimo ➔</button>
-      <button type="button" class="btn-sort" (click)="sortCombatants()">⚡ Ordina</button>
-      <button type="button" class="btn-reset" (click)="resetCombat()">🔄 Reset</button>
-    </div>
-  </div>
-
-  <!-- AGGIUNGI NEMICO -->
-  <div class="add-enemy-panel">
-    <div class="panel-title">⚔️ Inserisci Nemico</div>
-    <div class="add-form">
+  <!-- FORM RAPIDO INSERIMENTO NEMICI -->
+  <section class="enemy-creator-box">
+    <div class="box-title">⚔️ INSERISCI NEMICO</div>
+    <form (ngSubmit)="addEnemy()" class="enemy-form">
       <input 
         type="text" 
         [(ngModel)]="newEnemyName" 
+        name="enemyName" 
         placeholder="Nome (es. Goblin 1, Lupo Leader)..." 
-        class="input-name" />
-      <div class="init-input-group">
-        <span class="init-label">Iniz:</span>
+        required />
+
+      <div class="init-input-wrap">
+        <label>Iniz:</label>
         <input 
           type="number" 
           [(ngModel)]="newEnemyInit" 
-          class="input-init" />
+          name="enemyInit" 
+          required />
       </div>
-      <button type="button" class="btn-add" [disabled]="!newEnemyName.trim()" (click)="addEnemy()">
-        + Aggiungi
-      </button>
-    </div>
-  </div>
 
-  <div *ngIf="loading()" class="loading-state">
-    <span>Caricamento scontro dal server...</span>
-  </div>
+      <button type="submit" class="btn-add-enemy">+ Aggiungi</button>
+    </form>
+  </section>
 
-  <!-- LISTA COMBATTENTI ORDINATA -->
-  <div class="combatants-list" *ngIf="encounter() && !loading()">
-    <div 
-      class="combatant-card" 
-      *ngFor="let c of encounter()!.combatants; let i = index"
-      [class.active-turn]="i === encounter()!.active_turn_index"
-      [class.is-pc]="c.type === 'pc'"
-      [class.is-npc]="c.type === 'npc'"
-      [class.is-enemy]="c.type === 'enemy'">
-      
-      <!-- RIGA INTESTAZIONE COMBATTENTE -->
-      <div class="combatant-main-row">
-        <!-- COLONNA TURNO FISSA (NON SI SOVRAPPONE MAI AL TESTO) -->
-        <div class="turn-column">
-          <div class="turn-badge-active" *ngIf="i === encounter()!.active_turn_index">
-            <span class="turn-icon">▶</span>
-            <span class="turn-text">TURNO</span>
-          </div>
-          <div class="turn-index-idle" *ngIf="i !== encounter()!.active_turn_index">
-            #{{ i + 1 }}
-          </div>
+  <!-- LISTA ORDINATA DEI COMBATTENTI -->
+  <div class="combatants-list">
+    <article 
+      *ngFor="let c of combatants(); let i = index" 
+      class="combatant-card"
+      [class.active-turn]="i === activeTurnIndex()"
+      [class.card-enemy]="c.type === 'enemy'"
+      [class.card-pc]="c.type === 'pc'"
+      [class.card-npc]="c.type === 'npc'"
+      [class.is-defeated]="c.is_ko">
+
+      <!-- RIGA SUPERIORE CARD: NUMERO, NOME, BADGE E INIZIATIVA -->
+      <div class="card-top-row">
+        <div class="left-col">
+          <!-- PULSANTE INDICATORE TURNO: CLICCABILE PER PASSARE AL PROSSIMO -->
+          <button 
+            *ngIf="i === activeTurnIndex()" 
+            type="button" 
+            class="turn-badge-btn" 
+            (click)="nextTurn()" 
+            title="È il suo turno! Clicca per passare al prossimo">
+            <span class="pulse-play">▶</span> TURNO <span class="pass-hint">Passa ▸</span>
+          </button>
+
+          <span class="index-badge" *ngIf="i !== activeTurnIndex()">#{{ i + 1 }}</span>
+
+          <span class="combatant-name">{{ c.name }}</span>
+
+          <!-- BADGE TIPO COMBATTENTE -->
+          <span class="type-pill pill-enemy" *ngIf="c.type === 'enemy'">NEMICO</span>
+          <span class="type-pill pill-pc" *ngIf="c.type === 'pc'">PG</span>
+          <span class="type-pill pill-npc" *ngIf="c.type === 'npc'">CAROVANA</span>
         </div>
 
-        <!-- BLOCCO INFORMAZIONI NOME E INIZIATIVA -->
-        <div class="info-block">
-          <div class="name-line">
-            <h3 class="name">{{ c.name }}</h3>
-            <span class="type-badge {{ c.type }}">
-              {{ c.type === 'pc' ? 'PG' : c.type === 'npc' ? 'Carovana' : 'Nemico' }}
-            </span>
-          </div>
-
-          <div class="init-line">
-            <span class="init-label">Iniziativa:</span>
+        <div class="right-col">
+          <div class="init-value-box">
+            <span class="init-lbl">Iniziativa:</span>
             <input 
               type="number" 
+              class="init-input" 
               [(ngModel)]="c.initiative" 
               (change)="sortCombatants()" 
-              [disabled]="c.type === 'npc'"
-              class="init-input" />
-            <span *ngIf="c.type === 'npc'" class="npc-note">Agisce a fine round</span>
+              [readonly]="c.type === 'npc'" />
           </div>
-        </div>
 
-        <!-- TASTO ELIMINA (SOLO NEMICI) -->
-        <button 
-          type="button" 
-          class="btn-del" 
-          *ngIf="c.type === 'enemy'"
-          (click)="removeCombatant(c.id)" 
-          title="Rimuovi Nemico"
-          aria-label="Rimuovi Nemico">
-          ✕
-        </button>
+          <!-- Solo i nemici inseriti al volo possono essere eliminati con la X -->
+          <button 
+            *ngIf="c.type === 'enemy'" 
+            type="button" 
+            class="btn-delete" 
+            (click)="removeCombatant(c.id)" 
+            title="Rimuovi nemico">✕</button>
+        </div>
       </div>
 
-      <!-- SEZIONE DANNI (SOLO PER NEMICI - ANTI METAGAME) -->
-      <div class="enemy-damage-section" *ngIf="c.type === 'enemy'">
-        <div class="damage-summary-row">
+      <!-- NOTA PER GLI NPC DELLA CAROVANA -->
+      <div class="npc-note" *ngIf="c.type === 'npc'">
+        <em>Agisce a fine round con la carovana</em>
+      </div>
+
+      <!-- PANNELLO DANNI SUBITI (VISIBILE SIA PER I NEMICI CHE PER GLI NPC DELLA CAROVANA) -->
+      <div class="damage-panel" *ngIf="c.type === 'enemy' || c.type === 'npc'">
+        <div class="damage-status-line">
           <div class="damage-counter">
-            <span class="dmg-label">Danni Subiti:</span>
-            <span class="dmg-val">{{ c.damageTaken || 0 }}</span>
+            <span class="lbl">DANNI SUBITI:</span>
+            <span class="val">{{ c.damage || 0 }}</span>
           </div>
 
-          <div class="status-tags">
-            <span class="status-pill" [class.ko]="c.status === 'KO / A Terra'">
-              {{ c.status || 'Illeso' }}
-            </span>
+          <div class="ko-actions">
             <button 
+              *ngIf="!c.is_ko" 
               type="button" 
-              class="btn-toggle-ko" 
-              [class.is-ko]="c.status === 'KO / A Terra'"
-              (click)="toggleKo(c)">
-              {{ c.status === 'KO / A Terra' ? 'Rianima' : 'Segna KO' }}
+              class="btn-ko" 
+              (click)="setKo(c, true)">
+              KO / A Terra
+            </button>
+            <button 
+              *ngIf="c.is_ko" 
+              type="button" 
+              class="btn-revive" 
+              (click)="setKo(c, false)">
+              Rianima
             </button>
           </div>
         </div>
 
-        <div class="damage-actions-row">
-          <div class="quick-dmg-group">
-            <button type="button" class="btn-dmg plus" (click)="applyDamage(c, 1)">+1</button>
-            <button type="button" class="btn-dmg plus" (click)="applyDamage(c, 5)">+5</button>
-            <button type="button" class="btn-dmg plus" (click)="applyDamage(c, 10)">+10</button>
-            <button type="button" class="btn-dmg minus" (click)="applyDamage(c, -5)">-5</button>
-          </div>
+        <!-- CONTROLLI RAPIDI DANNI -->
+        <div class="damage-controls-row">
+          <button type="button" class="btn-dmg-quick" (click)="addQuickDamage(c, 1)">+1</button>
+          <button type="button" class="btn-dmg-quick" (click)="addQuickDamage(c, 5)">+5</button>
+          <button type="button" class="btn-dmg-quick" (click)="addQuickDamage(c, 10)">+10</button>
+          <button type="button" class="btn-dmg-quick btn-heal" (click)="addQuickDamage(c, -5)">-5</button>
 
-          <div class="manual-dmg-group">
-            <input 
-              type="number" 
-              [(ngModel)]="damageInputs[c.id]" 
-              placeholder="0" 
-              class="input-custom-dmg" />
-            <button type="button" class="btn-apply-dmg" (click)="applyCustomDamage(c)">
-              Infliggi
-            </button>
-          </div>
+          <input 
+            type="number" 
+            class="input-custom-dmg" 
+            [(ngModel)]="c.tempDamageInput" 
+            placeholder="0" />
+
+          <button type="button" class="btn-apply-dmg" (click)="applyInputDamage(c)">Infliggi</button>
         </div>
       </div>
-
-    </div>
+    </article>
   </div>
 </div>
