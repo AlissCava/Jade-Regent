@@ -91,7 +91,7 @@ export class SessionService {
 
     if (!isReady) throw new Error('Timeout: il file audio impiega troppo tempo ad elaborarsi su Google');
 
-    // 2. Chiamata Gemini direttamente dal browser (può durare quanto serve)
+    // 2. Chiamata Gemini direttamente dal browser con gestione automatica di sovraccarico (errore 503)
     const promptText = `
 Sei il Cronista della carovana della campagna di Pathfinder 1E "Jade Regent".
 Ascolta questa registrazione audio della sessione di gioco di ruolo.
@@ -111,28 +111,51 @@ REGOLE CRITICHE:
 }
 `;
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                { fileData: { mimeType: mimeType || 'audio/mp3', fileUri: `https://generativelanguage.googleapis.com/v1beta/${resourceName}` } },
-                { text: promptText }
-              ]
-            }
-          ],
-          generationConfig: { responseMimeType: 'application/json' }
-        })
-      }
-    );
+    let geminiRes: Response | null = null;
+    const maxRetries = 3;
+    const retryDelays = [3000, 6000, 10000]; // Pause progressive: 3s, 6s, 10s
 
-    if (!geminiRes.ok) {
-      const err = await geminiRes.text();
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  { 
+                    fileData: { 
+                      mimeType: mimeType || 'audio/mp3', 
+                      fileUri: `https://generativelanguage.googleapis.com/v1beta/${resourceName}` 
+                    } 
+                  },
+                  { text: promptText }
+                ]
+              }
+            ],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        }
+      );
+
+      // Se Google risponde 503 (sovraccarico temporaneo), attende con backoff e ritenta
+      if (geminiRes.status === 503 && attempt < maxRetries) {
+        console.warn(`[Gemini 503] Modello saturo. Riprovo (tentativo ${attempt + 1}/${maxRetries}) tra ${retryDelays[attempt] / 1000}s...`);
+        await new Promise(r => setTimeout(r, retryDelays[attempt]));
+        continue;
+      }
+
+      break;
+    }
+
+    if (!geminiRes || !geminiRes.ok) {
+      if (geminiRes?.status === 503) {
+        throw new Error('I server di Google sono temporaneamente saturi (errore 503). Attendi un paio di minuti e riprova.');
+      }
+      const err = await geminiRes?.text();
       throw new Error(`Errore risposta Gemini: ${err}`);
     }
 
@@ -154,7 +177,7 @@ REGOLE CRITICHE:
       };
     }
 
-    // 3. Salva su Neon DB tramite /api/sessions (impiega solo 50ms)
+    // 3. Salva su Neon DB tramite /api/sessions (impiega solo ~50ms)
     const saved = await firstValueFrom(
       this.http.post<SessionRecord>('/api/sessions', {
         sessionNumber,
