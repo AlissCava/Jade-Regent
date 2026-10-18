@@ -3,7 +3,42 @@ import { EnemyStatblock } from '../models/enemy-statblock.model';
 
 const STORAGE_KEY = 'jade_regent_bestiary_enemies';
 
-// Modello di prova basato sul tuo PDF di esempio per testare subito
+const SAMPLE_CARMEN: EnemyStatblock = {
+  id: 'carmen_coccolatrice',
+  name: 'CARMEN',
+  title_line: 'Coccolatrice Suprema',
+  cr: '20',
+  xp: '160,000',
+  gender_race_class: 'Female Labrador Retriever divine beast',
+  alignment_size_type: 'LG Medium magical beast (canine, good)',
+  init: '+10',
+  senses: 'darkvision 60 ft., scent 60 ft.; Perception +25',
+  ac: '40, touch 20, flat-footed 30 (+10 Dex, +10 natural, +10 deviazione)',
+  hp: '550000 (PF infiniti da coccole)',
+  fort: '+30',
+  ref: '+30',
+  will: '+30',
+  speed: '50 ft. (15 m)',
+  melee: 'coccole +80 (1d8+4/19-20 plus amore incondizionato)',
+  space_reach: '5 ft.; Reach 5 ft.',
+  abilities: { str: '20', dex: '30', con: '30', int: '18', wis: '24', cha: '30' },
+  bab: '+20',
+  cmb: '+25',
+  cmd: '45',
+  feats: 'Tutti i talenti di coccole',
+  skills: 'Perception +25, Stealth +30, Amore +50',
+  languages: 'Comprende tutto',
+  special_abilities: [
+    {
+      name: 'Coccole Irresistibili',
+      type: 'Su',
+      description: 'Chiunque guardi Carmen deve superare un TS su Volontà con CD 40 o passare il round ad accarezzarla.'
+    }
+  ],
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+};
+
 const SAMPLE_JEVA: EnemyStatblock = {
   id: 'jeva_werewolf',
   name: 'Jeva',
@@ -30,19 +65,12 @@ const SAMPLE_JEVA: EnemyStatblock = {
   during_combat: 'Flank if possible. Otherwise take the weakest foe.',
   morale: 'Run if <10 hp',
   base_statistics: 'Str 16, Dex 17, Con 15, Int 12, Wis 14, Cha 15 | AC 16, touch 14, flat-footed 12',
-  abilities: {
-    str: '18',
-    dex: '19',
-    con: '17',
-    int: '12',
-    wis: '14',
-    cha: '15'
-  },
+  abilities: { str: '18', dex: '19', con: '17', int: '12', wis: '14', cha: '15' },
   bab: '+3',
   cmb: '+7',
   cmd: '21 (10+3 bab +4 dex +4 str)',
   feats: 'Improved Init, Iron Will, Skill Focus (Bluff), Track, Weapon Focus (Bite)',
-  skills: 'Acrobatics +10, Bluff +12, Diplomacy +8, Stealth +11, Intimidate +8, Perception +9, Disable Device +8, Survival +6 (+10 using Scent)',
+  skills: 'Acrobatics +10, Bluff +12, Diplomacy +8, Stealth +11, Intimidate +8, Perception +9, Disable Device +8, Survival +6',
   languages: 'Common, Elven',
   sq: 'alternate form, wolf empathy, trapfinding',
   gear: 'dagger, garnet ring (10 gp), tattered clothes',
@@ -56,11 +84,6 @@ const SAMPLE_JEVA: EnemyStatblock = {
       name: 'Curse of Lycanthropy',
       type: 'Su',
       description: "A natural lycanthrope's bite attack in animal or hybrid form infects a humanoid target with lycanthropy (Fortitude DC 15 negates)."
-    },
-    {
-      name: 'Lycanthropic Empathy (Wolf)',
-      type: 'Ex',
-      description: 'In any form, can communicate and empathize with wolves (+4 racial bonus to Diplomacy checks).'
     }
   ],
   created_at: new Date().toISOString(),
@@ -75,13 +98,20 @@ export class BestiaryService {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        // Inizializza con il mostro campione dal tuo PDF
-        this.saveAll([SAMPLE_JEVA]);
-        return [SAMPLE_JEVA];
+        const defaults = [SAMPLE_CARMEN, SAMPLE_JEVA];
+        this.saveAll(defaults);
+        return defaults;
       }
-      return JSON.parse(raw);
+      const list: EnemyStatblock[] = JSON.parse(raw);
+      // Se era rimasta vuota o mancavano Carmen e Jeva, le reintegra
+      if (list.length === 0) {
+        const defaults = [SAMPLE_CARMEN, SAMPLE_JEVA];
+        this.saveAll(defaults);
+        return defaults;
+      }
+      return list;
     } catch {
-      return [SAMPLE_JEVA];
+      return [SAMPLE_CARMEN, SAMPLE_JEVA];
     }
   }
 
@@ -127,15 +157,35 @@ export class BestiaryService {
     URL.revokeObjectURL(url);
   }
 
+  // --- IMPORTAZIONE CON MERGE (NON CANCELLA PIÙ I MOSTRI ESISTENTI) ---
   importBackupJson(file: File, callback: (count: number) => void): void {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const parsed = JSON.parse(e.target?.result as string);
-        if (Array.isArray(parsed)) {
-          this.saveAll(parsed);
-          callback(parsed.length);
+        const incoming: EnemyStatblock[] = Array.isArray(parsed) ? parsed : [parsed];
+        const currentList = this.getAll();
+        let affected = 0;
+
+        for (const item of incoming) {
+          if (!item || !item.name) continue;
+          
+          // Cerca se esiste già per ID o per Nome
+          const idx = currentList.findIndex(
+            (m) => m.id === item.id || (m.name.trim().toLowerCase() === item.name.trim().toLowerCase() && m.cr === item.cr)
+          );
+
+          if (idx >= 0) {
+            currentList[idx] = { ...currentList[idx], ...item, updated_at: new Date().toISOString() };
+          } else {
+            const newId = item.id || 'enemy_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+            currentList.push({ ...item, id: newId });
+          }
+          affected++;
         }
+
+        this.saveAll(currentList);
+        callback(affected);
       } catch (err) {
         console.error('File backup non valido:', err);
       }

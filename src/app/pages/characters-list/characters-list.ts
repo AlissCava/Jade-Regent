@@ -7,7 +7,7 @@ import { NpcService } from '../../services/npc.service';
 import { NpcRecord } from '../../models/npc.model';
 import { BestiaryService } from '../../services/bestiary.service';
 import { PdfExportService } from '../../services/pdf-export.service';
-import { EnemyStatblock, SpecialAbilityItem } from '../../models/enemy-statblock.model';
+import { EnemyStatblock } from '../../models/enemy-statblock.model';
 
 export interface CharacterEntry {
   slug: string;
@@ -22,11 +22,57 @@ export interface CharacterEntry {
 }
 
 const DEFAULT_HEROES: CharacterEntry[] = [
-  { slug: 'ryoujin', name: 'Ryoujin', kanji: '竜刃', className: 'Samurai (Ordine del Ronin)', race: 'Tiefling (Oni-Spawn)', level: 7, icon: '⚔️', theme: 'crimson', subtitle: 'Spadaccino in prima linea • Lupo Hisui' },
-  { slug: 'airyn', name: 'Airyn', className: 'Druido', race: 'Silfide', level: 7, icon: '🌿', theme: 'emerald', subtitle: 'Magia divina e forme selvatiche' },
-  { slug: 'azoi', name: 'Azoi', className: 'Magus', race: 'Tengu', level: 7, icon: '⚡', theme: 'blue', subtitle: 'Spellstrike e combattimento arcano' },
-  { slug: 'kaede', name: 'Kaede', className: 'Ninja', race: 'Kitsune', level: 7, icon: '🦊', theme: 'amber', subtitle: 'Arti ninja, furtività e colpi letali' },
-  { slug: 'nijena', name: 'Nijena', className: 'Barda', race: 'Aasimar', level: 7, icon: '🪕', theme: 'violet', subtitle: 'Canti, ispirazione coraggio e supporto' }
+  {
+    slug: 'ryoujin',
+    name: 'Ryoujin',
+    kanji: '竜刃',
+    className: 'Samurai (Ordine del Ronin)',
+    race: 'Tiefling (Oni-Spawn)',
+    level: 7,
+    icon: '⚔️',
+    theme: 'crimson',
+    subtitle: 'Spadaccino in prima linea • Lupo Hisui'
+  },
+  {
+    slug: 'airyn',
+    name: 'Airyn',
+    className: 'Druido',
+    race: 'Silfide',
+    level: 7,
+    icon: '🌿',
+    theme: 'emerald',
+    subtitle: 'Magia divina e forme selvatiche'
+  },
+  {
+    slug: 'azoi',
+    name: 'Azoi',
+    className: 'Magus',
+    race: 'Tengu',
+    level: 7,
+    icon: '⚡',
+    theme: 'blue',
+    subtitle: 'Spellstrike e combattimento arcano'
+  },
+  {
+    slug: 'kaede',
+    name: 'Kaede',
+    className: 'Ninja',
+    race: 'Kitsune',
+    level: 7,
+    icon: '🦊',
+    theme: 'amber',
+    subtitle: 'Arti ninja, furtività e colpi letali'
+  },
+  {
+    slug: 'nijena',
+    name: 'Nijena',
+    className: 'Barda',
+    race: 'Aasimar',
+    level: 7,
+    icon: '🪕',
+    theme: 'violet',
+    subtitle: 'Canti, ispirazione coraggio e supporto'
+  }
 ];
 
 @Component({
@@ -46,11 +92,11 @@ export class CharactersListComponent implements OnInit {
   // SWITCHER A 3 SCHEDE
   activeMainTab = signal<'party' | 'npcs' | 'bestiary'>('party');
 
-  // EROI PARTY
+  // 1. EROI PARTY
   characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
   loadingHeroes = signal<boolean>(false);
 
-  // PNG & CAROVANA
+  // 2. PNG & CAROVANA (SERVER NEON)
   npcs = signal<NpcRecord[]>([]);
   loadingNpcs = signal<boolean>(false);
   npcSearch = signal<string>('');
@@ -59,7 +105,7 @@ export class CharactersListComponent implements OnInit {
   selectedNpc = signal<NpcRecord | null>(null);
   isSavingNpc = signal<boolean>(false);
 
-  // BESTIARIO DEL MASTER (IN LOCALE)
+  // 3. BESTIARIO DEL MASTER (LOCALE)
   enemies = signal<EnemyStatblock[]>([]);
   enemySearch = signal<string>('');
   selectedEnemy = signal<EnemyStatblock | null>(null);
@@ -78,6 +124,7 @@ export class CharactersListComponent implements OnInit {
   newLevel = 7;
   isCreating = signal<boolean>(false);
 
+  // FILTRI REATTIVI
   filteredNpcs = computed(() => {
     const q = this.npcSearch().toLowerCase().trim();
     const loc = this.selectedLocation();
@@ -104,7 +151,7 @@ export class CharactersListComponent implements OnInit {
     const q = this.enemySearch().toLowerCase().trim();
     return this.enemies().filter((e) => {
       if (!q) return true;
-      const full = `${e.name} ${e.title_line} ${e.cr} ${e.gender_race_class} ${e.special_attacks || ''}`.toLowerCase();
+      const full = `${e.name} ${e.title_line || ''} ${e.cr || ''} ${e.gender_race_class || ''} ${e.special_attacks || ''}`.toLowerCase();
       return full.includes(q);
     });
   });
@@ -115,7 +162,7 @@ export class CharactersListComponent implements OnInit {
     this.loadBestiary();
   }
 
-  // --- BESTIARIO METHODS ---
+  // ==================== SEZIONE BESTIARIO ====================
   loadBestiary(): void {
     this.enemies.set(this.bestiaryService.getAll());
   }
@@ -160,7 +207,14 @@ export class CharactersListComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    this.selectedEnemy.set(JSON.parse(JSON.stringify(enemy)));
+    const clone = JSON.parse(JSON.stringify(enemy));
+    if (!clone.abilities) {
+      clone.abilities = { str: '10', dex: '10', con: '10', int: '10', wis: '10', cha: '10' };
+    }
+    if (!clone.special_abilities) {
+      clone.special_abilities = [];
+    }
+    this.selectedEnemy.set(clone);
     this.editorTab.set('general');
   }
 
@@ -180,12 +234,20 @@ export class CharactersListComponent implements OnInit {
     this.loadBestiary();
   }
 
-  downloadPdf(enemy: EnemyStatblock, event?: Event): void {
+  async downloadPdf(enemy: EnemyStatblock, event?: Event): Promise<void> {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
-    this.pdfExportService.downloadStatblockPdf(enemy);
+    await this.pdfExportService.downloadStatblockPdf(enemy);
+  }
+
+  printPdf(enemy: EnemyStatblock, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.pdfExportService.printStatblockNative(enemy);
   }
 
   addSpecialAbility(): void {
@@ -215,12 +277,13 @@ export class CharactersListComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     this.bestiaryService.importBackupJson(input.files[0], (count) => {
-      alert(`Importati con successo ${count} mostri nel Bestiario locale!`);
+      alert(`Importati/Aggiornati con successo ${count} mostri nel Bestiario locale!`);
       this.loadBestiary();
+      input.value = '';
     });
   }
 
-  // --- ALTRI METODI ---
+  // ==================== SEZIONE PNG & CAROVANA ====================
   formatImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     if (url.startsWith('data:image/')) return url;
@@ -275,26 +338,6 @@ export class CharactersListComponent implements OnInit {
     }
   }
 
-  syncCharactersWithDatabase(): void {
-    this.loadingHeroes.set(true);
-    this.charService.getAllCharacters().subscribe({
-      next: (dbCharacters: CharacterSummary[]) => {
-        const list = [...DEFAULT_HEROES];
-        for (const dbChar of dbCharacters) {
-          const match = list.find((c) => c.slug === dbChar.slug);
-          if (match) {
-            match.level = dbChar.level || match.level;
-            if (dbChar.class_name) match.className = dbChar.class_name;
-            if (dbChar.race) match.race = dbChar.race;
-          }
-        }
-        this.characters.set(list);
-        this.loadingHeroes.set(false);
-      },
-      error: () => this.loadingHeroes.set(false)
-    });
-  }
-
   loadNpcsFromServer(): void {
     this.loadingNpcs.set(true);
     this.npcService.getAllNpcs().subscribe({
@@ -324,6 +367,87 @@ export class CharactersListComponent implements OnInit {
     });
   }
 
+  // ==================== SEZIONE EROI DEL PARTY ====================
+  private getDeletedSlugs(): Set<string> {
+    try {
+      const raw = localStorage.getItem('jade_regent_deleted_slugs');
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch {
+      return new Set();
+    }
+  }
+
+  private markSlugAsDeleted(slug: string): void {
+    const set = this.getDeletedSlugs();
+    set.add(slug);
+    try {
+      localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(Array.from(set)));
+    } catch {}
+  }
+
+  private unmarkSlugAsDeleted(slug: string): void {
+    const set = this.getDeletedSlugs();
+    set.delete(slug);
+    try {
+      localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(Array.from(set)));
+    } catch {}
+  }
+
+  syncCharactersWithDatabase(): void {
+    this.loadingHeroes.set(true);
+    const deletedSlugs = this.getDeletedSlugs();
+
+    this.charService.getAllCharacters().subscribe({
+      next: (dbCharacters: CharacterSummary[]) => {
+        const list = DEFAULT_HEROES.filter((h) => !deletedSlugs.has(h.slug));
+
+        for (const dbChar of dbCharacters) {
+          if (deletedSlugs.has(dbChar.slug)) continue;
+
+          const match = list.find((c) => c.slug === dbChar.slug);
+          if (match) {
+            match.level = dbChar.level || match.level;
+            if (dbChar.class_name) match.className = dbChar.class_name;
+            if (dbChar.race) match.race = dbChar.race;
+          } else {
+            list.push({
+              slug: dbChar.slug,
+              name: dbChar.name,
+              className: dbChar.class_name || 'Avventuriero',
+              race: dbChar.race || 'Umano',
+              level: dbChar.level || 7,
+              icon: '🛡️',
+              theme: 'blue',
+              subtitle: 'Eroe della carovana'
+            });
+          }
+        }
+        this.characters.set(list);
+        this.loadingHeroes.set(false);
+      },
+      error: () => this.loadingHeroes.set(false)
+    });
+  }
+
+  deleteCharacter(slug: string, name: string, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const msg = `Vuoi davvero eliminare definitivamente la scheda di "${name}"? I dati sul database verranno cancellati.`;
+    if (!confirm(msg)) return;
+
+    this.charService.deleteCharacter(slug).subscribe({
+      next: () => {
+        this.markSlugAsDeleted(slug);
+        this.characters.update((list) => list.filter((c) => c.slug !== slug));
+      },
+      error: () => {
+        this.markSlugAsDeleted(slug);
+        this.characters.update((list) => list.filter((c) => c.slug !== slug));
+      }
+    });
+  }
+
   openCreateModal(): void {
     this.newName = '';
     this.newClass = 'Guerriero';
@@ -335,8 +459,10 @@ export class CharactersListComponent implements OnInit {
   createNewCharacter(): void {
     const name = this.newName.trim();
     if (!name) return;
+
     const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     this.isCreating.set(true);
+    this.unmarkSlugAsDeleted(slug);
 
     const initialData: CharacterSheetData = {
       character: {

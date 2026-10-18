@@ -24,7 +24,9 @@
     </button>
   </div>
 
-  <!-- SEZIONE 1: EROI PARTY -->
+  <!-- ========================================================= -->
+  <!-- SEZIONE 1: EROI PARTY                                     -->
+  <!-- ========================================================= -->
   <ng-container *ngIf="activeMainTab() === 'party'">
     <header class="characters-header">
       <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
@@ -34,6 +36,15 @@
 
     <div class="modules-grid">
       <a *ngFor="let hero of characters()" [routerLink]="['/characters', hero.slug]" class="module-card">
+        <button 
+          type="button" 
+          class="btn-delete-card" 
+          (click)="deleteCharacter(hero.slug, hero.name, $event)" 
+          title="Elimina definitivamente la scheda di {{ hero.name }}"
+          aria-label="Elimina scheda">
+          🗑️
+        </button>
+
         <div class="card-icon-wrap" [ngClass]="hero.theme"><span class="icon">{{ hero.icon }}</span></div>
         <div class="card-content">
           <div class="card-tag">Livello {{ hero.level }} • {{ hero.race }}</div>
@@ -57,7 +68,9 @@
     </div>
   </ng-container>
 
-  <!-- SEZIONE 2: PNG & CAROVANA -->
+  <!-- ========================================================= -->
+  <!-- SEZIONE 2: PNG & CAROVANA (NEON SERVER)                   -->
+  <!-- ========================================================= -->
   <ng-container *ngIf="activeMainTab() === 'npcs'">
     <header class="characters-header">
       <div class="campaign-pill">Database Server Neon</div>
@@ -117,7 +130,7 @@
   </ng-container>
 
   <!-- ========================================================= -->
-  <!-- SEZIONE 3: BESTIARIO DEL MASTER (LAYOUT OTTIMIZZATO)      -->
+  <!-- SEZIONE 3: BESTIARIO DEL MASTER (LOCALE & EXPORT PDF)     -->
   <!-- ========================================================= -->
   <ng-container *ngIf="activeMainTab() === 'bestiary'">
     <header class="characters-header">
@@ -126,7 +139,7 @@
       <p class="subtitle">Statblock salvati in locale nel tuo browser. Scarica in un click i PDF per le tue sessioni.</p>
     </header>
 
-    <!-- TOOLBAR BESTIARIO CON BARRA DI RICERCA A LARGHEZZA PIENA -->
+    <!-- TOOLBAR BESTIARIO -->
     <div class="bestiary-toolbar">
       <div class="search-wrap">
         <span class="s-icon">🔍</span>
@@ -155,11 +168,10 @@
       </div>
     </div>
 
-    <!-- GRIGLIA MOSTRI (1 COLONNA SU MOBILE, MULTI SU DESKTOP) -->
+    <!-- GRIGLIA MOSTRI (LAYOUT OTTIMIZZATO SENZA OVERLAP) -->
     <div class="modules-grid bestiary-grid">
       <div *ngFor="let enemy of filteredEnemies()" class="module-card enemy-card" (click)="editEnemy(enemy)">
         
-        <!-- HEADER DELLA CARD: CR A SINISTRA, XP E CESTINO A DESTRA (ZERO SOVRAPPOSIZIONI) -->
         <div class="enemy-card-top">
           <span class="cr-badge">CR {{ enemy.cr || '?' }}</span>
           
@@ -179,7 +191,6 @@
           <h2 class="card-title">{{ enemy.name }}</h2>
           <div class="card-class" *ngIf="enemy.title_line">{{ enemy.title_line }}</div>
           
-          <!-- STATISTICHE A PILLOLE PROTETTE (PF E CA NON COLLASSANO) -->
           <div class="enemy-quick-stats">
             <div class="stat-pill hp-pill">
               <span class="pill-icon">❤️</span>
@@ -196,7 +207,6 @@
           </p>
         </div>
 
-        <!-- AZIONI IN BASSO ALLINEATE E CHIARE -->
         <div class="enemy-card-actions">
           <button type="button" class="btn-download-pdf" (click)="downloadPdf(enemy, $event)">
             📄 Scarica PDF
@@ -211,10 +221,12 @@
     </div>
   </ng-container>
 
-  <!-- MODALI (INVARIATE NEL FUNZIONAMENTO) -->
-  <!-- ... Modale Bestiario, Modale NPC e Modale Eroe ... -->
+  <!-- ========================================================= -->
+  <!-- MODALE EDITOR BESTIARIO (CON ANTEPRIMA PAIZO BLINDATA)    -->
+  <!-- ========================================================= -->
   <div class="modal-backdrop" *ngIf="selectedEnemy()" (click)="selectedEnemy.set(null)">
     <div class="modal-card bestiary-editor-card" (click)="$event.stopPropagation()" *ngIf="selectedEnemy() as en">
+      
       <header class="modal-head">
         <div>
           <div class="modal-badge red-badge">STATBLOCK PATHFINDER 1E</div>
@@ -234,6 +246,8 @@
       </div>
 
       <div class="modal-body">
+        
+        <!-- 1. GENERAL -->
         <div *ngIf="editorTab() === 'general'" class="ed-section">
           <div class="fields-row">
             <div class="field-group"><label>Nome Creatura *</label><input type="text" [(ngModel)]="en.name" /></div>
@@ -250,8 +264,10 @@
             <div class="field-group"><label>Percezione</label><input type="text" [(ngModel)]="en.perception" /></div>
           </div>
           <div class="field-group"><label>Sensi</label><input type="text" [(ngModel)]="en.senses" /></div>
+          <div class="field-group"><label>Aura (opzionale)</label><input type="text" [(ngModel)]="en.aura" /></div>
         </div>
 
+        <!-- 2. DEFENSE -->
         <div *ngIf="editorTab() === 'defense'" class="ed-section">
           <div class="field-group"><label>Punti Ferita (hp)</label><input type="text" [(ngModel)]="en.hp" /></div>
           <div class="field-group"><label>Classe Armatura (AC)</label><input type="text" [(ngModel)]="en.ac" /></div>
@@ -269,8 +285,10 @@
             <div class="field-group"><label>Immunità</label><input type="text" [(ngModel)]="en.immune" /></div>
             <div class="field-group"><label>Resistenza Incantesimi (SR)</label><input type="text" [(ngModel)]="en.sr" /></div>
           </div>
+          <div class="field-group"><label>Debolezze (Weaknesses)</label><input type="text" [(ngModel)]="en.weaknesses" /></div>
         </div>
 
+        <!-- 3. OFFENSE -->
         <div *ngIf="editorTab() === 'offense'" class="ed-section">
           <div class="fields-row">
             <div class="field-group"><label>Velocità (Spd)</label><input type="text" [(ngModel)]="en.speed" /></div>
@@ -283,6 +301,7 @@
           <div class="field-group"><label>Incantesimi Conosciuti</label><textarea rows="3" [(ngModel)]="en.spells_known"></textarea></div>
         </div>
 
+        <!-- 4. TACTICS -->
         <div *ngIf="editorTab() === 'tactics'" class="ed-section">
           <div class="field-group"><label>Prima del Combattimento</label><textarea rows="2" [(ngModel)]="en.before_combat"></textarea></div>
           <div class="field-group"><label>Durante il Combattimento</label><textarea rows="3" [(ngModel)]="en.during_combat"></textarea></div>
@@ -290,6 +309,7 @@
           <div class="field-group"><label>Statistiche Base</label><input type="text" [(ngModel)]="en.base_statistics" /></div>
         </div>
 
+        <!-- 5. STATS -->
         <div *ngIf="editorTab() === 'stats'" class="ed-section">
           <div class="fields-row-6">
             <div class="field-group"><label>FOR</label><input type="text" [(ngModel)]="en.abilities.str" /></div>
@@ -311,6 +331,7 @@
           <div class="field-group"><label>Equipaggiamento (Gear)</label><input type="text" [(ngModel)]="en.gear" /></div>
         </div>
 
+        <!-- 6. ABILITIES -->
         <div *ngIf="editorTab() === 'abilities'" class="ed-section">
           <div class="items-edit-list" *ngIf="en.special_abilities">
             <div class="item-edit-row" *ngFor="let sa of en.special_abilities; let i = index">
@@ -337,57 +358,79 @@
           </div>
         </div>
 
+        <!-- 7. ANTEPRIMA PAIZO BLINDATA -->
         <div *ngIf="editorTab() === 'preview'" class="paizo-statblock-preview">
           <div class="sb-head-row">
-            <span class="sb-title">{{ en.name }}, {{ en.title_line }}</span>
-            <span class="sb-cr">CR {{ en.cr }} {{ en.xp ? '(XP ' + en.xp + ')' : '' }}</span>
+            <span class="sb-title">{{ en.name || 'Senza Nome' }}, {{ en.title_line || '' }}</span>
+            <span class="sb-cr">CR {{ en.cr || '?' }} {{ en.xp ? '(XP ' + en.xp + ')' : '' }}</span>
           </div>
-          <div class="sb-italic">{{ en.gender_race_class }}</div>
-          <div>{{ en.alignment_size_type }}</div>
-          <div><strong>Init</strong> {{ en.init }}; <strong>Senses</strong> {{ en.senses }}; <strong>Perception</strong> {{ en.perception }}</div>
+          <div class="sb-italic" *ngIf="en.gender_race_class">{{ en.gender_race_class }}</div>
+          <div *ngIf="en.alignment_size_type">{{ en.alignment_size_type }}</div>
+          <div><strong>Init</strong> {{ en.init || '+0' }}; <strong>Senses</strong> {{ en.senses || '-' }}; <strong>Perception</strong> {{ en.perception || '+0' }}</div>
 
           <div class="sb-sec-bar">DEFENSE</div>
-          <div><strong>AC</strong> {{ en.ac }}</div>
-          <div><strong>hp</strong> {{ en.hp }}</div>
-          <div><strong>Fort</strong> {{ en.fort }}, <strong>Ref</strong> {{ en.ref }}, <strong>Will</strong> {{ en.will }}</div>
-          <div *ngIf="en.defensive_abilities || en.dr || en.immune">
-            <strong>Defensive Abilities</strong> {{ en.defensive_abilities }}; {{ en.dr ? 'DR ' + en.dr + ';' : '' }} {{ en.immune ? 'Immune ' + en.immune : '' }}
+          <div><strong>AC</strong> {{ en.ac || '10' }}</div>
+          <div><strong>hp</strong> {{ en.hp || '10' }}</div>
+          <div><strong>Fort</strong> {{ en.fort || '+0' }}, <strong>Ref</strong> {{ en.ref || '+0' }}, <strong>Will</strong> {{ en.will || '+0' }}</div>
+          <div *ngIf="en.defensive_abilities || en.dr || en.immune || en.resist || en.sr">
+            <strong>Defensive Abilities</strong> {{ en.defensive_abilities || '' }}; {{ en.dr ? 'DR ' + en.dr + ';' : '' }} {{ en.immune ? 'Immune ' + en.immune + ';' : '' }} {{ en.resist ? 'Resist ' + en.resist + ';' : '' }} {{ en.sr ? 'SR ' + en.sr : '' }}
           </div>
 
           <div class="sb-sec-bar">OFFENSE</div>
-          <div><strong>Spd</strong> {{ en.speed }}</div>
+          <div><strong>Spd</strong> {{ en.speed || '30 ft.' }}</div>
           <div *ngIf="en.melee"><strong>Melee</strong> {{ en.melee }}</div>
           <div *ngIf="en.ranged"><strong>Ranged</strong> {{ en.ranged }}</div>
+          <div *ngIf="en.space_reach"><strong>Space</strong> {{ en.space_reach }}</div>
           <div *ngIf="en.special_attacks"><strong>Special Attacks</strong> {{ en.special_attacks }}</div>
+          <div *ngIf="en.spells_prepared"><strong>Spells Prepared:</strong> <pre class="spell-pre">{{ en.spells_prepared }}</pre></div>
+          <div *ngIf="en.spells_known"><strong>Spells Known:</strong> <pre class="spell-pre">{{ en.spells_known }}</pre></div>
 
-          <div class="sb-sec-bar" *ngIf="en.before_combat || en.during_combat || en.morale">TACTICS</div>
+          <div class="sb-sec-bar" *ngIf="en.before_combat || en.during_combat || en.morale || en.base_statistics">TACTICS</div>
           <div *ngIf="en.before_combat"><strong>Before Combat</strong> {{ en.before_combat }}</div>
           <div *ngIf="en.during_combat"><strong>During Combat</strong> {{ en.during_combat }}</div>
           <div *ngIf="en.morale"><strong>Morale</strong> {{ en.morale }}</div>
+          <div *ngIf="en.base_statistics"><strong>Base Statistics</strong> {{ en.base_statistics }}</div>
 
           <div class="sb-sec-bar">STATISTICS</div>
-          <div><strong>Str</strong> {{ en.abilities.str }}, <strong>Dex</strong> {{ en.abilities.dex }}, <strong>Con</strong> {{ en.abilities.con }}, <strong>Int</strong> {{ en.abilities.int }}, <strong>Wis</strong> {{ en.abilities.wis }}, <strong>Cha</strong> {{ en.abilities.cha }}</div>
-          <div><strong>Base Atk</strong> {{ en.bab }}; <strong>CMB</strong> {{ en.cmb }}; <strong>CMD</strong> {{ en.cmd }}</div>
+          <div>
+            <strong>Str</strong> {{ en.abilities?.str || '10' }}, 
+            <strong>Dex</strong> {{ en.abilities?.dex || '10' }}, 
+            <strong>Con</strong> {{ en.abilities?.con || '-' }}, 
+            <strong>Int</strong> {{ en.abilities?.int || '10' }}, 
+            <strong>Wis</strong> {{ en.abilities?.wis || '10' }}, 
+            <strong>Cha</strong> {{ en.abilities?.cha || '10' }}
+          </div>
+          <div><strong>Base Atk</strong> {{ en.bab || '+0' }}; <strong>CMB</strong> {{ en.cmb || '+0' }}; <strong>CMD</strong> {{ en.cmd || '10' }}</div>
           <div *ngIf="en.feats"><strong>Feats</strong> {{ en.feats }}</div>
           <div *ngIf="en.skills"><strong>Skills</strong> {{ en.skills }}</div>
+          <div *ngIf="en.languages"><strong>Languages</strong> {{ en.languages }}</div>
+          <div *ngIf="en.sq"><strong>SQ</strong> {{ en.sq }}</div>
           <div *ngIf="en.gear"><strong>Gear</strong> {{ en.gear }}</div>
 
           <div class="sb-sec-bar" *ngIf="en.special_abilities && en.special_abilities.length > 0">SPECIAL ABILITIES</div>
-          <div *ngFor="let sa of en.special_abilities">
-            <strong>{{ sa.name }} ({{ sa.type }}):</strong> {{ sa.description }}
+          <div *ngFor="let sa of en.special_abilities" style="margin-bottom: 4px;">
+            <strong>{{ sa.name }}{{ sa.type ? ' (' + sa.type + ')' : '' }}:</strong> {{ sa.description }}
           </div>
         </div>
+
       </div>
 
       <footer class="modal-actions">
-        <button type="button" class="btn-download-pdf-modal" (click)="downloadPdf(en)">📄 Scarica PDF</button>
+        <button type="button" class="btn-download-pdf-modal" (click)="downloadPdf(en)">
+          📄 Scarica PDF
+        </button>
+        <button type="button" class="btn-print-modal" (click)="printPdf(en)">
+          🖨️ Stampa A4
+        </button>
         <button type="button" class="btn-cancel" (click)="selectedEnemy.set(null)">Annulla</button>
         <button type="button" class="btn-submit" (click)="saveEnemyFromEditor()">💾 Salva</button>
       </footer>
     </div>
   </div>
 
-  <!-- MODALE NPC ESISTENTE -->
+  <!-- ========================================================= -->
+  <!-- MODALE DETTAGLI NPC ESISTENTE                             -->
+  <!-- ========================================================= -->
   <div class="modal-backdrop" *ngIf="selectedNpc()" (click)="selectedNpc.set(null)">
     <div class="modal-card npc-modal-card" (click)="$event.stopPropagation()" *ngIf="selectedNpc() as npc">
       <header class="modal-head">
@@ -438,7 +481,9 @@
     </div>
   </div>
 
-  <!-- MODALE CREA EROE -->
+  <!-- ========================================================= -->
+  <!-- MODALE CREA EROE                                          -->
+  <!-- ========================================================= -->
   <div class="modal-backdrop" *ngIf="showCreateModal()" (click)="showCreateModal.set(false)">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <header class="modal-head">
