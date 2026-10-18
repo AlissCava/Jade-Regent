@@ -12,7 +12,8 @@ const SAMPLE_CARMEN: EnemyStatblock = {
   gender_race_class: 'Female Labrador Retriever divine beast',
   alignment_size_type: 'LG Medium magical beast (canine, good)',
   init: '+10',
-  senses: 'darkvision 60 ft., scent 60 ft.; Perception +25',
+  senses: 'darkvision 60 ft., scent 60 ft.',
+  perception: '+25',
   ac: '40, touch 20, flat-footed 30 (+10 Dex, +10 natural, +10 deviazione)',
   hp: '550000 (PF infiniti da coccole)',
   fort: '+30',
@@ -103,7 +104,6 @@ export class BestiaryService {
         return defaults;
       }
       const list: EnemyStatblock[] = JSON.parse(raw);
-      // Se era rimasta vuota o mancavano Carmen e Jeva, le reintegra
       if (list.length === 0) {
         const defaults = [SAMPLE_CARMEN, SAMPLE_JEVA];
         this.saveAll(defaults);
@@ -157,7 +157,6 @@ export class BestiaryService {
     URL.revokeObjectURL(url);
   }
 
-  // --- IMPORTAZIONE CON MERGE (NON CANCELLA PIÙ I MOSTRI ESISTENTI) ---
   importBackupJson(file: File, callback: (count: number) => void): void {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -169,8 +168,7 @@ export class BestiaryService {
 
         for (const item of incoming) {
           if (!item || !item.name) continue;
-          
-          // Cerca se esiste già per ID o per Nome
+
           const idx = currentList.findIndex(
             (m) => m.id === item.id || (m.name.trim().toLowerCase() === item.name.trim().toLowerCase() && m.cr === item.cr)
           );
