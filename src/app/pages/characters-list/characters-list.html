@@ -1,26 +1,26 @@
 <div class="characters-container">
-  <!-- SWITCHER A 3 SCHEDE -->
+  <!-- SWITCHER A 3 SCHEDE RESPONSIVE -->
   <div class="main-tab-switcher" role="tablist">
     <button 
       type="button" 
       class="tab-toggle-btn" 
       [class.active]="activeMainTab() === 'party'" 
       (click)="activeMainTab.set('party')">
-      🛡️ Eroi del Party
+      🛡️ Eroi Party
     </button>
     <button 
       type="button" 
       class="tab-toggle-btn" 
       [class.active]="activeMainTab() === 'npcs'" 
       (click)="activeMainTab.set('npcs')">
-      📜 PNG & Carovana ({{ npcs().length }})
+      📜 PNG ({{ npcs().length }})
     </button>
     <button 
       type="button" 
       class="tab-toggle-btn bestiary-btn" 
       [class.active]="activeMainTab() === 'bestiary'" 
       (click)="activeMainTab.set('bestiary')">
-      👹 Bestiario del Master ({{ enemies().length }})
+      👹 Bestiario Master ({{ enemies().length }})
     </button>
   </div>
 
@@ -68,7 +68,7 @@
     <div class="npc-filter-panel">
       <div class="search-wrap">
         <span class="s-icon">🔍</span>
-        <input type="search" [ngModel]="npcSearch()" (ngModelChange)="npcSearch.set($event)" placeholder="Cerca PNG per nome, alter ego, luogo o note di trama..." />
+        <input type="search" [ngModel]="npcSearch()" (ngModelChange)="npcSearch.set($event)" placeholder="Cerca PNG per nome, alter ego, luogo o note..." />
         <button *ngIf="npcSearch()" class="btn-clear" (click)="npcSearch.set('')">✕</button>
       </div>
 
@@ -89,7 +89,7 @@
         <button type="button" class="f-chip status-ally" [class.active]="selectedStatus() === 'ally'" (click)="selectedStatus.set('ally')">🟢 Alleati</button>
         <button type="button" class="f-chip status-enemy" [class.active]="selectedStatus() === 'enemy'" (click)="selectedStatus.set('enemy')">🔴 Nemici</button>
         <button type="button" class="f-chip status-dead" [class.active]="selectedStatus() === 'dead'" (click)="selectedStatus.set('dead')">💀 Deceduti</button>
-        <button type="button" class="f-chip status-lore" [class.active]="selectedStatus() === 'lore'" (click)="selectedStatus.set('lore')">🏯 Luoghi & Divinità</button>
+        <button type="button" class="f-chip status-lore" [class.active]="selectedStatus() === 'lore'" (click)="selectedStatus.set('lore')">🏯 Luoghi</button>
       </div>
     </div>
 
@@ -117,20 +117,25 @@
   </ng-container>
 
   <!-- ========================================================= -->
-  <!-- SEZIONE 3: BESTIARIO DEL MASTER (LOCALE & EXPORT PDF)     -->
+  <!-- SEZIONE 3: BESTIARIO DEL MASTER (LAYOUT OTTIMIZZATO)      -->
   <!-- ========================================================= -->
   <ng-container *ngIf="activeMainTab() === 'bestiary'">
     <header class="characters-header">
       <div class="campaign-pill red-pill">Master Only • Zero Spoilers</div>
       <h1 class="main-title">👹 Bestiario del Master</h1>
-      <p class="subtitle">Statblock completi salvati in locale nel tuo browser. Scarica in un click i PDF per le tue sessioni.</p>
+      <p class="subtitle">Statblock salvati in locale nel tuo browser. Scarica in un click i PDF per le tue sessioni.</p>
     </header>
 
-    <!-- BARRA STRUMENTI BESTIARIO -->
+    <!-- TOOLBAR BESTIARIO CON BARRA DI RICERCA A LARGHEZZA PIENA -->
     <div class="bestiary-toolbar">
       <div class="search-wrap">
         <span class="s-icon">🔍</span>
-        <input type="search" [ngModel]="enemySearch()" (ngModelChange)="enemySearch.set($event)" placeholder="Cerca mostro per nome, CR, razza o classe..." />
+        <input 
+          type="search" 
+          [ngModel]="enemySearch()" 
+          (ngModelChange)="enemySearch.set($event)" 
+          placeholder="Cerca mostro per nome, CR, razza o classe..." />
+        <button *ngIf="enemySearch()" class="btn-clear" (click)="enemySearch.set('')">✕</button>
       </div>
 
       <div class="bestiary-actions-row">
@@ -150,26 +155,48 @@
       </div>
     </div>
 
-    <!-- GRIGLIA MOSTRI -->
-    <div class="modules-grid">
+    <!-- GRIGLIA MOSTRI (1 COLONNA SU MOBILE, MULTI SU DESKTOP) -->
+    <div class="modules-grid bestiary-grid">
       <div *ngFor="let enemy of filteredEnemies()" class="module-card enemy-card" (click)="editEnemy(enemy)">
-        <button type="button" class="btn-delete-card" (click)="deleteEnemy(enemy.id, enemy.name, $event)" title="Elimina dal bestiario">🗑️</button>
         
+        <!-- HEADER DELLA CARD: CR A SINISTRA, XP E CESTINO A DESTRA (ZERO SOVRAPPOSIZIONI) -->
         <div class="enemy-card-top">
           <span class="cr-badge">CR {{ enemy.cr || '?' }}</span>
-          <span class="enemy-xp" *ngIf="enemy.xp">{{ enemy.xp }} XP</span>
+          
+          <div class="top-right-group">
+            <span class="enemy-xp" *ngIf="enemy.xp">{{ enemy.xp }} XP</span>
+            <button 
+              type="button" 
+              class="btn-delete-inline" 
+              (click)="deleteEnemy(enemy.id, enemy.name, $event)" 
+              title="Elimina statblock">
+              🗑️
+            </button>
+          </div>
         </div>
 
         <div class="card-content">
           <h2 class="card-title">{{ enemy.name }}</h2>
-          <div class="card-class">{{ enemy.title_line }}</div>
+          <div class="card-class" *ngIf="enemy.title_line">{{ enemy.title_line }}</div>
+          
+          <!-- STATISTICHE A PILLOLE PROTETTE (PF E CA NON COLLASSANO) -->
           <div class="enemy-quick-stats">
-            <span>❤️ {{ enemy.hp }}</span>
-            <span>🛡️ CA {{ enemy.ac?.split(',')[0] || '10' }}</span>
+            <div class="stat-pill hp-pill">
+              <span class="pill-icon">❤️</span>
+              <span class="pill-val">{{ enemy.hp || '10 PF' }}</span>
+            </div>
+            <div class="stat-pill ac-pill">
+              <span class="pill-icon">🛡️</span>
+              <span class="pill-val">CA {{ enemy.ac?.split(',')[0] || '10' }}</span>
+            </div>
           </div>
-          <p class="card-desc" *ngIf="enemy.melee">⚔️ {{ enemy.melee }}</p>
+
+          <p class="card-desc attack-line" *ngIf="enemy.melee">
+            <strong>⚔️ Mischia:</strong> {{ enemy.melee }}
+          </p>
         </div>
 
+        <!-- AZIONI IN BASSO ALLINEATE E CHIARE -->
         <div class="enemy-card-actions">
           <button type="button" class="btn-download-pdf" (click)="downloadPdf(enemy, $event)">
             📄 Scarica PDF
@@ -177,16 +204,17 @@
           <span class="edit-hint">Modifica ➔</span>
         </div>
       </div>
+
+      <div *ngIf="filteredEnemies().length === 0" class="empty-hint">
+        Nessun mostro trovato. Clicca su <strong>➕ Crea Mostro / Boss</strong> per aggiungerne uno!
+      </div>
     </div>
   </ng-container>
 
-  <!-- ========================================================= -->
-  <!-- MODALE EDITOR BESTIARIO CON ANTEPRIMA LIVE STATBLOCK      -->
-  <!-- ========================================================= -->
+  <!-- MODALI (INVARIATE NEL FUNZIONAMENTO) -->
+  <!-- ... Modale Bestiario, Modale NPC e Modale Eroe ... -->
   <div class="modal-backdrop" *ngIf="selectedEnemy()" (click)="selectedEnemy.set(null)">
     <div class="modal-card bestiary-editor-card" (click)="$event.stopPropagation()" *ngIf="selectedEnemy() as en">
-      
-      <!-- INTESTAZIONE MODALE -->
       <header class="modal-head">
         <div>
           <div class="modal-badge red-badge">STATBLOCK PATHFINDER 1E</div>
@@ -195,7 +223,6 @@
         <button type="button" class="btn-close" (click)="selectedEnemy.set(null)">✕</button>
       </header>
 
-      <!-- BARRA SCHEDE EDITOR -->
       <div class="editor-tabs-bar" role="tablist">
         <button type="button" class="ed-tab" [class.active]="editorTab() === 'general'" (click)="editorTab.set('general')">1. Info</button>
         <button type="button" class="ed-tab" [class.active]="editorTab() === 'defense'" (click)="editorTab.set('defense')">2. Difesa</button>
@@ -206,72 +233,64 @@
         <button type="button" class="ed-tab preview-tab" [class.active]="editorTab() === 'preview'" (click)="editorTab.set('preview')">👁️ Anteprima</button>
       </div>
 
-      <!-- CORPO FORM -->
       <div class="modal-body">
-        
-        <!-- 1. GENERAL -->
         <div *ngIf="editorTab() === 'general'" class="ed-section">
           <div class="fields-row">
             <div class="field-group"><label>Nome Creatura *</label><input type="text" [(ngModel)]="en.name" /></div>
             <div class="field-group"><label>CR (Grado di Sfida)</label><input type="text" [(ngModel)]="en.cr" /></div>
           </div>
           <div class="fields-row">
-            <div class="field-group"><label>Sottotitolo / Ruolo</label><input type="text" [(ngModel)]="en.title_line" placeholder="es. human werewolf Rogue 3" /></div>
-            <div class="field-group"><label>XP</label><input type="text" [(ngModel)]="en.xp" placeholder="es. 1200" /></div>
+            <div class="field-group"><label>Sottotitolo / Ruolo</label><input type="text" [(ngModel)]="en.title_line" /></div>
+            <div class="field-group"><label>XP</label><input type="text" [(ngModel)]="en.xp" /></div>
           </div>
-          <div class="field-group"><label>Sesso, Razza e Classe</label><input type="text" [(ngModel)]="en.gender_race_class" placeholder="es. Female human werewolf rogue 3" /></div>
-          <div class="field-group"><label>Allineamento, Taglia e Tipo</label><input type="text" [(ngModel)]="en.alignment_size_type" placeholder="es. CE Medium humanoid (human, shapechanger)" /></div>
+          <div class="field-group"><label>Sesso, Razza e Classe</label><input type="text" [(ngModel)]="en.gender_race_class" /></div>
+          <div class="field-group"><label>Allineamento, Taglia e Tipo</label><input type="text" [(ngModel)]="en.alignment_size_type" /></div>
           <div class="fields-row">
-            <div class="field-group"><label>Iniziativa</label><input type="text" [(ngModel)]="en.init" placeholder="+8" /></div>
-            <div class="field-group"><label>Percezione</label><input type="text" [(ngModel)]="en.perception" placeholder="+9" /></div>
+            <div class="field-group"><label>Iniziativa</label><input type="text" [(ngModel)]="en.init" /></div>
+            <div class="field-group"><label>Percezione</label><input type="text" [(ngModel)]="en.perception" /></div>
           </div>
-          <div class="field-group"><label>Sensi</label><input type="text" [(ngModel)]="en.senses" placeholder="es. darkvision 60 ft., scent" /></div>
+          <div class="field-group"><label>Sensi</label><input type="text" [(ngModel)]="en.senses" /></div>
         </div>
 
-        <!-- 2. DEFENSE -->
         <div *ngIf="editorTab() === 'defense'" class="ed-section">
-          <div class="field-group"><label>Punti Ferita (hp)</label><input type="text" [(ngModel)]="en.hp" placeholder="es. 43 (4d8+15 and 2d6+6) (RUN AT < 10 hp)" /></div>
-          <div class="field-group"><label>Classe Armatura (AC)</label><input type="text" [(ngModel)]="en.ac" placeholder="es. 19, touch 14, flat-footed 15 (+4 Dex, +5 natural)" /></div>
+          <div class="field-group"><label>Punti Ferita (hp)</label><input type="text" [(ngModel)]="en.hp" /></div>
+          <div class="field-group"><label>Classe Armatura (AC)</label><input type="text" [(ngModel)]="en.ac" /></div>
           <div class="fields-row-3">
-            <div class="field-group"><label>Tempra</label><input type="text" [(ngModel)]="en.fort" placeholder="+7" /></div>
-            <div class="field-group"><label>Riflessi</label><input type="text" [(ngModel)]="en.ref" placeholder="+10" /></div>
-            <div class="field-group"><label>Volontà</label><input type="text" [(ngModel)]="en.will" placeholder="+4" /></div>
+            <div class="field-group"><label>Tempra</label><input type="text" [(ngModel)]="en.fort" /></div>
+            <div class="field-group"><label>Riflessi</label><input type="text" [(ngModel)]="en.ref" /></div>
+            <div class="field-group"><label>Volontà</label><input type="text" [(ngModel)]="en.will" /></div>
           </div>
-          <div class="field-group"><label>Capacità Difensive</label><input type="text" [(ngModel)]="en.defensive_abilities" placeholder="es. evasion" /></div>
+          <div class="field-group"><label>Capacità Difensive</label><input type="text" [(ngModel)]="en.defensive_abilities" /></div>
           <div class="fields-row">
-            <div class="field-group"><label>Riduzione Danno (DR)</label><input type="text" [(ngModel)]="en.dr" placeholder="es. 5/argento, 10/cold iron" /></div>
-            <div class="field-group"><label>Resistenze</label><input type="text" [(ngModel)]="en.resist" placeholder="es. cold 10, fire 10" /></div>
+            <div class="field-group"><label>Riduzione Danno (DR)</label><input type="text" [(ngModel)]="en.dr" /></div>
+            <div class="field-group"><label>Resistenze</label><input type="text" [(ngModel)]="en.resist" /></div>
           </div>
           <div class="fields-row">
-            <div class="field-group"><label>Immunità</label><input type="text" [(ngModel)]="en.immune" placeholder="es. sleep, paralysis, undead traits" /></div>
-            <div class="field-group"><label>Resistenza Incantesimi (SR)</label><input type="text" [(ngModel)]="en.sr" placeholder="es. 16" /></div>
+            <div class="field-group"><label>Immunità</label><input type="text" [(ngModel)]="en.immune" /></div>
+            <div class="field-group"><label>Resistenza Incantesimi (SR)</label><input type="text" [(ngModel)]="en.sr" /></div>
           </div>
         </div>
 
-        <!-- 3. OFFENSE -->
         <div *ngIf="editorTab() === 'offense'" class="ed-section">
           <div class="fields-row">
-            <div class="field-group"><label>Velocità (Spd)</label><input type="text" [(ngModel)]="en.speed" placeholder="30 ft. (9 m)" /></div>
-            <div class="field-group"><label>Spazio / Portata</label><input type="text" [(ngModel)]="en.space_reach" placeholder="5 ft.; Reach 5 ft." /></div>
+            <div class="field-group"><label>Velocità (Spd)</label><input type="text" [(ngModel)]="en.speed" /></div>
+            <div class="field-group"><label>Spazio / Portata</label><input type="text" [(ngModel)]="en.space_reach" /></div>
           </div>
-          <div class="field-group"><label>Mischia (Melee)</label><input type="text" [(ngModel)]="en.melee" placeholder="es. 2 claws +7 (1d6+4) and bite +9 (1d8+4)" /></div>
-          <div class="field-group"><label>Distanza (Ranged)</label><input type="text" [(ngModel)]="en.ranged" placeholder="es. Composite Longbow +1 +15/+10 (1d8+6)" /></div>
-          <div class="field-group"><label>Attacchi Speciali</label><input type="text" [(ngModel)]="en.special_attacks" placeholder="es. sneak attack +2d6, death gaze" /></div>
-          <div class="field-group"><label>Incantesimi Preparati (Spells Prepared)</label><textarea rows="3" [(ngModel)]="en.spells_prepared" placeholder="es. 3rd-lightning bolt (DC 18)..."></textarea></div>
-          <div class="field-group"><label>Incantesimi Conosciuti (Spells Known)</label><textarea rows="3" [(ngModel)]="en.spells_known" placeholder="es. 2nd (4/day)-bull's strength..."></textarea></div>
+          <div class="field-group"><label>Mischia (Melee)</label><input type="text" [(ngModel)]="en.melee" /></div>
+          <div class="field-group"><label>Distanza (Ranged)</label><input type="text" [(ngModel)]="en.ranged" /></div>
+          <div class="field-group"><label>Attacchi Speciali</label><input type="text" [(ngModel)]="en.special_attacks" /></div>
+          <div class="field-group"><label>Incantesimi Preparati</label><textarea rows="3" [(ngModel)]="en.spells_prepared"></textarea></div>
+          <div class="field-group"><label>Incantesimi Conosciuti</label><textarea rows="3" [(ngModel)]="en.spells_known"></textarea></div>
         </div>
 
-        <!-- 4. TACTICS -->
         <div *ngIf="editorTab() === 'tactics'" class="ed-section">
-          <div class="field-group"><label>Prima del Combattimento (Before Combat)</label><textarea rows="2" [(ngModel)]="en.before_combat" placeholder="Buff già attivi, posizionamento..."></textarea></div>
-          <div class="field-group"><label>Durante il Combattimento (During Combat)</label><textarea rows="3" [(ngModel)]="en.during_combat" placeholder="Priorità di bersagli, manovre..."></textarea></div>
-          <div class="field-group"><label>Morale</label><input type="text" [(ngModel)]="en.morale" placeholder="es. Fugge a < 10 hp, Fino alla morte..." /></div>
-          <div class="field-group"><label>Statistiche Base (Senza Buff)</label><input type="text" [(ngModel)]="en.base_statistics" placeholder="es. AC 16, Str 16..." /></div>
+          <div class="field-group"><label>Prima del Combattimento</label><textarea rows="2" [(ngModel)]="en.before_combat"></textarea></div>
+          <div class="field-group"><label>Durante il Combattimento</label><textarea rows="3" [(ngModel)]="en.during_combat"></textarea></div>
+          <div class="field-group"><label>Morale</label><input type="text" [(ngModel)]="en.morale" /></div>
+          <div class="field-group"><label>Statistiche Base</label><input type="text" [(ngModel)]="en.base_statistics" /></div>
         </div>
 
-        <!-- 5. STATISTICS -->
         <div *ngIf="editorTab() === 'stats'" class="ed-section">
-          <label class="sub-sec-lbl">Punteggi di Caratteristica</label>
           <div class="fields-row-6">
             <div class="field-group"><label>FOR</label><input type="text" [(ngModel)]="en.abilities.str" /></div>
             <div class="field-group"><label>DES</label><input type="text" [(ngModel)]="en.abilities.dex" /></div>
@@ -281,18 +300,17 @@
             <div class="field-group"><label>CAR</label><input type="text" [(ngModel)]="en.abilities.cha" /></div>
           </div>
           <div class="fields-row-3" style="margin-top: 8px;">
-            <div class="field-group"><label>Base Atk</label><input type="text" [(ngModel)]="en.bab" placeholder="+5" /></div>
-            <div class="field-group"><label>CMB</label><input type="text" [(ngModel)]="en.cmb" placeholder="+8" /></div>
-            <div class="field-group"><label>CMD</label><input type="text" [(ngModel)]="en.cmd" placeholder="20" /></div>
+            <div class="field-group"><label>Base Atk</label><input type="text" [(ngModel)]="en.bab" /></div>
+            <div class="field-group"><label>CMB</label><input type="text" [(ngModel)]="en.cmb" /></div>
+            <div class="field-group"><label>CMD</label><input type="text" [(ngModel)]="en.cmd" /></div>
           </div>
-          <div class="field-group"><label>Talenti (Feats)</label><input type="text" [(ngModel)]="en.feats" placeholder="Iron Will, Power Attack..." /></div>
-          <div class="field-group"><label>Abilità (Skills)</label><textarea rows="2" [(ngModel)]="en.skills" placeholder="Perception +10, Stealth +12..."></textarea></div>
-          <div class="field-group"><label>Linguaggi</label><input type="text" [(ngModel)]="en.languages" placeholder="Common, Elven" /></div>
-          <div class="field-group"><label>Qualità Speciali (SQ)</label><input type="text" [(ngModel)]="en.sq" placeholder="darkvision, scent..." /></div>
-          <div class="field-group"><label>Equipaggiamento (Gear)</label><input type="text" [(ngModel)]="en.gear" placeholder="armi, anelli, monete..." /></div>
+          <div class="field-group"><label>Talenti</label><input type="text" [(ngModel)]="en.feats" /></div>
+          <div class="field-group"><label>Abilità</label><textarea rows="2" [(ngModel)]="en.skills"></textarea></div>
+          <div class="field-group"><label>Linguaggi</label><input type="text" [(ngModel)]="en.languages" /></div>
+          <div class="field-group"><label>Qualità Speciali (SQ)</label><input type="text" [(ngModel)]="en.sq" /></div>
+          <div class="field-group"><label>Equipaggiamento (Gear)</label><input type="text" [(ngModel)]="en.gear" /></div>
         </div>
 
-        <!-- 6. SPECIAL ABILITIES -->
         <div *ngIf="editorTab() === 'abilities'" class="ed-section">
           <div class="items-edit-list" *ngIf="en.special_abilities">
             <div class="item-edit-row" *ngFor="let sa of en.special_abilities; let i = index">
@@ -303,30 +321,22 @@
               <button type="button" class="trash-btn" (click)="removeSpecialAbility(i)">🗑️</button>
             </div>
           </div>
-
           <div class="add-box-section">
             <h4>+ Aggiungi Capacità Speciale</h4>
             <div class="fields-row">
-              <div class="field-group"><label>Nome Capacità</label><input type="text" [(ngModel)]="newAbilityName" placeholder="es. Change Shape" /></div>
+              <div class="field-group"><label>Nome</label><input type="text" [(ngModel)]="newAbilityName" /></div>
               <div class="field-group">
                 <label>Tipo</label>
                 <select [(ngModel)]="newAbilityType">
-                  <option value="Ex">Straordinaria (Ex)</option>
-                  <option value="Sp">Magica (Sp)</option>
-                  <option value="Su">Soprannaturale (Su)</option>
-                  <option value="">Nessuno</option>
+                  <option value="Ex">Ex</option><option value="Sp">Sp</option><option value="Su">Su</option><option value="">Nessuno</option>
                 </select>
               </div>
             </div>
-            <div class="field-group" style="margin-top: 6px;">
-              <label>Descrizione Effetto</label>
-              <textarea rows="3" [(ngModel)]="newAbilityDesc" placeholder="Testo descrittivo della capacità..."></textarea>
-            </div>
+            <div class="field-group"><label>Descrizione</label><textarea rows="3" [(ngModel)]="newAbilityDesc"></textarea></div>
             <button type="button" class="btn-add-action" (click)="addSpecialAbility()">+ Aggiungi</button>
           </div>
         </div>
 
-        <!-- 7. ANTEPRIMA STATBLOCK FEDELE AL PDF -->
         <div *ngIf="editorTab() === 'preview'" class="paizo-statblock-preview">
           <div class="sb-head-row">
             <span class="sb-title">{{ en.name }}, {{ en.title_line }}</span>
@@ -367,23 +377,17 @@
             <strong>{{ sa.name }} ({{ sa.type }}):</strong> {{ sa.description }}
           </div>
         </div>
-
       </div>
 
-      <!-- FOOTER AZIONI -->
       <footer class="modal-actions">
-        <button type="button" class="btn-download-pdf-modal" (click)="downloadPdf(en)">
-          📄 Scarica PDF
-        </button>
+        <button type="button" class="btn-download-pdf-modal" (click)="downloadPdf(en)">📄 Scarica PDF</button>
         <button type="button" class="btn-cancel" (click)="selectedEnemy.set(null)">Annulla</button>
-        <button type="button" class="btn-submit" (click)="saveEnemyFromEditor()">
-          💾 Salva nel Bestiario
-        </button>
+        <button type="button" class="btn-submit" (click)="saveEnemyFromEditor()">💾 Salva</button>
       </footer>
     </div>
   </div>
 
-  <!-- MODALE DETTAGLI NPC ESISTENTE -->
+  <!-- MODALE NPC ESISTENTE -->
   <div class="modal-backdrop" *ngIf="selectedNpc()" (click)="selectedNpc.set(null)">
     <div class="modal-card npc-modal-card" (click)="$event.stopPropagation()" *ngIf="selectedNpc() as npc">
       <header class="modal-head">

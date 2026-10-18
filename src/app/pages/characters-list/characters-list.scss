@@ -1,42 +1,48 @@
 $bg-card: #0d1527;
 $border-card: #1e2c48;
 $gold: #f59e0b;
+$crimson: #ef4444;
 $text-muted: #94a3b8;
 
 .characters-container {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 10px 10px 80px;
+  padding: 12px 12px 85px;
   box-sizing: border-box;
   width: 100%;
   overflow-x: hidden;
 
-  @media (min-width: 500px) {
-    padding: 16px 16px 90px;
+  @media (min-width: 600px) {
+    padding: 16px 16px 95px;
   }
 }
 
-/* SWITCHER IN TESTA (EROI / PNG) */
+/* SWITCHER A SCHEDE RESPONSIVE */
 .main-tab-switcher {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   background: #080d18;
   border: 1px solid #1c2a44;
   border-radius: 14px;
-  padding: 0.35rem;
+  padding: 0.3rem;
   margin-bottom: 1.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 
   .tab-toggle-btn {
-    flex: 1;
-    height: 42px;
+    flex: 1 0 auto;
+    height: 40px;
+    padding: 0 0.85rem;
     background: transparent;
     border: none;
     border-radius: 10px;
     color: $text-muted;
     font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.78rem, 2.5vw, 0.92rem);
     font-weight: 700;
     cursor: pointer;
+    white-space: nowrap;
     transition: all 0.15s ease;
 
     &.active {
@@ -44,14 +50,23 @@ $text-muted: #94a3b8;
       color: #fef08a;
       box-shadow: 0 0 10px rgba($gold, 0.25);
     }
+
+    &.bestiary-btn.active {
+      background: rgba($crimson, 0.22);
+      color: #fca5a5;
+      box-shadow: 0 0 10px rgba($crimson, 0.35);
+    }
   }
 }
 
-/* HEADER */
+/* HEADER CENTRATO */
 .characters-header {
   text-align: center;
-  margin-bottom: 1rem;
+  margin: 0 auto 1.15rem;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   .campaign-pill {
     display: inline-block;
@@ -64,18 +79,22 @@ $text-muted: #94a3b8;
     border: 1px solid rgba($gold, 0.3);
     padding: 2px 8px;
     border-radius: 9999px;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
+
+    &.red-pill {
+      color: $crimson;
+      background: rgba($crimson, 0.12);
+      border-color: rgba($crimson, 0.35);
+    }
   }
 
   .main-title {
     font-family: 'Cinzel', serif;
-    font-size: clamp(1.2rem, 5vw, 1.8rem);
+    font-size: clamp(1.25rem, 5vw, 1.85rem);
     color: #ffffff;
     margin: 0;
     letter-spacing: 0.02em;
     line-height: 1.2;
-    overflow-wrap: break-word;
-    word-break: break-word;
   }
 
   .subtitle {
@@ -83,12 +102,12 @@ $text-muted: #94a3b8;
     color: $text-muted;
     margin: 4px auto 0;
     line-height: 1.35;
-    max-width: 480px;
+    max-width: 520px;
   }
 }
 
-/* PANNELLO FILTRI NPC */
-.npc-filter-panel {
+/* ==================== TOOLBAR BESTIARIO & RICERCA (100% WIDTH) ==================== */
+.bestiary-toolbar, .npc-filter-panel {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
@@ -97,40 +116,89 @@ $text-muted: #94a3b8;
   border-radius: 14px;
   padding: 0.85rem;
   margin-bottom: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
 
   .search-wrap {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 
     .s-icon {
       position: absolute;
-      left: 10px;
-      font-size: 0.9rem;
+      left: 12px;
+      font-size: 0.95rem;
       color: $text-muted;
+      pointer-events: none;
     }
 
     input {
-      width: 100%;
-      height: 40px;
-      padding: 0 2rem 0 2.2rem;
+      width: 100% !important;
+      height: 42px;
+      padding: 0 2rem 0 2.4rem;
       background: #050811;
       border: 1px solid #22324f;
-      border-radius: 8px;
+      border-radius: 9px;
       color: #fff;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       outline: none;
+      box-sizing: border-box;
 
       &:focus { border-color: $gold; }
     }
 
     .btn-clear {
       position: absolute;
-      right: 8px;
+      right: 10px;
       background: transparent;
       border: none;
       color: $text-muted;
       cursor: pointer;
+      font-size: 0.85rem;
+    }
+  }
+
+  .bestiary-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .btn-create-monster {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(245, 158, 11, 0.25));
+      border: 1px solid $crimson;
+      color: #fca5a5;
+      font-size: 0.86rem;
+      font-weight: 800;
+      padding: 9px 15px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover { background: $crimson; color: #fff; }
+    }
+
+    .backup-btns-group {
+      display: flex;
+      gap: 0.4rem;
+
+      .btn-tool {
+        background: #0d1527;
+        border: 1px solid #283958;
+        color: #cbd5e1;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 7px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+
+        &:hover { border-color: $gold; color: #fff; }
+      }
     }
   }
 
@@ -142,13 +210,7 @@ $text-muted: #94a3b8;
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
 
-    .chip-lbl {
-      font-size: 0.68rem;
-      font-weight: 800;
-      color: $text-muted;
-      white-space: nowrap;
-    }
-
+    .chip-lbl { font-size: 0.68rem; font-weight: 800; color: $text-muted; white-space: nowrap; }
     .f-chip {
       flex: 0 0 auto;
       padding: 0.35rem 0.65rem;
@@ -159,13 +221,7 @@ $text-muted: #94a3b8;
       font-weight: 700;
       border-radius: 8px;
       cursor: pointer;
-
-      &.active {
-        background: $gold;
-        border-color: $gold;
-        color: #000;
-      }
-
+      &.active { background: $gold; border-color: $gold; color: #000; }
       &.status-ally.active { background: #10b981; border-color: #10b981; color: #fff; }
       &.status-enemy.active { background: #ef4444; border-color: #ef4444; color: #fff; }
       &.status-dead.active { background: #64748b; border-color: #64748b; color: #fff; }
@@ -174,11 +230,11 @@ $text-muted: #94a3b8;
   }
 }
 
-/* GRIGLIA CARDS */
+/* ==================== GRIGLIA CARDS ==================== */
 .modules-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   box-sizing: border-box;
 
@@ -187,37 +243,37 @@ $text-muted: #94a3b8;
     gap: 12px;
   }
 
+  /* GRIGLIA BESTIARIO: 1 COLONNA SU MOBILE PER RESPIRO E LETTURA OTTIMALE */
+  &.bestiary-grid {
+    grid-template-columns: 1fr;
+
+    @media (min-width: 600px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (min-width: 860px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   .module-card {
     background: $bg-card;
     border: 1px solid $border-card;
-    border-radius: 12px;
-    padding: 10px 8px;
+    border-radius: 14px;
+    padding: 12px 10px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     text-decoration: none;
-    transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease;
-    user-select: none;
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
-    overflow: hidden;
-    position: relative;
+    transition: transform 0.12s ease, border-color 0.15s ease;
+    cursor: pointer;
 
-    &:active { transform: scale(0.96); }
     &:hover { border-color: rgba($gold, 0.5); background: #111b32; }
 
     .card-icon-wrap {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 6px;
-      flex-shrink: 0;
-
-      .icon { font-size: 1.2rem; line-height: 1; }
+      width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
+      .icon { font-size: 1.2rem; }
       &.crimson { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); }
       &.emerald { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); }
       &.blue    { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); }
@@ -228,197 +284,175 @@ $text-muted: #94a3b8;
     .card-content {
       width: 100%;
       min-width: 0;
-      box-sizing: border-box;
       flex: 1 1 auto;
 
-      .card-tag {
-        font-size: 0.62rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        color: $text-muted;
-        margin-bottom: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
+      .card-tag { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; color: $text-muted; margin-bottom: 2px; }
       .card-title {
         font-family: 'Cinzel', serif;
-        font-size: clamp(0.85rem, 3.4vw, 1rem);
+        font-size: clamp(0.95rem, 3.4vw, 1.15rem);
         font-weight: 700;
-        color: #ffffff;
+        color: #fff;
         margin: 0 0 2px;
         line-height: 1.15;
-        overflow-wrap: break-word;
-        word-break: break-word;
-
-        .kanji {
-          font-family: sans-serif;
-          font-size: 0.78rem;
-          color: $gold;
-          font-weight: 600;
-        }
       }
-
-      .card-class, .card-category {
-        font-size: 0.74rem;
-        font-weight: 700;
-        color: $gold;
-        margin-bottom: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .card-desc {
-        font-size: clamp(0.64rem, 2.7vw, 0.72rem);
-        color: #64748b;
-        margin: 0;
-        line-height: 1.25;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        word-break: break-word;
-      }
+      .card-class { font-size: 0.78rem; font-weight: 700; color: $gold; margin-bottom: 4px; }
+      .card-desc { font-size: 0.76rem; color: #94a3b8; margin: 0; line-height: 1.35; }
     }
 
-    .card-action-hint {
-      margin-top: 8px;
-      font-size: 0.68rem;
-      font-weight: 800;
-      color: rgba($gold, 0.85);
-      letter-spacing: 0.02em;
-    }
-
-    .btn-delete-card {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 28px;
-      height: 28px;
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-      font-size: 0.8rem;
-      border-radius: 7px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s ease;
-      z-index: 5;
-
-      &:hover {
-        background: #ef4444;
-        border-color: #ef4444;
-        color: #fff;
-        transform: scale(1.12);
-      }
-    }
-  }
-
-  /* CARDS SPECIFICHE PNG */
-  .npc-card {
-    cursor: pointer;
-
-    .npc-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      margin-bottom: 6px;
-
-      .loc-pill {
-        font-size: 0.65rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        background: rgba($gold, 0.15);
-        color: #fde68a;
-        border: 1px solid rgba($gold, 0.3);
-        padding: 2px 6px;
-        border-radius: 5px;
-      }
-
-      .status-badge {
-        font-size: 0.62rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        padding: 2px 6px;
-        border-radius: 5px;
-
-        &.ally { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35); }
-        &.enemy { background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
-        &.dead { background: rgba(100, 116, 139, 0.25); color: #94a3b8; border: 1px solid #475569; }
-        &.prisoner { background: rgba(245, 158, 11, 0.18); color: #fef08a; border: 1px solid rgba(245, 158, 11, 0.35); }
-        &.cultist { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.35); }
-      }
-    }
-
-    .npc-card-body-row {
-      display: flex;
-      gap: 10px;
-      width: 100%;
-      align-items: flex-start;
-
-      .npc-thumb-avatar {
-        width: 52px;
-        height: 52px;
-        border-radius: 10px;
-        overflow: hidden;
-        flex-shrink: 0;
-        border: 1px solid rgba($gold, 0.4);
-        background: #060a14;
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-      }
-    }
-
-    .npc-notes-preview {
-      font-size: 0.72rem;
-      color: #fde68a;
-      margin-top: 5px;
-      line-height: 1.3;
-    }
+    .card-action-hint { margin-top: 8px; font-size: 0.72rem; font-weight: 800; color: rgba($gold, 0.85); }
   }
 }
 
-.add-hero-card {
-  border: 1px dashed rgba($gold, 0.45) !important;
-  background: rgba(245, 158, 11, 0.04) !important;
-  cursor: pointer;
-  text-align: left;
+/* ==================== SCHEDA MOSTRO / BOSS (ENEMY CARD) ==================== */
+.enemy-card {
+  border-color: rgba($crimson, 0.35) !important;
+  background: #0d1222 !important;
 
   &:hover {
-    border-color: $gold !important;
-    background: rgba(245, 158, 11, 0.1) !important;
-    transform: translateY(-2px);
+    border-color: $crimson !important;
+    background: #131728 !important;
   }
 
-  .gold-wrap {
-    background: rgba($gold, 0.18) !important;
-    border: 1px solid rgba($gold, 0.4) !important;
+  /* HEADER INTESTAZIONE: ZERO SOVRAPPOSIZIONI */
+  .enemy-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 6px;
+
+    .cr-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #fca5a5;
+      background: rgba($crimson, 0.18);
+      border: 1px solid rgba($crimson, 0.45);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .top-right-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .enemy-xp {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #94a3b8;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2px 6px;
+        border-radius: 5px;
+      }
+
+      .btn-delete-inline {
+        width: 28px;
+        height: 28px;
+        background: rgba($crimson, 0.12);
+        border: 1px solid rgba($crimson, 0.35);
+        color: #fca5a5;
+        font-size: 0.8rem;
+        border-radius: 7px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: $crimson;
+          color: #fff;
+          transform: scale(1.08);
+        }
+      }
+    }
   }
 
-  .gold-hint {
-    color: $gold !important;
-    font-weight: 800;
+  /* STATISTICHE A PILLOLE (PF & CA) */
+  .enemy-quick-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0 8px;
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+
+      &.hp-pill {
+        background: rgba(239, 68, 68, 0.14);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: #fca5a5;
+      }
+
+      &.ac-pill {
+        background: rgba(56, 189, 248, 0.14);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        color: #bae6fd;
+      }
+
+      .pill-val {
+        overflow-wrap: anywhere;
+      }
+    }
+  }
+
+  .attack-line {
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    margin-top: 4px;
+    strong { color: #f8fafc; }
+  }
+
+  /* AZIONI IN FONDO ALLA SCHEDA */
+  .enemy-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #1a283f;
+    gap: 8px;
+
+    .btn-download-pdf {
+      background: rgba($gold, 0.18);
+      border: 1px solid rgba($gold, 0.5);
+      color: #fef08a;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: $gold;
+        color: #000;
+      }
+    }
+
+    .edit-hint {
+      font-size: 0.76rem;
+      color: $text-muted;
+      font-weight: 700;
+      white-space: nowrap;
+    }
   }
 }
 
-/* ========================================================= */
-/* MODALI: SCORREVOLI, TOTALMENTE RESPONSIVE E ANTI-OVERFLOW */
-/* ========================================================= */
+/* ==================== MODALI & ALTRI STILI ==================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1300; /* Superiore alla bottom navigation bar */
+  z-index: 1300;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -434,19 +468,16 @@ $text-muted: #94a3b8;
     border-radius: 16px;
     padding: 1rem 1.15rem;
     width: 100%;
-    max-width: 450px;
+    max-width: 460px;
     max-height: calc(100dvh - 2rem);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
-    box-sizing: border-box;
 
-    &.npc-modal-card {
-      max-width: 520px;
-    }
+    &.bestiary-editor-card { max-width: 640px; }
+    &.npc-modal-card { max-width: 520px; }
 
-    /* INTESTAZIONE FISSA */
     .modal-head {
       display: flex;
       justify-content: space-between;
@@ -459,124 +490,75 @@ $text-muted: #94a3b8;
         display: inline-block;
         font-size: 0.65rem;
         font-weight: 800;
-        letter-spacing: 0.08em;
         color: $gold;
         background: rgba($gold, 0.12);
         padding: 2px 8px;
         border-radius: 6px;
         margin-bottom: 4px;
+        &.red-badge { color: #fca5a5; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); }
       }
 
-      .modal-title {
-        font-family: 'Cinzel', serif;
-        font-size: 1.25rem;
-        color: #fff;
-        margin: 0;
-        line-height: 1.2;
-      }
-
-      .modal-sub {
-        font-size: 0.8rem;
-        color: #94a3b8;
-        margin-top: 3px;
-        strong { color: #fde68a; }
-      }
-
+      .modal-title { font-family: 'Cinzel', serif; font-size: 1.25rem; color: #fff; margin: 0; }
+      .modal-sub { font-size: 0.8rem; color: #94a3b8; margin-top: 3px; strong { color: #fde68a; } }
       .btn-close {
-        background: #15223c;
-        border: 1px solid #283958;
-        color: #cbd5e1;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-
-        &:hover { background: #1e2f52; color: #fff; }
+        background: #15223c; border: 1px solid #283958; color: #cbd5e1; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
       }
     }
 
-    /* CORPO SCORREVOLE INTERNO */
+    .editor-tabs-bar {
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 0.5rem 0 0.4rem;
+      border-bottom: 1px solid #1c2a44;
+      flex-shrink: 0;
+
+      .ed-tab {
+        flex: 0 0 auto;
+        padding: 0.35rem 0.65rem;
+        background: #0d1527;
+        border: 1px solid #233452;
+        color: #94a3b8;
+        font-size: 0.78rem;
+        font-weight: 700;
+        border-radius: 7px;
+        cursor: pointer;
+
+        &.active { background: rgba(239, 68, 68, 0.22); border-color: #ef4444; color: #fca5a5; }
+        &.preview-tab.active { background: rgba($gold, 0.22); border-color: $gold; color: #fef08a; }
+      }
+    }
+
     .modal-body {
       flex: 1 1 auto;
       min-height: 0;
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
       padding: 0.85rem 0.25rem 0.5rem 0;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
 
-      scrollbar-width: thin;
-      scrollbar-color: #283958 transparent;
-      &::-webkit-scrollbar { width: 5px; }
-      &::-webkit-scrollbar-thumb { background: #283958; border-radius: 4px; }
+      .ed-section { display: flex; flex-direction: column; gap: 0.7rem; }
+      .fields-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+      .fields-row-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.35rem; }
     }
 
-    .modal-form {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      overflow-y: auto;
-      flex: 1 1 auto;
-      min-height: 0;
-      padding-top: 0.75rem;
-    }
-
-    /* CAMPI FORM */
     .field-group {
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
-      width: 100%;
-      box-sizing: border-box;
-
-      label {
-        font-size: 0.74rem;
-        font-weight: 700;
-        color: $text-muted;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        display: block;
-      }
-
+      label { font-size: 0.74rem; font-weight: 700; color: $text-muted; text-transform: uppercase; }
       input, textarea, select {
-        width: 100%;
-        box-sizing: border-box;
-        background: #060a14;
-        border: 1px solid #22324f;
-        border-radius: 8px;
-        color: #fff;
-        font-size: 0.9rem;
-        padding: 8px 10px;
-        outline: none;
-        font-family: inherit;
-
+        width: 100%; box-sizing: border-box; background: #060a14; border: 1px solid #22324f; border-radius: 8px; color: #fff; font-size: 0.9rem; padding: 8px 10px; outline: none;
         &:focus { border-color: $gold; }
       }
-
-      textarea {
-        resize: vertical;
-        min-height: 64px;
-      }
-
-      select {
-        height: 40px;
-        padding: 0 8px;
-      }
+      textarea { resize: vertical; min-height: 64px; }
+      select { height: 40px; padding: 0 8px; }
     }
 
-    .fields-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.65rem;
-    }
+    .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
 
-    /* FOOTER PULSANTI SEMPRE ANCORATO IN BASSO */
     .modal-actions {
       display: flex;
       justify-content: flex-end;
@@ -586,121 +568,33 @@ $text-muted: #94a3b8;
       margin-top: 0.4rem;
       border-top: 1px solid #1c2a44;
       flex-shrink: 0;
-      background: #0d1527;
 
       button {
-        height: 42px;
-        padding: 0 1.25rem;
-        border-radius: 9px;
-        font-size: 0.9rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s ease;
+        height: 42px; padding: 0 1.25rem; border-radius: 9px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
       }
-
-      .btn-cancel {
-        background: #15223c;
-        border: 1px solid #283958;
-        color: #cbd5e1;
-        &:hover { background: #1e2f52; }
-      }
-
-      .btn-submit {
-        background: $gold;
-        border: none;
-        color: #000;
-        font-weight: 800;
-        box-shadow: 0 0 12px rgba($gold, 0.3);
-
-        &:hover { filter: brightness(1.1); }
-        &:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-          box-shadow: none;
-        }
+      .btn-cancel { background: #15223c; border: 1px solid #283958; color: #cbd5e1; }
+      .btn-submit { background: $gold; border: none; color: #000; font-weight: 800; }
+      .btn-download-pdf-modal {
+        background: rgba($gold, 0.18); border: 1px solid $gold; color: #fef08a; font-weight: 800; margin-right: auto;
       }
     }
   }
 }
 
-/* BOX RITRATTO E UPLOAD IMMAGINE */
-.npc-portrait-section {
-  background: #080d18;
-  border: 1px dashed #22324f;
-  border-radius: 12px;
-  padding: 0.75rem;
+/* ANTEPRIMA STATBLOCK */
+.paizo-statblock-preview {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.86rem;
+  line-height: 1.35;
 
-  .npc-img-box {
-    position: relative;
-    text-align: center;
-    margin-bottom: 0.5rem;
-
-    img {
-      max-height: 160px; /* Compatto per lasciare spazio di lettura */
-      max-width: 100%;
-      object-fit: contain;
-      border-radius: 10px;
-      border: 1px solid #2d4268;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-    }
-
-    .btn-remove-img {
-      display: block;
-      margin: 6px auto 0;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      color: #fca5a5;
-      font-size: 0.76rem;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-
-      &:hover { background: #ef4444; color: #fff; }
-    }
-  }
-
-  .npc-no-img {
-    text-align: center;
-    padding: 1rem 0.5rem;
-    color: #64748b;
-    font-size: 0.85rem;
-  }
-
-  .upload-controls-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
-    margin-top: 0.4rem;
-
-    .btn-upload-file {
-      display: inline-flex;
-      align-items: center;
-      background: rgba($gold, 0.18);
-      border: 1px solid $gold;
-      color: #fef08a;
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 7px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-
-      &:hover {
-        background: $gold;
-        color: #000;
-      }
-    }
-
-    .upload-or {
-      font-size: 0.74rem;
-      color: #64748b;
-      text-transform: uppercase;
-    }
+  .sb-head-row { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 800; margin-bottom: 2px; }
+  .sb-italic { font-style: italic; margin-bottom: 2px; }
+  .sb-sec-bar {
+    background: #1c2438; color: #f59e0b; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.06em; padding: 2px 6px; margin: 6px 0 4px; border-radius: 2px;
   }
 }
 
@@ -710,259 +604,4 @@ $text-muted: #94a3b8;
   padding: 2.5rem 1rem;
   color: $text-muted;
   font-size: 0.9rem;
-}
-
-/* BADGE ROSSO MASTER E BOTTONE BESTIARIO */
-.red-pill {
-  color: #ef4444 !important;
-  background: rgba(239, 68, 68, 0.12) !important;
-  border-color: rgba(239, 68, 68, 0.35) !important;
-}
-
-.bestiary-btn.active {
-  background: rgba(239, 68, 68, 0.22) !important;
-  color: #fca5a5 !important;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35) !important;
-}
-
-.bestiary-toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  background: #090e1a;
-  border: 1px solid #1c2b44;
-  border-radius: 14px;
-  padding: 0.85rem;
-  margin-bottom: 1.25rem;
-
-  .bestiary-actions-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-
-    .btn-create-monster {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(245, 158, 11, 0.3));
-      border: 1px solid #ef4444;
-      color: #fca5a5;
-      font-size: 0.85rem;
-      font-weight: 800;
-      padding: 8px 14px;
-      border-radius: 9px;
-      cursor: pointer;
-      &:hover { background: #ef4444; color: #fff; }
-    }
-
-    .backup-btns-group {
-      display: flex;
-      gap: 0.4rem;
-
-      .btn-tool {
-        background: #0d1527;
-        border: 1px solid #283958;
-        color: #cbd5e1;
-        font-size: 0.78rem;
-        font-weight: 700;
-        padding: 6px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        &:hover { border-color: $gold; color: #fff; }
-      }
-    }
-  }
-}
-
-/* CARDS MOSTRI */
-.enemy-card {
-  border-color: rgba(239, 68, 68, 0.35) !important;
-
-  &:hover {
-    border-color: #ef4444 !important;
-    background: #141726 !important;
-  }
-
-  .enemy-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 6px;
-
-    .cr-badge {
-      font-family: 'Cinzel', serif;
-      font-size: 0.78rem;
-      font-weight: 800;
-      color: #fca5a5;
-      background: rgba(239, 68, 68, 0.18);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      padding: 2px 7px;
-      border-radius: 6px;
-    }
-
-    .enemy-xp {
-      font-size: 0.72rem;
-      color: #94a3b8;
-    }
-  }
-
-  .enemy-quick-stats {
-    display: flex;
-    gap: 0.65rem;
-    font-size: 0.76rem;
-    font-weight: 700;
-    color: #e2e8f0;
-    margin: 4px 0;
-  }
-
-  .enemy-card-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-top: 10px;
-    padding-top: 6px;
-    border-top: 1px solid #1a283f;
-
-    .btn-download-pdf {
-      background: rgba($gold, 0.15);
-      border: 1px solid rgba($gold, 0.4);
-      color: #fde68a;
-      font-size: 0.74rem;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      &:hover { background: $gold; color: #000; }
-    }
-
-    .edit-hint {
-      font-size: 0.72rem;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-  }
-}
-
-/* MODALE BESTIARIO */
-.bestiary-editor-card {
-  max-width: 620px !important;
-
-  .red-badge {
-    color: #fca5a5 !important;
-    background: rgba(239, 68, 68, 0.15) !important;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-  }
-
-  .editor-tabs-bar {
-    display: flex;
-    gap: 0.35rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding: 0.5rem 0 0.4rem;
-    border-bottom: 1px solid #1c2a44;
-    flex-shrink: 0;
-
-    .ed-tab {
-      flex: 0 0 auto;
-      padding: 0.35rem 0.65rem;
-      background: #0d1527;
-      border: 1px solid #233452;
-      color: #94a3b8;
-      font-size: 0.78rem;
-      font-weight: 700;
-      border-radius: 7px;
-      cursor: pointer;
-
-      &.active {
-        background: rgba(239, 68, 68, 0.22);
-        border-color: #ef4444;
-        color: #fca5a5;
-      }
-
-      &.preview-tab.active {
-        background: rgba($gold, 0.22);
-        border-color: $gold;
-        color: #fef08a;
-      }
-    }
-  }
-
-  .ed-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-
-    .sub-sec-lbl {
-      font-size: 0.76rem;
-      font-weight: 800;
-      color: $gold;
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: 2px;
-    }
-  }
-
-  .fields-row-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-  }
-
-  .fields-row-6 {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 0.35rem;
-  }
-
-  .btn-download-pdf-modal {
-    background: rgba($gold, 0.18);
-    border: 1px solid $gold;
-    color: #fef08a;
-    font-size: 0.88rem;
-    font-weight: 800;
-    padding: 0 1rem;
-    height: 42px;
-    border-radius: 9px;
-    cursor: pointer;
-    margin-right: auto;
-    &:hover { background: $gold; color: #000; }
-  }
-}
-
-/* ANTEPRIMA STATBLOCK PAIZO ESATTA */
-.paizo-statblock-preview {
-  background: #ffffff;
-  color: #000000;
-  border-radius: 8px;
-  padding: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.86rem;
-  line-height: 1.35;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-
-  .sb-head-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.05rem;
-    font-weight: 800;
-    margin-bottom: 2px;
-  }
-
-  .sb-italic { font-style: italic; margin-bottom: 2px; }
-
-  .sb-sec-bar {
-    background: #1c2438;
-    color: #f59e0b;
-    font-weight: 800;
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    padding: 2px 6px;
-    margin: 6px 0 4px;
-    border-radius: 2px;
-  }
-
-  strong { font-weight: 800; }
 }
