@@ -243,14 +243,9 @@ $text-muted: #94a3b8;
     gap: 12px;
   }
 
-  /* GRIGLIA BESTIARIO: 1 COLONNA SU MOBILE PER RESPIRO E LETTURA OTTIMALE */
   &.bestiary-grid {
     grid-template-columns: 1fr;
-
     @media (min-width: 600px) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    @media (min-width: 860px) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
@@ -268,8 +263,38 @@ $text-muted: #94a3b8;
     min-width: 0;
     transition: transform 0.12s ease, border-color 0.15s ease;
     cursor: pointer;
+    position: relative !important; // Evita anomalie di posizionamento
 
     &:hover { border-color: rgba($gold, 0.5); background: #111b32; }
+
+    /* FIX DEFINITIVO CESTINO EROI: NESSUNA BARRA BIANCA */
+    .btn-delete-card {
+      position: absolute !important;
+      top: 8px !important;
+      right: 8px !important;
+      width: 28px !important;
+      height: 28px !important;
+      background: rgba(239, 68, 68, 0.15) !important;
+      border: 1px solid rgba(239, 68, 68, 0.35) !important;
+      color: #fca5a5 !important;
+      font-size: 0.8rem !important;
+      border-radius: 7px !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      transition: all 0.15s ease;
+      z-index: 5;
+
+      &:hover {
+        background: #ef4444 !important;
+        border-color: #ef4444 !important;
+        color: #fff !important;
+        transform: scale(1.1);
+      }
+    }
 
     .card-icon-wrap {
       width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
@@ -303,6 +328,102 @@ $text-muted: #94a3b8;
   }
 }
 
+/* ==================== CARD PNG CON AVATAR CONTENUTO (FIX IMMAGINI GIGANTI) ==================== */
+.npc-card {
+  .npc-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+    gap: 6px;
+
+    .loc-pill {
+      font-size: 0.66rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: rgba($gold, 0.12);
+      color: #fde68a;
+      border: 1px solid rgba($gold, 0.3);
+      padding: 2px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .status-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+
+      &.ally { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+      &.enemy { background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+      &.dead { background: rgba(100, 116, 139, 0.25); color: #94a3b8; border: 1px solid #475569; }
+      &.prisoner { background: rgba(245, 158, 11, 0.18); color: #fef08a; border: 1px solid rgba(245, 158, 11, 0.4); }
+      &.cultist { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+      &.alive { background: rgba(56, 189, 248, 0.18); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
+    }
+  }
+
+  .npc-card-body-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    align-items: flex-start;
+    min-width: 0;
+
+    .npc-thumb-avatar {
+      width: 72px;
+      height: 88px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #060a14;
+      border: 1px solid #1e2c48;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; // Mantiene proporzioni corrette senza tagliare teste o piedi
+        display: block;
+      }
+    }
+
+    .card-content {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+    }
+  }
+
+  .card-category { font-size: 0.74rem; font-weight: 700; color: #64748b; margin-bottom: 2px; }
+  .npc-notes-preview { font-size: 0.74rem; color: #fde68a; margin-top: 5px; line-height: 1.3; }
+}
+
+.add-hero-card {
+  border: 1px dashed rgba($gold, 0.45) !important;
+  background: rgba(245, 158, 11, 0.04) !important;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    border-color: $gold !important;
+    background: rgba(245, 158, 11, 0.1) !important;
+    transform: translateY(-2px);
+  }
+
+  .gold-wrap {
+    background: rgba($gold, 0.18) !important;
+    border: 1px solid rgba($gold, 0.4) !important;
+  }
+
+  .gold-hint { color: $gold !important; font-weight: 800; }
+}
+
 /* ==================== SCHEDA MOSTRO / BOSS (ENEMY CARD) ==================== */
 .enemy-card {
   border-color: rgba($crimson, 0.35) !important;
@@ -313,7 +434,6 @@ $text-muted: #94a3b8;
     background: #131728 !important;
   }
 
-  /* HEADER INTESTAZIONE: ZERO SOVRAPPOSIZIONI */
   .enemy-card-top {
     display: flex;
     justify-content: space-between;
@@ -369,7 +489,6 @@ $text-muted: #94a3b8;
     }
   }
 
-  /* STATISTICHE A PILLOLE (PF & CA) */
   .enemy-quick-stats {
     display: flex;
     flex-wrap: wrap;
@@ -397,9 +516,7 @@ $text-muted: #94a3b8;
         color: #bae6fd;
       }
 
-      .pill-val {
-        overflow-wrap: anywhere;
-      }
+      .pill-val { overflow-wrap: anywhere; }
     }
   }
 
@@ -410,7 +527,6 @@ $text-muted: #94a3b8;
     strong { color: #f8fafc; }
   }
 
-  /* AZIONI IN FONDO ALLA SCHEDA */
   .enemy-card-actions {
     display: flex;
     justify-content: space-between;
@@ -433,10 +549,7 @@ $text-muted: #94a3b8;
       white-space: nowrap;
       transition: all 0.15s ease;
 
-      &:hover {
-        background: $gold;
-        color: #000;
-      }
+      &:hover { background: $gold; color: #000; }
     }
 
     .edit-hint {
@@ -448,7 +561,7 @@ $text-muted: #94a3b8;
   }
 }
 
-/* ==================== MODALI & ALTRI STILI ==================== */
+/* ==================== MODALI & COMPONENTI SCORREVOLI ==================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -577,6 +690,68 @@ $text-muted: #94a3b8;
       .btn-download-pdf-modal {
         background: rgba($gold, 0.18); border: 1px solid $gold; color: #fef08a; font-weight: 800; margin-right: auto;
       }
+      .btn-print-modal {
+        background: #1e293b; border: 1px solid #475569; color: #cbd5e1; font-weight: 700;
+        &:hover { background: #334155; color: #fff; }
+      }
+    }
+  }
+}
+
+/* RITRATTO NELLA MODALE NPC */
+.npc-portrait-section {
+  background: #080d18;
+  border: 1px dashed #22324f;
+  border-radius: 12px;
+  padding: 0.75rem;
+
+  .npc-img-box {
+    position: relative;
+    text-align: center;
+    margin-bottom: 0.5rem;
+
+    img {
+      max-height: 160px;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid #2d4268;
+    }
+
+    .btn-remove-img {
+      display: block;
+      margin: 6px auto 0;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      &:hover { background: #ef4444; color: #fff; }
+    }
+  }
+
+  .upload-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 0.4rem;
+
+    .btn-upload-file {
+      display: inline-flex;
+      align-items: center;
+      background: rgba($gold, 0.18);
+      border: 1px solid $gold;
+      color: #fef08a;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      &:hover { background: $gold; color: #000; }
     }
   }
 }
@@ -596,6 +771,9 @@ $text-muted: #94a3b8;
   .sb-sec-bar {
     background: #1c2438; color: #f59e0b; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.06em; padding: 2px 6px; margin: 6px 0 4px; border-radius: 2px;
   }
+  .spell-pre {
+    white-space: pre-wrap; font-family: inherit; margin: 3px 0 0; font-size: 0.82rem; color: #1e293b;
+  }
 }
 
 .empty-hint {
@@ -604,24 +782,4 @@ $text-muted: #94a3b8;
   padding: 2.5rem 1rem;
   color: $text-muted;
   font-size: 0.9rem;
-}
-
-.btn-print-modal {
-  background: #1e293b;
-  border: 1px solid #475569;
-  color: #cbd5e1;
-  font-weight: 700;
-  height: 42px;
-  padding: 0 1rem;
-  border-radius: 9px;
-  cursor: pointer;
-  &:hover { background: #334155; color: #fff; }
-}
-
-.spell-pre {
-  white-space: pre-wrap;
-  font-family: inherit;
-  margin: 3px 0 0;
-  font-size: 0.82rem;
-  color: #1e293b;
 }

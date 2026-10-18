@@ -36,6 +36,7 @@
 
     <div class="modules-grid">
       <a *ngFor="let hero of characters()" [routerLink]="['/characters', hero.slug]" class="module-card">
+        <!-- PULSANTE CESTINO PICCOLO E PULITO IN ALTO A DESTRA -->
         <button 
           type="button" 
           class="btn-delete-card" 
@@ -112,10 +113,12 @@
       <div *ngFor="let npc of filteredNpcs()" class="module-card npc-card" (click)="openNpcDetails(npc)">
         <div class="npc-card-top">
           <span class="loc-pill">{{ npc.location }}</span>
-          <span class="status-badge" [ngClass]="npc.status">{{ npc.status }}</span>
+          <span class="status-badge" [ngClass]="npc.status">{{ getStatusLabel(npc.status) }}</span>
         </div>
         <div class="npc-card-body-row">
-          <div class="npc-thumb-avatar" *ngIf="npc.image_url"><img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" loading="lazy" /></div>
+          <div class="npc-thumb-avatar" *ngIf="npc.image_url">
+            <img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" loading="lazy" />
+          </div>
           <div class="card-content">
             <div class="card-tag" *ngIf="npc.alter_ego">Alias: <strong>{{ npc.alter_ego }}</strong></div>
             <h2 class="card-title">{{ npc.first_name }} {{ npc.last_name || '' }}</h2>
@@ -139,7 +142,6 @@
       <p class="subtitle">Statblock salvati in locale nel tuo browser. Scarica in un click i PDF per le tue sessioni.</p>
     </header>
 
-    <!-- TOOLBAR BESTIARIO -->
     <div class="bestiary-toolbar">
       <div class="search-wrap">
         <span class="s-icon">🔍</span>
@@ -168,7 +170,7 @@
       </div>
     </div>
 
-    <!-- GRIGLIA MOSTRI (LAYOUT OTTIMIZZATO SENZA OVERLAP) -->
+    <!-- GRIGLIA MOSTRI OTTIMIZZATA -->
     <div class="modules-grid bestiary-grid">
       <div *ngFor="let enemy of filteredEnemies()" class="module-card enemy-card" (click)="editEnemy(enemy)">
         
@@ -358,7 +360,7 @@
           </div>
         </div>
 
-        <!-- 7. ANTEPRIMA PAIZO BLINDATA -->
+        <!-- 7. ANTEPRIMA PAIZO BLINDATA CON SAFE NAVIGATION -->
         <div *ngIf="editorTab() === 'preview'" class="paizo-statblock-preview">
           <div class="sb-head-row">
             <span class="sb-title">{{ en.name || 'Senza Nome' }}, {{ en.title_line || '' }}</span>

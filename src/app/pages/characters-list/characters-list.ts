@@ -96,7 +96,7 @@ export class CharactersListComponent implements OnInit {
   characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
   loadingHeroes = signal<boolean>(false);
 
-  // 2. PNG & CAROVANA (SERVER NEON)
+  // 2. PNG & CAROVANA (NEON SERVER)
   npcs = signal<NpcRecord[]>([]);
   loadingNpcs = signal<boolean>(false);
   npcSearch = signal<string>('');
@@ -111,7 +111,6 @@ export class CharactersListComponent implements OnInit {
   selectedEnemy = signal<EnemyStatblock | null>(null);
   editorTab = signal<'general' | 'defense' | 'offense' | 'tactics' | 'stats' | 'abilities' | 'preview'>('general');
 
-  // Campi per nuova capacità speciale nell'editor
   newAbilityName = '';
   newAbilityType: 'Ex' | 'Sp' | 'Su' | '' = 'Ex';
   newAbilityDesc = '';
@@ -160,6 +159,19 @@ export class CharactersListComponent implements OnInit {
     this.syncCharactersWithDatabase();
     this.loadNpcsFromServer();
     this.loadBestiary();
+  }
+
+  // ETICHETTE PULITE PER LO STATO DEI PNG
+  getStatusLabel(status: string | null | undefined): string {
+    switch (status) {
+      case 'ally': return '🟢 Alleato';
+      case 'enemy': return '🔴 Nemico';
+      case 'dead': return '💀 Deceduto';
+      case 'prisoner': return '🔒 Prigioniero';
+      case 'cultist': return '🟣 Cultista';
+      case 'alive': return '⚪ Attivo';
+      default: return status || 'Attivo';
+    }
   }
 
   // ==================== SEZIONE BESTIARIO ====================
@@ -385,14 +397,6 @@ export class CharactersListComponent implements OnInit {
     } catch {}
   }
 
-  private unmarkSlugAsDeleted(slug: string): void {
-    const set = this.getDeletedSlugs();
-    set.delete(slug);
-    try {
-      localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(Array.from(set)));
-    } catch {}
-  }
-
   syncCharactersWithDatabase(): void {
     this.loadingHeroes.set(true);
     const deletedSlugs = this.getDeletedSlugs();
@@ -462,7 +466,6 @@ export class CharactersListComponent implements OnInit {
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     this.isCreating.set(true);
-    this.unmarkSlugAsDeleted(slug);
 
     const initialData: CharacterSheetData = {
       character: {
