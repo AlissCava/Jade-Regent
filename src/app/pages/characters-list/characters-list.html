@@ -1,62 +1,209 @@
 <div class="characters-container">
-  <!-- HEADER COMPATTO -->
-  <header class="characters-header">
-    <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
-    <h1 class="main-title">⚔️ Gli Eroi della Carovana</h1>
-    <p class="subtitle">Seleziona un personaggio per aprire la scheda interattiva e gestire le statistiche.</p>
-  </header>
-
-  <!-- GRIGLIA EROI -->
-  <div class="modules-grid">
-    <a 
-      *ngFor="let hero of characters()" 
-      [routerLink]="['/characters', hero.slug]" 
-      class="module-card">
-      
-      <!-- PULSANTE CESTINO PER ELIMINARE LA SCHEDA -->
-      <button 
-        type="button" 
-        class="btn-delete-card" 
-        (click)="deleteCharacter(hero.slug, hero.name, $event)" 
-        title="Elimina definitivamente la scheda di {{ hero.name }}"
-        aria-label="Elimina scheda">
-        🗑️
-      </button>
-
-      <!-- ICONA COLORATA -->
-      <div class="card-icon-wrap" [ngClass]="hero.theme">
-        <span class="icon">{{ hero.icon }}</span>
-      </div>
-
-      <!-- CONTENUTO SCHEDA -->
-      <div class="card-content">
-        <div class="card-tag">Livello {{ hero.level }} • {{ hero.race || 'Razza non impostata' }}</div>
-        <h2 class="card-title">
-          {{ hero.name }} <span class="kanji" *ngIf="hero.kanji">({{ hero.kanji }})</span>
-        </h2>
-        <div class="card-class">{{ hero.className || 'Classe da definire' }}</div>
-        <p class="card-desc">{{ hero.subtitle }}</p>
-      </div>
-
-      <div class="card-action-hint">Apri Scheda ➔</div>
-    </a>
-
-    <!-- CARD SPECIALE: + AGGIUNGI NUOVO EROE O PNG -->
-    <button type="button" class="module-card add-hero-card" (click)="openCreateModal()">
-      <div class="card-icon-wrap gold-wrap">
-        <span class="icon">➕</span>
-      </div>
-      <div class="card-content">
-        <div class="card-tag">Nuova Scheda</div>
-        <h2 class="card-title">Aggiungi Eroe / PNG</h2>
-        <div class="card-class">Crea da zero</div>
-        <p class="card-desc">Crea e salva una scheda personalizzata su Neon DB.</p>
-      </div>
-      <div class="card-action-hint gold-hint">+ Crea Scheda</div>
+  <!-- SWITCHER DI VISTA IN TESTA -->
+  <div class="main-tab-switcher" role="tablist">
+    <button 
+      type="button" 
+      class="tab-toggle-btn" 
+      [class.active]="activeMainTab() === 'party'" 
+      (click)="activeMainTab.set('party')">
+      🛡️ Eroi del Party
+    </button>
+    <button 
+      type="button" 
+      class="tab-toggle-btn" 
+      [class.active]="activeMainTab() === 'npcs'" 
+      (click)="activeMainTab.set('npcs')">
+      📜 PNG & Carovana ({{ npcs().length }})
     </button>
   </div>
 
-  <!-- MODALE CREAZIONE NUOVO PERSONAGGIO -->
+  <!-- ========================================================= -->
+  <!-- SEZIONE 1: GLI EROI DEL PARTY (RYOUJIN, AIRYN, AZOI...)    -->
+  <!-- ========================================================= -->
+  <ng-container *ngIf="activeMainTab() === 'party'">
+    <header class="characters-header">
+      <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
+      <h1 class="main-title">⚔️ Gli Eroi della Carovana</h1>
+      <p class="subtitle">Seleziona un personaggio per aprire la scheda interattiva e gestire le statistiche.</p>
+    </header>
+
+    <div class="modules-grid">
+      <a 
+        *ngFor="let hero of characters()" 
+        [routerLink]="['/characters', hero.slug]" 
+        class="module-card">
+        <div class="card-icon-wrap" [ngClass]="hero.theme">
+          <span class="icon">{{ hero.icon }}</span>
+        </div>
+        <div class="card-content">
+          <div class="card-tag">Livello {{ hero.level }} • {{ hero.race }}</div>
+          <h2 class="card-title">
+            {{ hero.name }} <span class="kanji" *ngIf="hero.kanji">({{ hero.kanji }})</span>
+          </h2>
+          <div class="card-class">{{ hero.className }}</div>
+          <p class="card-desc">{{ hero.subtitle }}</p>
+        </div>
+        <div class="card-action-hint">Apri Scheda ➔</div>
+      </a>
+
+      <!-- CARD SPECIALE: + AGGIUNGI NUOVO EROE -->
+      <button type="button" class="module-card add-hero-card" (click)="openCreateModal()">
+        <div class="card-icon-wrap gold-wrap"><span class="icon">➕</span></div>
+        <div class="card-content">
+          <div class="card-tag">Nuova Scheda</div>
+          <h2 class="card-title">Aggiungi Eroe</h2>
+          <div class="card-class">Crea da zero</div>
+          <p class="card-desc">Crea e salva una scheda personalizzata su Neon DB.</p>
+        </div>
+        <div class="card-action-hint gold-hint">+ Crea Scheda</div>
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================= -->
+  <!-- SEZIONE 2: COMPENDIO PNG, CAROVANA & LORE (DAL SERVER)    -->
+  <!-- ========================================================= -->
+  <ng-container *ngIf="activeMainTab() === 'npcs'">
+    <header class="characters-header">
+      <div class="campaign-pill">Database Server Neon</div>
+      <h1 class="main-title">📜 Registro PNG & Luoghi</h1>
+      <p class="subtitle">Tutti gli alleati, nemici, contatti e luoghi incontrati durante il viaggio.</p>
+    </header>
+
+    <!-- BARRA DI RICERCA & FILTRI RAPIDI -->
+    <div class="npc-filter-panel">
+      <div class="search-wrap">
+        <span class="s-icon">🔍</span>
+        <input 
+          type="search" 
+          [ngModel]="npcSearch()" 
+          (ngModelChange)="npcSearch.set($event)" 
+          placeholder="Cerca PNG per nome, alter ego, luogo o note di trama..." />
+        <button *ngIf="npcSearch()" class="btn-clear" (click)="npcSearch.set('')">✕</button>
+      </div>
+
+      <!-- CHIP FILTRO LUOGHI -->
+      <div class="chips-scroll-bar">
+        <span class="chip-lbl">LUOGO:</span>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Tutti'" (click)="selectedLocation.set('Tutti')">Tutti</button>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Gruppo'" (click)="selectedLocation.set('Gruppo')">Carovana</button>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Nancun'" (click)="selectedLocation.set('Nancun')">Nancun</button>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Brinewall'" (click)="selectedLocation.set('Brinewall')">Brinewall</button>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Bian Jie'" (click)="selectedLocation.set('Bian Jie')">Bian Jie</button>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Kaoling'" (click)="selectedLocation.set('Kaoling')">Kaoling</button>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Minkai'" (click)="selectedLocation.set('Minkai')">Minkai</button>
+      </div>
+
+      <!-- CHIP FILTRO STATO -->
+      <div class="chips-scroll-bar">
+        <span class="chip-lbl">STATO:</span>
+        <button type="button" class="f-chip" [class.active]="selectedStatus() === 'Tutti'" (click)="selectedStatus.set('Tutti')">Tutti</button>
+        <button type="button" class="f-chip status-ally" [class.active]="selectedStatus() === 'ally'" (click)="selectedStatus.set('ally')">🟢 Alleati</button>
+        <button type="button" class="f-chip status-enemy" [class.active]="selectedStatus() === 'enemy'" (click)="selectedStatus.set('enemy')">🔴 Nemici</button>
+        <button type="button" class="f-chip status-dead" [class.active]="selectedStatus() === 'dead'" (click)="selectedStatus.set('dead')">💀 Deceduti</button>
+        <button type="button" class="f-chip status-lore" [class.active]="selectedStatus() === 'lore'" (click)="selectedStatus.set('lore')">🏯 Luoghi & Divinità</button>
+      </div>
+    </div>
+
+    <!-- STATO CARICAMENTO -->
+    <div *ngIf="loadingNpcs()" class="loading-state">
+      <div class="spinner"></div>
+      <span>Caricamento registro PNG dal server...</span>
+    </div>
+
+    <!-- GRIGLIA CARDS PNG -->
+    <div class="modules-grid" *ngIf="!loadingNpcs()">
+      <div 
+        *ngFor="let npc of filteredNpcs()" 
+        class="module-card npc-card" 
+        (click)="openNpcDetails(npc)">
+
+        <!-- HEADER CARD CON BADGE STATO & LUOGO -->
+        <div class="npc-card-top">
+          <span class="loc-pill">{{ npc.location }}</span>
+          
+          <span class="status-badge" [ngClass]="npc.status">
+            {{ npc.status === 'ally' ? 'Alleato' : (npc.status === 'dead' ? 'Deceduto' : (npc.status === 'prisoner' ? 'Prigioniero' : (npc.status === 'enemy' ? 'Nemico' : 'Attivo'))) }}
+          </span>
+        </div>
+
+        <div class="card-content">
+          <div class="card-tag" *ngIf="npc.alter_ego">Alter Ego: <strong>{{ npc.alter_ego }}</strong></div>
+          <h2 class="card-title">
+            {{ npc.first_name }} {{ npc.last_name || '' }}
+          </h2>
+          <div class="card-category">{{ npc.category }}</div>
+          <p class="card-desc">{{ npc.description }}</p>
+          <div class="npc-notes-preview" *ngIf="npc.notes">
+            <em>📌 {{ npc.notes }}</em>
+          </div>
+        </div>
+
+        <div class="card-action-hint">Dettagli / Modifica ➔</div>
+      </div>
+
+      <div *ngIf="filteredNpcs().length === 0" class="empty-hint">
+        Nessun PNG o luogo trovato per i filtri selezionati.
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================= -->
+  <!-- MODALE DETTAGLI & MODIFICHE NPC PER IL MASTER              -->
+  <!-- ========================================================= -->
+  <div class="modal-backdrop" *ngIf="selectedNpc()" (click)="selectedNpc.set(null)">
+    <div class="modal-card npc-modal-card" (click)="$event.stopPropagation()" *ngIf="selectedNpc() as npc">
+      <header class="modal-head">
+        <div>
+          <div class="modal-badge">{{ npc.location }} • {{ npc.category }}</div>
+          <h2 class="modal-title">{{ npc.first_name }} {{ npc.last_name || '' }}</h2>
+          <div class="modal-sub" *ngIf="npc.alter_ego">Alias: <strong>{{ npc.alter_ego }}</strong></div>
+        </div>
+        <button type="button" class="btn-close" (click)="selectedNpc.set(null)">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <!-- IMMAGINE SE PRESENTE -->
+        <div class="npc-img-box" *ngIf="npc.image_url">
+          <img [src]="npc.image_url" alt="{{ npc.first_name }}" />
+        </div>
+
+        <!-- STATO (MODIFICABILE DAL MASTER) -->
+        <div class="field-group">
+          <label>Stato Attuale</label>
+          <select [(ngModel)]="npc.status">
+            <option value="alive">Attivo / In vita</option>
+            <option value="ally">Alleato del Party</option>
+            <option value="enemy">Nemico / Ostile</option>
+            <option value="prisoner">Prigioniero</option>
+            <option value="cultist">Cultista</option>
+            <option value="dead">Deceduto / Morto</option>
+          </select>
+        </div>
+
+        <!-- DESCRIZIONE -->
+        <div class="field-group">
+          <label>Descrizione / Ruolo</label>
+          <textarea rows="3" [(ngModel)]="npc.description"></textarea>
+        </div>
+
+        <!-- NOTE DI CAMPAGNA & UPDATE -->
+        <div class="field-group">
+          <label>Note Master & Aggiornamenti di Trama (UPDATE)</label>
+          <textarea rows="3" [(ngModel)]="npc.notes" placeholder="es. UPDATE: ha rivelato la posizione del castello..."></textarea>
+        </div>
+      </div>
+
+      <footer class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="selectedNpc.set(null)">Annulla</button>
+        <button type="button" class="btn-submit" [disabled]="isSavingNpc()" (click)="saveNpcChanges()">
+          {{ isSavingNpc() ? 'Salvataggio...' : '💾 Salva su Server' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- MODALE CREAZIONE NUOVO EROE -->
   <div class="modal-backdrop" *ngIf="showCreateModal()" (click)="showCreateModal.set(false)">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <header class="modal-head">
@@ -68,29 +215,17 @@
       <form (ngSubmit)="createNewCharacter()" class="modal-form">
         <div class="field-group">
           <label>Nome del Personaggio *</label>
-          <input type="text" [(ngModel)]="newName" name="charName" placeholder="es. Ameiko, Shalelu, Kenji..." required />
+          <input type="text" [(ngModel)]="newName" name="charName" placeholder="es. Kenji, Shin..." required />
         </div>
-
         <div class="fields-row">
-          <div class="field-group">
-            <label>Classe</label>
-            <input type="text" [(ngModel)]="newClass" name="charClass" placeholder="es. Barda, Ladro, Chierico" required />
-          </div>
-          <div class="field-group">
-            <label>Razza</label>
-            <input type="text" [(ngModel)]="newRace" name="charRace" placeholder="es. Umano, Elfo, Kitsune" required />
-          </div>
+          <div class="field-group"><label>Classe</label><input type="text" [(ngModel)]="newClass" name="charClass" required /></div>
+          <div class="field-group"><label>Razza</label><input type="text" [(ngModel)]="newRace" name="charRace" required /></div>
         </div>
-
-        <div class="field-group">
-          <label>Livello Iniziale</label>
-          <input type="number" [(ngModel)]="newLevel" name="charLevel" min="1" max="20" required />
-        </div>
-
+        <div class="field-group"><label>Livello Iniziale</label><input type="number" [(ngModel)]="newLevel" name="charLevel" min="1" max="20" required /></div>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" (click)="showCreateModal.set(false)">Annulla</button>
           <button type="submit" class="btn-submit" [disabled]="!newName.trim() || isCreating()">
-            {{ isCreating() ? 'Creazione...' : '✨ Inizializza Scheda' }}
+            {{ isCreating() ? 'Creazione...' : '✨ Inizializza' }}
           </button>
         </div>
       </form>

@@ -1,8 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CharacterService, CharacterSummary, CharacterSheetData } from '../../services/character.service';
+import { NpcService } from '../../services/npc.service';
+import { NpcRecord } from '../../models/npc.model';
 
 export interface CharacterEntry {
   slug: string;
@@ -79,11 +81,28 @@ const DEFAULT_HEROES: CharacterEntry[] = [
 })
 export class CharactersListComponent implements OnInit {
   private charService = inject(CharacterService);
+  private npcService = inject(NpcService);
   private router = inject(Router);
 
-  characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
-  loading = signal<boolean>(false);
+  // Switcher principale tra Eroi e PNG
+  activeMainTab = signal<'party' | 'npcs'>('party');
 
+  // Dati Eroi Party
+  characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
+  loadingHeroes = signal<boolean>(false);
+
+  // Dati PNG & Carovana dal server
+  npcs = signal<NpcRecord[]>([]);
+  loadingNpcs = signal<boolean>(false);
+  npcSearch = signal<string>('');
+  selectedLocation = signal<string>('Tutti');
+  selectedStatus = signal<string>('Tutti');
+
+  // Modale Dettaglio / Modifica NPC per il Master
+  selectedNpc = signal<NpcRecord | null>(null);
+  isSavingNpc = signal<boolean>(false);
+
+  // Modale per creare un nuovo Eroe
   showCreateModal = signal<boolean>(false);
   newName = '';
   newClass = 'Guerriero';
@@ -91,92 +110,103 @@ export class CharactersListComponent implements OnInit {
   newLevel = 7;
   isCreating = signal<boolean>(false);
 
+  // Filtro reattivo per gli NPC
+  filteredNpcs = computed(() => {
+    const q = this.npcSearch().toLowerCase().trim();
+    const loc = this.selectedLocation();
+    const st = this.selectedStatus();
+
+    return this.npcs().filter((n) => {
+      // 1. Filtro testo
+      if (q) {
+        const full = `${n.first_name} ${n.last_name || ''} ${n.alter_ego || ''} ${n.description || ''} ${n.notes || ''}`.toLowerCase();
+        if (!full.includes(q)) return false;
+      }
+
+      // 2. Filtro Luogo
+      if (loc !== 'Tutti' && n.location !== loc) {
+        return false;
+      }
+
+      // 3. Filtro Stato
+      if (st !== 'Tutti') {
+        if (st === 'lore') {
+          if (n.category === 'NPC') return false;
+        } else if (n.status !== st) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  });
+
   ngOnInit(): void {
     this.syncCharactersWithDatabase();
+    this.loadNpcsFromServer();
   }
 
-  private getDeletedSlugs(): Set<string> {
-    try {
-      const raw = localStorage.getItem('jade_regent_deleted_slugs');
-      return raw ? new Set(JSON.parse(raw)) : new Set();
-    } catch {
-      return new Set();
-    }
-  }
-
-  private markSlugAsDeleted(slug: string): void {
-    const set = this.getDeletedSlugs();
-    set.add(slug);
-    try {
-      localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(Array.from(set)));
-    } catch {}
-  }
-
-  private unmarkSlugAsDeleted(slug: string): void {
-    const set = this.getDeletedSlugs();
-    set.delete(slug);
-    try {
-      localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(Array.from(set)));
-    } catch {}
-  }
-
+  // --- SINCRONIZZAZIONE EROI ---
   syncCharactersWithDatabase(): void {
-    this.loading.set(true);
-    const deletedSlugs = this.getDeletedSlugs();
-
+    this.loadingHeroes.set(true);
     this.charService.getAllCharacters().subscribe({
       next: (dbCharacters: CharacterSummary[]) => {
-        // Filtra via i personaggi eliminati
-        const list = DEFAULT_HEROES.filter(h => !deletedSlugs.has(h.slug));
-
+        const list = [...DEFAULT_HEROES];
         for (const dbChar of dbCharacters) {
-          if (deletedSlugs.has(dbChar.slug)) continue;
-
           const match = list.find((c) => c.slug === dbChar.slug);
           if (match) {
             match.level = dbChar.level || match.level;
             if (dbChar.class_name) match.className = dbChar.class_name;
             if (dbChar.race) match.race = dbChar.race;
-          } else {
-            list.push({
-              slug: dbChar.slug,
-              name: dbChar.name,
-              className: dbChar.class_name || 'Avventuriero',
-              race: dbChar.race || 'Umano',
-              level: dbChar.level || 7,
-              icon: '🛡️',
-              theme: 'blue',
-              subtitle: 'Eroe della carovana'
-            });
           }
         }
-
         this.characters.set(list);
-        this.loading.set(false);
+        this.loadingHeroes.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loadingHeroes.set(false)
     });
   }
 
-  deleteCharacter(slug: string, name: string, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation(); // Evita l'apertura accidentale del link della scheda
-
-    const msg = `Vuoi davvero eliminare definitivamente la scheda di "${name}"? I dati sul database verranno cancellati.`;
-    if (!confirm(msg)) return;
-
-    this.charService.deleteCharacter(slug).subscribe({
-      next: () => {
-        this.markSlugAsDeleted(slug);
-        this.characters.update(list => list.filter(c => c.slug !== slug));
+  // --- CARICAMENTO NPC DAL SERVER NEON ---
+  loadNpcsFromServer(): void {
+    this.loadingNpcs.set(true);
+    this.npcService.getAllNpcs().subscribe({
+      next: (data) => {
+        this.npcs.set(data || []);
+        this.loadingNpcs.set(false);
       },
-      error: () => {
-        this.markSlugAsDeleted(slug);
-        this.characters.update(list => list.filter(c => c.slug !== slug));
+      error: (err) => {
+        console.error('Errore caricamento NPC:', err);
+        this.loadingNpcs.set(false);
       }
     });
   }
 
+  openNpcDetails(npc: NpcRecord): void {
+    // Clona per non mutare l'elenco prima del salvataggio
+    this.selectedNpc.set(JSON.parse(JSON.stringify(npc)));
+  }
+
+  saveNpcChanges(): void {
+    const current = this.selectedNpc();
+    if (!current) return;
+
+    this.isSavingNpc.set(true);
+    this.npcService.saveNpc(current).subscribe({
+      next: (res) => {
+        // Aggiorna l'elenco in locale con i dati tornati dal server
+        this.npcs.update((list) => list.map((item) => (item.slug === res.npc.slug ? res.npc : item)));
+        this.isSavingNpc.set(false);
+        this.selectedNpc.set(null);
+      },
+      error: (err) => {
+        console.error('Errore salvataggio NPC su Neon:', err);
+        this.isSavingNpc.set(false);
+      }
+    });
+  }
+
+  // --- CREAZIONE EROE ---
   openCreateModal(): void {
     this.newName = '';
     this.newClass = 'Guerriero';
@@ -188,10 +218,8 @@ export class CharactersListComponent implements OnInit {
   createNewCharacter(): void {
     const name = this.newName.trim();
     if (!name) return;
-
     const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     this.isCreating.set(true);
-    this.unmarkSlugAsDeleted(slug);
 
     const initialData: CharacterSheetData = {
       character: {
@@ -222,9 +250,7 @@ export class CharactersListComponent implements OnInit {
         challenge_current: 0,
         weapons: [],
         feats: [],
-        special_resources: [],
-        skills: [],
-        notes: ''
+        skills: []
       }
     };
 
