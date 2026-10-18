@@ -84,25 +84,20 @@ export class CharactersListComponent implements OnInit {
   private npcService = inject(NpcService);
   private router = inject(Router);
 
-  // Switcher principale tra Eroi e PNG
   activeMainTab = signal<'party' | 'npcs'>('party');
 
-  // Dati Eroi Party
   characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
   loadingHeroes = signal<boolean>(false);
 
-  // Dati PNG & Carovana dal server
   npcs = signal<NpcRecord[]>([]);
   loadingNpcs = signal<boolean>(false);
   npcSearch = signal<string>('');
   selectedLocation = signal<string>('Tutti');
   selectedStatus = signal<string>('Tutti');
 
-  // Modale Dettaglio / Modifica NPC per il Master
   selectedNpc = signal<NpcRecord | null>(null);
   isSavingNpc = signal<boolean>(false);
 
-  // Modale per creare un nuovo Eroe
   showCreateModal = signal<boolean>(false);
   newName = '';
   newClass = 'Guerriero';
@@ -110,25 +105,17 @@ export class CharactersListComponent implements OnInit {
   newLevel = 7;
   isCreating = signal<boolean>(false);
 
-  // Filtro reattivo per gli NPC
   filteredNpcs = computed(() => {
     const q = this.npcSearch().toLowerCase().trim();
     const loc = this.selectedLocation();
     const st = this.selectedStatus();
 
     return this.npcs().filter((n) => {
-      // 1. Filtro testo
       if (q) {
         const full = `${n.first_name} ${n.last_name || ''} ${n.alter_ego || ''} ${n.description || ''} ${n.notes || ''}`.toLowerCase();
         if (!full.includes(q)) return false;
       }
-
-      // 2. Filtro Luogo
-      if (loc !== 'Tutti' && n.location !== loc) {
-        return false;
-      }
-
-      // 3. Filtro Stato
+      if (loc !== 'Tutti' && n.location !== loc) return false;
       if (st !== 'Tutti') {
         if (st === 'lore') {
           if (n.category === 'NPC') return false;
@@ -136,7 +123,6 @@ export class CharactersListComponent implements OnInit {
           return false;
         }
       }
-
       return true;
     });
   });
@@ -146,7 +132,70 @@ export class CharactersListComponent implements OnInit {
     this.loadNpcsFromServer();
   }
 
-  // --- SINCRONIZZAZIONE EROI ---
+  // --- TRASFORMA LINK DRIVE O NORMALI IN URL DIRETTO IMMAGINE ---
+  formatImageUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('data:image/')) return url; // È già un file caricato in Base64
+
+    // Riconosce e trasforma i link di Google Drive (es. /file/d/ID/view o id=ID)
+    const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (driveMatch && driveMatch[1]) {
+      return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+    }
+    return url;
+  }
+
+  // --- CARICAMENTO FILE DAL PC CON RIDIMENSIONAMENTO AUTOMATICO ---
+  onImageFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Ridimensionamento a max 800px per ottimizzare lo spazio su database
+        const maxDim = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Converte in JPEG ottimizzato
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+        const current = this.selectedNpc();
+        if (current) {
+          current.image_url = compressedBase64;
+          this.selectedNpc.set({ ...current });
+        }
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeNpcImage(): void {
+    const current = this.selectedNpc();
+    if (current) {
+      current.image_url = null;
+      this.selectedNpc.set({ ...current });
+    }
+  }
+
   syncCharactersWithDatabase(): void {
     this.loadingHeroes.set(true);
     this.charService.getAllCharacters().subscribe({
@@ -167,7 +216,6 @@ export class CharactersListComponent implements OnInit {
     });
   }
 
-  // --- CARICAMENTO NPC DAL SERVER NEON ---
   loadNpcsFromServer(): void {
     this.loadingNpcs.set(true);
     this.npcService.getAllNpcs().subscribe({
@@ -175,15 +223,11 @@ export class CharactersListComponent implements OnInit {
         this.npcs.set(data || []);
         this.loadingNpcs.set(false);
       },
-      error: (err) => {
-        console.error('Errore caricamento NPC:', err);
-        this.loadingNpcs.set(false);
-      }
+      error: () => this.loadingNpcs.set(false)
     });
   }
 
   openNpcDetails(npc: NpcRecord): void {
-    // Clona per non mutare l'elenco prima del salvataggio
     this.selectedNpc.set(JSON.parse(JSON.stringify(npc)));
   }
 
@@ -194,19 +238,17 @@ export class CharactersListComponent implements OnInit {
     this.isSavingNpc.set(true);
     this.npcService.saveNpc(current).subscribe({
       next: (res) => {
-        // Aggiorna l'elenco in locale con i dati tornati dal server
         this.npcs.update((list) => list.map((item) => (item.slug === res.npc.slug ? res.npc : item)));
         this.isSavingNpc.set(false);
         this.selectedNpc.set(null);
       },
       error: (err) => {
-        console.error('Errore salvataggio NPC su Neon:', err);
+        console.error('Errore salvataggio NPC:', err);
         this.isSavingNpc.set(false);
       }
     });
   }
 
-  // --- CREAZIONE EROE ---
   openCreateModal(): void {
     this.newName = '';
     this.newClass = 'Guerriero';

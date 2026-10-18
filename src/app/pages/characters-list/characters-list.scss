@@ -599,3 +599,105 @@ $text-muted: #94a3b8;
   color: $text-muted;
   font-size: 0.9rem;
 }
+
+/* RITRATTO SULLA CARD PNG */
+.npc-card-body-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: flex-start;
+
+  .npc-thumb-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba($gold, 0.4);
+    background: #060a14;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+/* SEZIONE RITRATTO NELLA MODALE */
+.npc-portrait-section {
+  background: #080d18;
+  border: 1px dashed #22324f;
+  border-radius: 12px;
+  padding: 0.85rem;
+  margin-bottom: 0.95rem;
+
+  .npc-img-box {
+    position: relative;
+    text-align: center;
+    margin-bottom: 0.65rem;
+
+    img {
+      max-height: 220px;
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid #2d4268;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn-remove-img {
+      display: block;
+      margin: 6px auto 0;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &:hover { background: #ef4444; color: #fff; }
+    }
+  }
+
+  .npc-no-img {
+    text-align: center;
+    padding: 1.25rem 0.5rem;
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+
+  .upload-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 0.4rem;
+
+    .btn-upload-file {
+      display: inline-flex;
+      align-items: center;
+      background: rgba($gold, 0.18);
+      border: 1px solid $gold;
+      color: #fef08a;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: $gold;
+        color: #000;
+      }
+    }
+
+    .upload-or {
+      font-size: 0.74rem;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+  }
+}

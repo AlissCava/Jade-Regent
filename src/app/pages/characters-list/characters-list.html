@@ -17,9 +17,7 @@
     </button>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- SEZIONE 1: GLI EROI DEL PARTY (RYOUJIN, AIRYN, AZOI...)    -->
-  <!-- ========================================================= -->
+  <!-- SEZIONE 1: EROI PARTY -->
   <ng-container *ngIf="activeMainTab() === 'party'">
     <header class="characters-header">
       <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
@@ -60,9 +58,7 @@
     </div>
   </ng-container>
 
-  <!-- ========================================================= -->
-  <!-- SEZIONE 2: COMPENDIO PNG, CAROVANA & LORE (DAL SERVER)    -->
-  <!-- ========================================================= -->
+  <!-- SEZIONE 2: PNG & CAROVANA (CON RITRATTI) -->
   <ng-container *ngIf="activeMainTab() === 'npcs'">
     <header class="characters-header">
       <div class="campaign-pill">Database Server Neon</div>
@@ -70,7 +66,7 @@
       <p class="subtitle">Tutti gli alleati, nemici, contatti e luoghi incontrati durante il viaggio.</p>
     </header>
 
-    <!-- BARRA DI RICERCA & FILTRI RAPIDI -->
+    <!-- BARRA DI RICERCA & FILTRI -->
     <div class="npc-filter-panel">
       <div class="search-wrap">
         <span class="s-icon">🔍</span>
@@ -82,7 +78,6 @@
         <button *ngIf="npcSearch()" class="btn-clear" (click)="npcSearch.set('')">✕</button>
       </div>
 
-      <!-- CHIP FILTRO LUOGHI -->
       <div class="chips-scroll-bar">
         <span class="chip-lbl">LUOGO:</span>
         <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Tutti'" (click)="selectedLocation.set('Tutti')">Tutti</button>
@@ -94,7 +89,6 @@
         <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Minkai'" (click)="selectedLocation.set('Minkai')">Minkai</button>
       </div>
 
-      <!-- CHIP FILTRO STATO -->
       <div class="chips-scroll-bar">
         <span class="chip-lbl">STATO:</span>
         <button type="button" class="f-chip" [class.active]="selectedStatus() === 'Tutti'" (click)="selectedStatus.set('Tutti')">Tutti</button>
@@ -118,24 +112,27 @@
         class="module-card npc-card" 
         (click)="openNpcDetails(npc)">
 
-        <!-- HEADER CARD CON BADGE STATO & LUOGO -->
         <div class="npc-card-top">
           <span class="loc-pill">{{ npc.location }}</span>
-          
           <span class="status-badge" [ngClass]="npc.status">
             {{ npc.status === 'ally' ? 'Alleato' : (npc.status === 'dead' ? 'Deceduto' : (npc.status === 'prisoner' ? 'Prigioniero' : (npc.status === 'enemy' ? 'Nemico' : 'Attivo'))) }}
           </span>
         </div>
 
-        <div class="card-content">
-          <div class="card-tag" *ngIf="npc.alter_ego">Alter Ego: <strong>{{ npc.alter_ego }}</strong></div>
-          <h2 class="card-title">
-            {{ npc.first_name }} {{ npc.last_name || '' }}
-          </h2>
-          <div class="card-category">{{ npc.category }}</div>
-          <p class="card-desc">{{ npc.description }}</p>
-          <div class="npc-notes-preview" *ngIf="npc.notes">
-            <em>📌 {{ npc.notes }}</em>
+        <div class="npc-card-body-row">
+          <!-- RITRATTO MINIATURA SE PRESENTE (ES. RYUKO O FILE CARICATO) -->
+          <div class="npc-thumb-avatar" *ngIf="npc.image_url">
+            <img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" loading="lazy" />
+          </div>
+
+          <div class="card-content">
+            <div class="card-tag" *ngIf="npc.alter_ego">Alias: <strong>{{ npc.alter_ego }}</strong></div>
+            <h2 class="card-title">{{ npc.first_name }} {{ npc.last_name || '' }}</h2>
+            <div class="card-category">{{ npc.category }}</div>
+            <p class="card-desc">{{ npc.description }}</p>
+            <div class="npc-notes-preview" *ngIf="npc.notes">
+              <em>📌 {{ npc.notes }}</em>
+            </div>
           </div>
         </div>
 
@@ -148,9 +145,7 @@
     </div>
   </ng-container>
 
-  <!-- ========================================================= -->
-  <!-- MODALE DETTAGLI & MODIFICHE NPC PER IL MASTER              -->
-  <!-- ========================================================= -->
+  <!-- MODALE DETTAGLI & CARICAMENTO IMMAGINE PER IL MASTER -->
   <div class="modal-backdrop" *ngIf="selectedNpc()" (click)="selectedNpc.set(null)">
     <div class="modal-card npc-modal-card" (click)="$event.stopPropagation()" *ngIf="selectedNpc() as npc">
       <header class="modal-head">
@@ -163,12 +158,35 @@
       </header>
 
       <div class="modal-body">
-        <!-- IMMAGINE SE PRESENTE -->
-        <div class="npc-img-box" *ngIf="npc.image_url">
-          <img [src]="npc.image_url" alt="{{ npc.first_name }}" />
+        <!-- ANTEPRIMA IMMAGINE -->
+        <div class="npc-portrait-section">
+          <div class="npc-img-box" *ngIf="npc.image_url">
+            <img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" />
+            <button type="button" class="btn-remove-img" (click)="removeNpcImage()" title="Rimuovi immagine">🗑️ Rimuovi</button>
+          </div>
+          <div class="npc-no-img" *ngIf="!npc.image_url">
+            <span>🖼️ Nessun ritratto caricato</span>
+          </div>
+
+          <!-- BOTTONE CARICA FILE DA PC & INPUT URL -->
+          <div class="upload-controls-row">
+            <label class="btn-upload-file">
+              📁 Carica Immagine da File
+              <input type="file" accept="image/*" (change)="onImageFileSelected($event)" hidden />
+            </label>
+            <span class="upload-or">oppure</span>
+          </div>
+
+          <div class="field-group" style="margin-top: 6px;">
+            <label>Link URL Diretto o Google Drive</label>
+            <input 
+              type="text" 
+              [(ngModel)]="npc.image_url" 
+              placeholder="es. https://drive.google.com/file/d/.../view" />
+          </div>
         </div>
 
-        <!-- STATO (MODIFICABILE DAL MASTER) -->
+        <!-- STATO -->
         <div class="field-group">
           <label>Stato Attuale</label>
           <select [(ngModel)]="npc.status">
@@ -187,10 +205,10 @@
           <textarea rows="3" [(ngModel)]="npc.description"></textarea>
         </div>
 
-        <!-- NOTE DI CAMPAGNA & UPDATE -->
+        <!-- NOTE MASTER -->
         <div class="field-group">
           <label>Note Master & Aggiornamenti di Trama (UPDATE)</label>
-          <textarea rows="3" [(ngModel)]="npc.notes" placeholder="es. UPDATE: ha rivelato la posizione del castello..."></textarea>
+          <textarea rows="3" [(ngModel)]="npc.notes" placeholder="es. UPDATE: ha stretto un patto diplomatico con Ryoujin..."></textarea>
         </div>
       </div>
 
@@ -203,7 +221,7 @@
     </div>
   </div>
 
-  <!-- MODALE CREAZIONE NUOVO EROE -->
+  <!-- MODALE CREA EROE -->
   <div class="modal-backdrop" *ngIf="showCreateModal()" (click)="showCreateModal.set(false)">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <header class="modal-head">
