@@ -711,3 +711,258 @@ $text-muted: #94a3b8;
   color: $text-muted;
   font-size: 0.9rem;
 }
+
+/* BADGE ROSSO MASTER E BOTTONE BESTIARIO */
+.red-pill {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
+.bestiary-btn.active {
+  background: rgba(239, 68, 68, 0.22) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35) !important;
+}
+
+.bestiary-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: #090e1a;
+  border: 1px solid #1c2b44;
+  border-radius: 14px;
+  padding: 0.85rem;
+  margin-bottom: 1.25rem;
+
+  .bestiary-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .btn-create-monster {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(245, 158, 11, 0.3));
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 8px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      &:hover { background: #ef4444; color: #fff; }
+    }
+
+    .backup-btns-group {
+      display: flex;
+      gap: 0.4rem;
+
+      .btn-tool {
+        background: #0d1527;
+        border: 1px solid #283958;
+        color: #cbd5e1;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        &:hover { border-color: $gold; color: #fff; }
+      }
+    }
+  }
+}
+
+/* CARDS MOSTRI */
+.enemy-card {
+  border-color: rgba(239, 68, 68, 0.35) !important;
+
+  &:hover {
+    border-color: #ef4444 !important;
+    background: #141726 !important;
+  }
+
+  .enemy-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 6px;
+
+    .cr-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .enemy-xp {
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+  }
+
+  .enemy-quick-stats {
+    display: flex;
+    gap: 0.65rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 4px 0;
+  }
+
+  .enemy-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 6px;
+    border-top: 1px solid #1a283f;
+
+    .btn-download-pdf {
+      background: rgba($gold, 0.15);
+      border: 1px solid rgba($gold, 0.4);
+      color: #fde68a;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      &:hover { background: $gold; color: #000; }
+    }
+
+    .edit-hint {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+  }
+}
+
+/* MODALE BESTIARIO */
+.bestiary-editor-card {
+  max-width: 620px !important;
+
+  .red-badge {
+    color: #fca5a5 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  .editor-tabs-bar {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.5rem 0 0.4rem;
+    border-bottom: 1px solid #1c2a44;
+    flex-shrink: 0;
+
+    .ed-tab {
+      flex: 0 0 auto;
+      padding: 0.35rem 0.65rem;
+      background: #0d1527;
+      border: 1px solid #233452;
+      color: #94a3b8;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 7px;
+      cursor: pointer;
+
+      &.active {
+        background: rgba(239, 68, 68, 0.22);
+        border-color: #ef4444;
+        color: #fca5a5;
+      }
+
+      &.preview-tab.active {
+        background: rgba($gold, 0.22);
+        border-color: $gold;
+        color: #fef08a;
+      }
+    }
+  }
+
+  .ed-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+
+    .sub-sec-lbl {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: $gold;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 2px;
+    }
+  }
+
+  .fields-row-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .fields-row-6 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.35rem;
+  }
+
+  .btn-download-pdf-modal {
+    background: rgba($gold, 0.18);
+    border: 1px solid $gold;
+    color: #fef08a;
+    font-size: 0.88rem;
+    font-weight: 800;
+    padding: 0 1rem;
+    height: 42px;
+    border-radius: 9px;
+    cursor: pointer;
+    margin-right: auto;
+    &:hover { background: $gold; color: #000; }
+  }
+}
+
+/* ANTEPRIMA STATBLOCK PAIZO ESATTA */
+.paizo-statblock-preview {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+
+  .sb-head-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 2px;
+  }
+
+  .sb-italic { font-style: italic; margin-bottom: 2px; }
+
+  .sb-sec-bar {
+    background: #1c2438;
+    color: #f59e0b;
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    padding: 2px 6px;
+    margin: 6px 0 4px;
+    border-radius: 2px;
+  }
+
+  strong { font-weight: 800; }
+}

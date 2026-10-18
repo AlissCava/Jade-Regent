@@ -30,20 +30,25 @@
               },
               "src/manifest.webmanifest"
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["src/styles.scss"],
+            "allowedCommonJsDependencies": [
+              "pdfmake",
+              "pdfmake/build/pdfmake",
+              "pdfmake/build/vfs_fonts"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
               {
                 "type": "initial",
-                "maximumWarning": "1MB",
-                "maximumError": "2MB"
+                "maximumWarning": "3MB",
+                "maximumError": "5MB"
               },
               {
                 "type": "anyComponentStyle",
-                "maximumWarning": "20kB",
-                "maximumError": "70kB"
+                "maximumWarning": "60kB",
+                "maximumError": "120kB"
               }
             ],
               "outputHashing": "all"

@@ -1,5 +1,5 @@
 <div class="characters-container">
-  <!-- SWITCHER DI VISTA IN TESTA -->
+  <!-- SWITCHER A 3 SCHEDE -->
   <div class="main-tab-switcher" role="tablist">
     <button 
       type="button" 
@@ -15,6 +15,13 @@
       (click)="activeMainTab.set('npcs')">
       📜 PNG & Carovana ({{ npcs().length }})
     </button>
+    <button 
+      type="button" 
+      class="tab-toggle-btn bestiary-btn" 
+      [class.active]="activeMainTab() === 'bestiary'" 
+      (click)="activeMainTab.set('bestiary')">
+      👹 Bestiario del Master ({{ enemies().length }})
+    </button>
   </div>
 
   <!-- SEZIONE 1: EROI PARTY -->
@@ -26,25 +33,17 @@
     </header>
 
     <div class="modules-grid">
-      <a 
-        *ngFor="let hero of characters()" 
-        [routerLink]="['/characters', hero.slug]" 
-        class="module-card">
-        <div class="card-icon-wrap" [ngClass]="hero.theme">
-          <span class="icon">{{ hero.icon }}</span>
-        </div>
+      <a *ngFor="let hero of characters()" [routerLink]="['/characters', hero.slug]" class="module-card">
+        <div class="card-icon-wrap" [ngClass]="hero.theme"><span class="icon">{{ hero.icon }}</span></div>
         <div class="card-content">
           <div class="card-tag">Livello {{ hero.level }} • {{ hero.race }}</div>
-          <h2 class="card-title">
-            {{ hero.name }} <span class="kanji" *ngIf="hero.kanji">({{ hero.kanji }})</span>
-          </h2>
+          <h2 class="card-title">{{ hero.name }} <span class="kanji" *ngIf="hero.kanji">({{ hero.kanji }})</span></h2>
           <div class="card-class">{{ hero.className }}</div>
           <p class="card-desc">{{ hero.subtitle }}</p>
         </div>
         <div class="card-action-hint">Apri Scheda ➔</div>
       </a>
 
-      <!-- CARD SPECIALE: + AGGIUNGI NUOVO EROE -->
       <button type="button" class="module-card add-hero-card" (click)="openCreateModal()">
         <div class="card-icon-wrap gold-wrap"><span class="icon">➕</span></div>
         <div class="card-content">
@@ -58,7 +57,7 @@
     </div>
   </ng-container>
 
-  <!-- SEZIONE 2: PNG & CAROVANA (CON RITRATTI) -->
+  <!-- SEZIONE 2: PNG & CAROVANA -->
   <ng-container *ngIf="activeMainTab() === 'npcs'">
     <header class="characters-header">
       <div class="campaign-pill">Database Server Neon</div>
@@ -66,15 +65,10 @@
       <p class="subtitle">Tutti gli alleati, nemici, contatti e luoghi incontrati durante il viaggio.</p>
     </header>
 
-    <!-- BARRA DI RICERCA & FILTRI -->
     <div class="npc-filter-panel">
       <div class="search-wrap">
         <span class="s-icon">🔍</span>
-        <input 
-          type="search" 
-          [ngModel]="npcSearch()" 
-          (ngModelChange)="npcSearch.set($event)" 
-          placeholder="Cerca PNG per nome, alter ego, luogo o note di trama..." />
+        <input type="search" [ngModel]="npcSearch()" (ngModelChange)="npcSearch.set($event)" placeholder="Cerca PNG per nome, alter ego, luogo o note di trama..." />
         <button *ngIf="npcSearch()" class="btn-clear" (click)="npcSearch.set('')">✕</button>
       </div>
 
@@ -99,53 +93,297 @@
       </div>
     </div>
 
-    <!-- STATO CARICAMENTO -->
-    <div *ngIf="loadingNpcs()" class="loading-state">
-      <div class="spinner"></div>
-      <span>Caricamento registro PNG dal server...</span>
-    </div>
+    <div *ngIf="loadingNpcs()" class="loading-state"><div class="spinner"></div><span>Caricamento registro PNG...</span></div>
 
-    <!-- GRIGLIA CARDS PNG -->
     <div class="modules-grid" *ngIf="!loadingNpcs()">
-      <div 
-        *ngFor="let npc of filteredNpcs()" 
-        class="module-card npc-card" 
-        (click)="openNpcDetails(npc)">
-
+      <div *ngFor="let npc of filteredNpcs()" class="module-card npc-card" (click)="openNpcDetails(npc)">
         <div class="npc-card-top">
           <span class="loc-pill">{{ npc.location }}</span>
-          <span class="status-badge" [ngClass]="npc.status">
-            {{ npc.status === 'ally' ? 'Alleato' : (npc.status === 'dead' ? 'Deceduto' : (npc.status === 'prisoner' ? 'Prigioniero' : (npc.status === 'enemy' ? 'Nemico' : 'Attivo'))) }}
-          </span>
+          <span class="status-badge" [ngClass]="npc.status">{{ npc.status }}</span>
         </div>
-
         <div class="npc-card-body-row">
-          <!-- RITRATTO MINIATURA SE PRESENTE (ES. RYUKO O FILE CARICATO) -->
-          <div class="npc-thumb-avatar" *ngIf="npc.image_url">
-            <img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" loading="lazy" />
-          </div>
-
+          <div class="npc-thumb-avatar" *ngIf="npc.image_url"><img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" loading="lazy" /></div>
           <div class="card-content">
             <div class="card-tag" *ngIf="npc.alter_ego">Alias: <strong>{{ npc.alter_ego }}</strong></div>
             <h2 class="card-title">{{ npc.first_name }} {{ npc.last_name || '' }}</h2>
             <div class="card-category">{{ npc.category }}</div>
             <p class="card-desc">{{ npc.description }}</p>
-            <div class="npc-notes-preview" *ngIf="npc.notes">
-              <em>📌 {{ npc.notes }}</em>
-            </div>
+            <div class="npc-notes-preview" *ngIf="npc.notes"><em>📌 {{ npc.notes }}</em></div>
           </div>
         </div>
-
         <div class="card-action-hint">Dettagli / Modifica ➔</div>
-      </div>
-
-      <div *ngIf="filteredNpcs().length === 0" class="empty-hint">
-        Nessun PNG o luogo trovato per i filtri selezionati.
       </div>
     </div>
   </ng-container>
 
-  <!-- MODALE DETTAGLI & CARICAMENTO IMMAGINE PER IL MASTER -->
+  <!-- ========================================================= -->
+  <!-- SEZIONE 3: BESTIARIO DEL MASTER (LOCALE & EXPORT PDF)     -->
+  <!-- ========================================================= -->
+  <ng-container *ngIf="activeMainTab() === 'bestiary'">
+    <header class="characters-header">
+      <div class="campaign-pill red-pill">Master Only • Zero Spoilers</div>
+      <h1 class="main-title">👹 Bestiario del Master</h1>
+      <p class="subtitle">Statblock completi salvati in locale nel tuo browser. Scarica in un click i PDF per le tue sessioni.</p>
+    </header>
+
+    <!-- BARRA STRUMENTI BESTIARIO -->
+    <div class="bestiary-toolbar">
+      <div class="search-wrap">
+        <span class="s-icon">🔍</span>
+        <input type="search" [ngModel]="enemySearch()" (ngModelChange)="enemySearch.set($event)" placeholder="Cerca mostro per nome, CR, razza o classe..." />
+      </div>
+
+      <div class="bestiary-actions-row">
+        <button type="button" class="btn-create-monster" (click)="openNewEnemyModal()">
+          ➕ Crea Mostro / Boss
+        </button>
+
+        <div class="backup-btns-group">
+          <button type="button" class="btn-tool" (click)="exportBackupBestiary()" title="Esporta file di backup JSON">
+            💾 Esporta
+          </button>
+          <label class="btn-tool" title="Importa file di backup JSON">
+            📥 Importa
+            <input type="file" accept=".json" (change)="onImportBestiaryFile($event)" hidden />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRIGLIA MOSTRI -->
+    <div class="modules-grid">
+      <div *ngFor="let enemy of filteredEnemies()" class="module-card enemy-card" (click)="editEnemy(enemy)">
+        <button type="button" class="btn-delete-card" (click)="deleteEnemy(enemy.id, enemy.name, $event)" title="Elimina dal bestiario">🗑️</button>
+        
+        <div class="enemy-card-top">
+          <span class="cr-badge">CR {{ enemy.cr || '?' }}</span>
+          <span class="enemy-xp" *ngIf="enemy.xp">{{ enemy.xp }} XP</span>
+        </div>
+
+        <div class="card-content">
+          <h2 class="card-title">{{ enemy.name }}</h2>
+          <div class="card-class">{{ enemy.title_line }}</div>
+          <div class="enemy-quick-stats">
+            <span>❤️ {{ enemy.hp }}</span>
+            <span>🛡️ CA {{ enemy.ac?.split(',')[0] || '10' }}</span>
+          </div>
+          <p class="card-desc" *ngIf="enemy.melee">⚔️ {{ enemy.melee }}</p>
+        </div>
+
+        <div class="enemy-card-actions">
+          <button type="button" class="btn-download-pdf" (click)="downloadPdf(enemy, $event)">
+            📄 Scarica PDF
+          </button>
+          <span class="edit-hint">Modifica ➔</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========================================================= -->
+  <!-- MODALE EDITOR BESTIARIO CON ANTEPRIMA LIVE STATBLOCK      -->
+  <!-- ========================================================= -->
+  <div class="modal-backdrop" *ngIf="selectedEnemy()" (click)="selectedEnemy.set(null)">
+    <div class="modal-card bestiary-editor-card" (click)="$event.stopPropagation()" *ngIf="selectedEnemy() as en">
+      
+      <!-- INTESTAZIONE MODALE -->
+      <header class="modal-head">
+        <div>
+          <div class="modal-badge red-badge">STATBLOCK PATHFINDER 1E</div>
+          <h2 class="modal-title">{{ en.name || 'Nuovo Mostro' }} (CR {{ en.cr || '?' }})</h2>
+        </div>
+        <button type="button" class="btn-close" (click)="selectedEnemy.set(null)">✕</button>
+      </header>
+
+      <!-- BARRA SCHEDE EDITOR -->
+      <div class="editor-tabs-bar" role="tablist">
+        <button type="button" class="ed-tab" [class.active]="editorTab() === 'general'" (click)="editorTab.set('general')">1. Info</button>
+        <button type="button" class="ed-tab" [class.active]="editorTab() === 'defense'" (click)="editorTab.set('defense')">2. Difesa</button>
+        <button type="button" class="ed-tab" [class.active]="editorTab() === 'offense'" (click)="editorTab.set('offense')">3. Attacco</button>
+        <button type="button" class="ed-tab" [class.active]="editorTab() === 'tactics'" (click)="editorTab.set('tactics')">4. Tattica</button>
+        <button type="button" class="ed-tab" [class.active]="editorTab() === 'stats'" (click)="editorTab.set('stats')">5. Stat</button>
+        <button type="button" class="ed-tab" [class.active]="editorTab() === 'abilities'" (click)="editorTab.set('abilities')">6. Doti ({{ en.special_abilities?.length || 0 }})</button>
+        <button type="button" class="ed-tab preview-tab" [class.active]="editorTab() === 'preview'" (click)="editorTab.set('preview')">👁️ Anteprima</button>
+      </div>
+
+      <!-- CORPO FORM -->
+      <div class="modal-body">
+        
+        <!-- 1. GENERAL -->
+        <div *ngIf="editorTab() === 'general'" class="ed-section">
+          <div class="fields-row">
+            <div class="field-group"><label>Nome Creatura *</label><input type="text" [(ngModel)]="en.name" /></div>
+            <div class="field-group"><label>CR (Grado di Sfida)</label><input type="text" [(ngModel)]="en.cr" /></div>
+          </div>
+          <div class="fields-row">
+            <div class="field-group"><label>Sottotitolo / Ruolo</label><input type="text" [(ngModel)]="en.title_line" placeholder="es. human werewolf Rogue 3" /></div>
+            <div class="field-group"><label>XP</label><input type="text" [(ngModel)]="en.xp" placeholder="es. 1200" /></div>
+          </div>
+          <div class="field-group"><label>Sesso, Razza e Classe</label><input type="text" [(ngModel)]="en.gender_race_class" placeholder="es. Female human werewolf rogue 3" /></div>
+          <div class="field-group"><label>Allineamento, Taglia e Tipo</label><input type="text" [(ngModel)]="en.alignment_size_type" placeholder="es. CE Medium humanoid (human, shapechanger)" /></div>
+          <div class="fields-row">
+            <div class="field-group"><label>Iniziativa</label><input type="text" [(ngModel)]="en.init" placeholder="+8" /></div>
+            <div class="field-group"><label>Percezione</label><input type="text" [(ngModel)]="en.perception" placeholder="+9" /></div>
+          </div>
+          <div class="field-group"><label>Sensi</label><input type="text" [(ngModel)]="en.senses" placeholder="es. darkvision 60 ft., scent" /></div>
+        </div>
+
+        <!-- 2. DEFENSE -->
+        <div *ngIf="editorTab() === 'defense'" class="ed-section">
+          <div class="field-group"><label>Punti Ferita (hp)</label><input type="text" [(ngModel)]="en.hp" placeholder="es. 43 (4d8+15 and 2d6+6) (RUN AT < 10 hp)" /></div>
+          <div class="field-group"><label>Classe Armatura (AC)</label><input type="text" [(ngModel)]="en.ac" placeholder="es. 19, touch 14, flat-footed 15 (+4 Dex, +5 natural)" /></div>
+          <div class="fields-row-3">
+            <div class="field-group"><label>Tempra</label><input type="text" [(ngModel)]="en.fort" placeholder="+7" /></div>
+            <div class="field-group"><label>Riflessi</label><input type="text" [(ngModel)]="en.ref" placeholder="+10" /></div>
+            <div class="field-group"><label>Volontà</label><input type="text" [(ngModel)]="en.will" placeholder="+4" /></div>
+          </div>
+          <div class="field-group"><label>Capacità Difensive</label><input type="text" [(ngModel)]="en.defensive_abilities" placeholder="es. evasion" /></div>
+          <div class="fields-row">
+            <div class="field-group"><label>Riduzione Danno (DR)</label><input type="text" [(ngModel)]="en.dr" placeholder="es. 5/argento, 10/cold iron" /></div>
+            <div class="field-group"><label>Resistenze</label><input type="text" [(ngModel)]="en.resist" placeholder="es. cold 10, fire 10" /></div>
+          </div>
+          <div class="fields-row">
+            <div class="field-group"><label>Immunità</label><input type="text" [(ngModel)]="en.immune" placeholder="es. sleep, paralysis, undead traits" /></div>
+            <div class="field-group"><label>Resistenza Incantesimi (SR)</label><input type="text" [(ngModel)]="en.sr" placeholder="es. 16" /></div>
+          </div>
+        </div>
+
+        <!-- 3. OFFENSE -->
+        <div *ngIf="editorTab() === 'offense'" class="ed-section">
+          <div class="fields-row">
+            <div class="field-group"><label>Velocità (Spd)</label><input type="text" [(ngModel)]="en.speed" placeholder="30 ft. (9 m)" /></div>
+            <div class="field-group"><label>Spazio / Portata</label><input type="text" [(ngModel)]="en.space_reach" placeholder="5 ft.; Reach 5 ft." /></div>
+          </div>
+          <div class="field-group"><label>Mischia (Melee)</label><input type="text" [(ngModel)]="en.melee" placeholder="es. 2 claws +7 (1d6+4) and bite +9 (1d8+4)" /></div>
+          <div class="field-group"><label>Distanza (Ranged)</label><input type="text" [(ngModel)]="en.ranged" placeholder="es. Composite Longbow +1 +15/+10 (1d8+6)" /></div>
+          <div class="field-group"><label>Attacchi Speciali</label><input type="text" [(ngModel)]="en.special_attacks" placeholder="es. sneak attack +2d6, death gaze" /></div>
+          <div class="field-group"><label>Incantesimi Preparati (Spells Prepared)</label><textarea rows="3" [(ngModel)]="en.spells_prepared" placeholder="es. 3rd-lightning bolt (DC 18)..."></textarea></div>
+          <div class="field-group"><label>Incantesimi Conosciuti (Spells Known)</label><textarea rows="3" [(ngModel)]="en.spells_known" placeholder="es. 2nd (4/day)-bull's strength..."></textarea></div>
+        </div>
+
+        <!-- 4. TACTICS -->
+        <div *ngIf="editorTab() === 'tactics'" class="ed-section">
+          <div class="field-group"><label>Prima del Combattimento (Before Combat)</label><textarea rows="2" [(ngModel)]="en.before_combat" placeholder="Buff già attivi, posizionamento..."></textarea></div>
+          <div class="field-group"><label>Durante il Combattimento (During Combat)</label><textarea rows="3" [(ngModel)]="en.during_combat" placeholder="Priorità di bersagli, manovre..."></textarea></div>
+          <div class="field-group"><label>Morale</label><input type="text" [(ngModel)]="en.morale" placeholder="es. Fugge a < 10 hp, Fino alla morte..." /></div>
+          <div class="field-group"><label>Statistiche Base (Senza Buff)</label><input type="text" [(ngModel)]="en.base_statistics" placeholder="es. AC 16, Str 16..." /></div>
+        </div>
+
+        <!-- 5. STATISTICS -->
+        <div *ngIf="editorTab() === 'stats'" class="ed-section">
+          <label class="sub-sec-lbl">Punteggi di Caratteristica</label>
+          <div class="fields-row-6">
+            <div class="field-group"><label>FOR</label><input type="text" [(ngModel)]="en.abilities.str" /></div>
+            <div class="field-group"><label>DES</label><input type="text" [(ngModel)]="en.abilities.dex" /></div>
+            <div class="field-group"><label>COS</label><input type="text" [(ngModel)]="en.abilities.con" /></div>
+            <div class="field-group"><label>INT</label><input type="text" [(ngModel)]="en.abilities.int" /></div>
+            <div class="field-group"><label>SAG</label><input type="text" [(ngModel)]="en.abilities.wis" /></div>
+            <div class="field-group"><label>CAR</label><input type="text" [(ngModel)]="en.abilities.cha" /></div>
+          </div>
+          <div class="fields-row-3" style="margin-top: 8px;">
+            <div class="field-group"><label>Base Atk</label><input type="text" [(ngModel)]="en.bab" placeholder="+5" /></div>
+            <div class="field-group"><label>CMB</label><input type="text" [(ngModel)]="en.cmb" placeholder="+8" /></div>
+            <div class="field-group"><label>CMD</label><input type="text" [(ngModel)]="en.cmd" placeholder="20" /></div>
+          </div>
+          <div class="field-group"><label>Talenti (Feats)</label><input type="text" [(ngModel)]="en.feats" placeholder="Iron Will, Power Attack..." /></div>
+          <div class="field-group"><label>Abilità (Skills)</label><textarea rows="2" [(ngModel)]="en.skills" placeholder="Perception +10, Stealth +12..."></textarea></div>
+          <div class="field-group"><label>Linguaggi</label><input type="text" [(ngModel)]="en.languages" placeholder="Common, Elven" /></div>
+          <div class="field-group"><label>Qualità Speciali (SQ)</label><input type="text" [(ngModel)]="en.sq" placeholder="darkvision, scent..." /></div>
+          <div class="field-group"><label>Equipaggiamento (Gear)</label><input type="text" [(ngModel)]="en.gear" placeholder="armi, anelli, monete..." /></div>
+        </div>
+
+        <!-- 6. SPECIAL ABILITIES -->
+        <div *ngIf="editorTab() === 'abilities'" class="ed-section">
+          <div class="items-edit-list" *ngIf="en.special_abilities">
+            <div class="item-edit-row" *ngFor="let sa of en.special_abilities; let i = index">
+              <div class="item-main-info">
+                <strong>{{ sa.name }} ({{ sa.type }})</strong>
+                <p class="mini-desc">{{ sa.description }}</p>
+              </div>
+              <button type="button" class="trash-btn" (click)="removeSpecialAbility(i)">🗑️</button>
+            </div>
+          </div>
+
+          <div class="add-box-section">
+            <h4>+ Aggiungi Capacità Speciale</h4>
+            <div class="fields-row">
+              <div class="field-group"><label>Nome Capacità</label><input type="text" [(ngModel)]="newAbilityName" placeholder="es. Change Shape" /></div>
+              <div class="field-group">
+                <label>Tipo</label>
+                <select [(ngModel)]="newAbilityType">
+                  <option value="Ex">Straordinaria (Ex)</option>
+                  <option value="Sp">Magica (Sp)</option>
+                  <option value="Su">Soprannaturale (Su)</option>
+                  <option value="">Nessuno</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-group" style="margin-top: 6px;">
+              <label>Descrizione Effetto</label>
+              <textarea rows="3" [(ngModel)]="newAbilityDesc" placeholder="Testo descrittivo della capacità..."></textarea>
+            </div>
+            <button type="button" class="btn-add-action" (click)="addSpecialAbility()">+ Aggiungi</button>
+          </div>
+        </div>
+
+        <!-- 7. ANTEPRIMA STATBLOCK FEDELE AL PDF -->
+        <div *ngIf="editorTab() === 'preview'" class="paizo-statblock-preview">
+          <div class="sb-head-row">
+            <span class="sb-title">{{ en.name }}, {{ en.title_line }}</span>
+            <span class="sb-cr">CR {{ en.cr }} {{ en.xp ? '(XP ' + en.xp + ')' : '' }}</span>
+          </div>
+          <div class="sb-italic">{{ en.gender_race_class }}</div>
+          <div>{{ en.alignment_size_type }}</div>
+          <div><strong>Init</strong> {{ en.init }}; <strong>Senses</strong> {{ en.senses }}; <strong>Perception</strong> {{ en.perception }}</div>
+
+          <div class="sb-sec-bar">DEFENSE</div>
+          <div><strong>AC</strong> {{ en.ac }}</div>
+          <div><strong>hp</strong> {{ en.hp }}</div>
+          <div><strong>Fort</strong> {{ en.fort }}, <strong>Ref</strong> {{ en.ref }}, <strong>Will</strong> {{ en.will }}</div>
+          <div *ngIf="en.defensive_abilities || en.dr || en.immune">
+            <strong>Defensive Abilities</strong> {{ en.defensive_abilities }}; {{ en.dr ? 'DR ' + en.dr + ';' : '' }} {{ en.immune ? 'Immune ' + en.immune : '' }}
+          </div>
+
+          <div class="sb-sec-bar">OFFENSE</div>
+          <div><strong>Spd</strong> {{ en.speed }}</div>
+          <div *ngIf="en.melee"><strong>Melee</strong> {{ en.melee }}</div>
+          <div *ngIf="en.ranged"><strong>Ranged</strong> {{ en.ranged }}</div>
+          <div *ngIf="en.special_attacks"><strong>Special Attacks</strong> {{ en.special_attacks }}</div>
+
+          <div class="sb-sec-bar" *ngIf="en.before_combat || en.during_combat || en.morale">TACTICS</div>
+          <div *ngIf="en.before_combat"><strong>Before Combat</strong> {{ en.before_combat }}</div>
+          <div *ngIf="en.during_combat"><strong>During Combat</strong> {{ en.during_combat }}</div>
+          <div *ngIf="en.morale"><strong>Morale</strong> {{ en.morale }}</div>
+
+          <div class="sb-sec-bar">STATISTICS</div>
+          <div><strong>Str</strong> {{ en.abilities.str }}, <strong>Dex</strong> {{ en.abilities.dex }}, <strong>Con</strong> {{ en.abilities.con }}, <strong>Int</strong> {{ en.abilities.int }}, <strong>Wis</strong> {{ en.abilities.wis }}, <strong>Cha</strong> {{ en.abilities.cha }}</div>
+          <div><strong>Base Atk</strong> {{ en.bab }}; <strong>CMB</strong> {{ en.cmb }}; <strong>CMD</strong> {{ en.cmd }}</div>
+          <div *ngIf="en.feats"><strong>Feats</strong> {{ en.feats }}</div>
+          <div *ngIf="en.skills"><strong>Skills</strong> {{ en.skills }}</div>
+          <div *ngIf="en.gear"><strong>Gear</strong> {{ en.gear }}</div>
+
+          <div class="sb-sec-bar" *ngIf="en.special_abilities && en.special_abilities.length > 0">SPECIAL ABILITIES</div>
+          <div *ngFor="let sa of en.special_abilities">
+            <strong>{{ sa.name }} ({{ sa.type }}):</strong> {{ sa.description }}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER AZIONI -->
+      <footer class="modal-actions">
+        <button type="button" class="btn-download-pdf-modal" (click)="downloadPdf(en)">
+          📄 Scarica PDF
+        </button>
+        <button type="button" class="btn-cancel" (click)="selectedEnemy.set(null)">Annulla</button>
+        <button type="button" class="btn-submit" (click)="saveEnemyFromEditor()">
+          💾 Salva nel Bestiario
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- MODALE DETTAGLI NPC ESISTENTE -->
   <div class="modal-backdrop" *ngIf="selectedNpc()" (click)="selectedNpc.set(null)">
     <div class="modal-card npc-modal-card" (click)="$event.stopPropagation()" *ngIf="selectedNpc() as npc">
       <header class="modal-head">
@@ -158,35 +396,20 @@
       </header>
 
       <div class="modal-body">
-        <!-- ANTEPRIMA IMMAGINE -->
         <div class="npc-portrait-section">
           <div class="npc-img-box" *ngIf="npc.image_url">
             <img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" />
-            <button type="button" class="btn-remove-img" (click)="removeNpcImage()" title="Rimuovi immagine">🗑️ Rimuovi</button>
+            <button type="button" class="btn-remove-img" (click)="removeNpcImage()">🗑️ Rimuovi</button>
           </div>
-          <div class="npc-no-img" *ngIf="!npc.image_url">
-            <span>🖼️ Nessun ritratto caricato</span>
-          </div>
-
-          <!-- BOTTONE CARICA FILE DA PC & INPUT URL -->
           <div class="upload-controls-row">
-            <label class="btn-upload-file">
-              📁 Carica Immagine da File
-              <input type="file" accept="image/*" (change)="onImageFileSelected($event)" hidden />
-            </label>
-            <span class="upload-or">oppure</span>
+            <label class="btn-upload-file">📁 Carica Immagine<input type="file" accept="image/*" (change)="onImageFileSelected($event)" hidden /></label>
           </div>
-
           <div class="field-group" style="margin-top: 6px;">
             <label>Link URL Diretto o Google Drive</label>
-            <input 
-              type="text" 
-              [(ngModel)]="npc.image_url" 
-              placeholder="es. https://drive.google.com/file/d/.../view" />
+            <input type="text" [(ngModel)]="npc.image_url" placeholder="https://..." />
           </div>
         </div>
 
-        <!-- STATO -->
         <div class="field-group">
           <label>Stato Attuale</label>
           <select [(ngModel)]="npc.status">
@@ -198,18 +421,8 @@
             <option value="dead">Deceduto / Morto</option>
           </select>
         </div>
-
-        <!-- DESCRIZIONE -->
-        <div class="field-group">
-          <label>Descrizione / Ruolo</label>
-          <textarea rows="3" [(ngModel)]="npc.description"></textarea>
-        </div>
-
-        <!-- NOTE MASTER -->
-        <div class="field-group">
-          <label>Note Master & Aggiornamenti di Trama (UPDATE)</label>
-          <textarea rows="3" [(ngModel)]="npc.notes" placeholder="es. UPDATE: ha stretto un patto diplomatico con Ryoujin..."></textarea>
-        </div>
+        <div class="field-group"><label>Descrizione / Ruolo</label><textarea rows="3" [(ngModel)]="npc.description"></textarea></div>
+        <div class="field-group"><label>Note Master (UPDATE)</label><textarea rows="3" [(ngModel)]="npc.notes"></textarea></div>
       </div>
 
       <footer class="modal-actions">
@@ -231,10 +444,7 @@
       </header>
 
       <form (ngSubmit)="createNewCharacter()" class="modal-form">
-        <div class="field-group">
-          <label>Nome del Personaggio *</label>
-          <input type="text" [(ngModel)]="newName" name="charName" placeholder="es. Kenji, Shin..." required />
-        </div>
+        <div class="field-group"><label>Nome del Personaggio *</label><input type="text" [(ngModel)]="newName" name="charName" required /></div>
         <div class="fields-row">
           <div class="field-group"><label>Classe</label><input type="text" [(ngModel)]="newClass" name="charClass" required /></div>
           <div class="field-group"><label>Razza</label><input type="text" [(ngModel)]="newRace" name="charRace" required /></div>
@@ -242,9 +452,7 @@
         <div class="field-group"><label>Livello Iniziale</label><input type="number" [(ngModel)]="newLevel" name="charLevel" min="1" max="20" required /></div>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" (click)="showCreateModal.set(false)">Annulla</button>
-          <button type="submit" class="btn-submit" [disabled]="!newName.trim() || isCreating()">
-            {{ isCreating() ? 'Creazione...' : '✨ Inizializza' }}
-          </button>
+          <button type="submit" class="btn-submit" [disabled]="!newName.trim() || isCreating()">{{ isCreating() ? 'Creazione...' : '✨ Inizializza' }}</button>
         </div>
       </form>
     </div>

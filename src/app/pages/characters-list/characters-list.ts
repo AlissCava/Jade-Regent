@@ -5,6 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { CharacterService, CharacterSummary, CharacterSheetData } from '../../services/character.service';
 import { NpcService } from '../../services/npc.service';
 import { NpcRecord } from '../../models/npc.model';
+import { BestiaryService } from '../../services/bestiary.service';
+import { PdfExportService } from '../../services/pdf-export.service';
+import { EnemyStatblock, SpecialAbilityItem } from '../../models/enemy-statblock.model';
 
 export interface CharacterEntry {
   slug: string;
@@ -19,57 +22,11 @@ export interface CharacterEntry {
 }
 
 const DEFAULT_HEROES: CharacterEntry[] = [
-  {
-    slug: 'ryoujin',
-    name: 'Ryoujin',
-    kanji: '竜刃',
-    className: 'Samurai (Ordine del Ronin)',
-    race: 'Tiefling (Oni-Spawn)',
-    level: 7,
-    icon: '⚔️',
-    theme: 'crimson',
-    subtitle: 'Spadaccino in prima linea • Lupo Hisui'
-  },
-  {
-    slug: 'airyn',
-    name: 'Airyn',
-    className: 'Druido',
-    race: 'Silfide',
-    level: 7,
-    icon: '🌿',
-    theme: 'emerald',
-    subtitle: 'Magia divina e forme selvatiche'
-  },
-  {
-    slug: 'azoi',
-    name: 'Azoi',
-    className: 'Magus',
-    race: 'Tengu',
-    level: 7,
-    icon: '⚡',
-    theme: 'blue',
-    subtitle: 'Spellstrike e combattimento arcano'
-  },
-  {
-    slug: 'kaede',
-    name: 'Kaede',
-    className: 'Ninja',
-    race: 'Kitsune',
-    level: 7,
-    icon: '🦊',
-    theme: 'amber',
-    subtitle: 'Arti ninja, furtività e colpi letali'
-  },
-  {
-    slug: 'nijena',
-    name: 'Nijena',
-    className: 'Barda',
-    race: 'Aasimar',
-    level: 7,
-    icon: '🪕',
-    theme: 'violet',
-    subtitle: 'Canti, ispirazione coraggio e supporto'
-  }
+  { slug: 'ryoujin', name: 'Ryoujin', kanji: '竜刃', className: 'Samurai (Ordine del Ronin)', race: 'Tiefling (Oni-Spawn)', level: 7, icon: '⚔️', theme: 'crimson', subtitle: 'Spadaccino in prima linea • Lupo Hisui' },
+  { slug: 'airyn', name: 'Airyn', className: 'Druido', race: 'Silfide', level: 7, icon: '🌿', theme: 'emerald', subtitle: 'Magia divina e forme selvatiche' },
+  { slug: 'azoi', name: 'Azoi', className: 'Magus', race: 'Tengu', level: 7, icon: '⚡', theme: 'blue', subtitle: 'Spellstrike e combattimento arcano' },
+  { slug: 'kaede', name: 'Kaede', className: 'Ninja', race: 'Kitsune', level: 7, icon: '🦊', theme: 'amber', subtitle: 'Arti ninja, furtività e colpi letali' },
+  { slug: 'nijena', name: 'Nijena', className: 'Barda', race: 'Aasimar', level: 7, icon: '🪕', theme: 'violet', subtitle: 'Canti, ispirazione coraggio e supporto' }
 ];
 
 @Component({
@@ -82,22 +39,38 @@ const DEFAULT_HEROES: CharacterEntry[] = [
 export class CharactersListComponent implements OnInit {
   private charService = inject(CharacterService);
   private npcService = inject(NpcService);
+  private bestiaryService = inject(BestiaryService);
+  private pdfExportService = inject(PdfExportService);
   private router = inject(Router);
 
-  activeMainTab = signal<'party' | 'npcs'>('party');
+  // SWITCHER A 3 SCHEDE
+  activeMainTab = signal<'party' | 'npcs' | 'bestiary'>('party');
 
+  // EROI PARTY
   characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
   loadingHeroes = signal<boolean>(false);
 
+  // PNG & CAROVANA
   npcs = signal<NpcRecord[]>([]);
   loadingNpcs = signal<boolean>(false);
   npcSearch = signal<string>('');
   selectedLocation = signal<string>('Tutti');
   selectedStatus = signal<string>('Tutti');
-
   selectedNpc = signal<NpcRecord | null>(null);
   isSavingNpc = signal<boolean>(false);
 
+  // BESTIARIO DEL MASTER (IN LOCALE)
+  enemies = signal<EnemyStatblock[]>([]);
+  enemySearch = signal<string>('');
+  selectedEnemy = signal<EnemyStatblock | null>(null);
+  editorTab = signal<'general' | 'defense' | 'offense' | 'tactics' | 'stats' | 'abilities' | 'preview'>('general');
+
+  // Campi per nuova capacità speciale nell'editor
+  newAbilityName = '';
+  newAbilityType: 'Ex' | 'Sp' | 'Su' | '' = 'Ex';
+  newAbilityDesc = '';
+
+  // MODALE CREA EROE
   showCreateModal = signal<boolean>(false);
   newName = '';
   newClass = 'Guerriero';
@@ -127,17 +100,130 @@ export class CharactersListComponent implements OnInit {
     });
   });
 
+  filteredEnemies = computed(() => {
+    const q = this.enemySearch().toLowerCase().trim();
+    return this.enemies().filter((e) => {
+      if (!q) return true;
+      const full = `${e.name} ${e.title_line} ${e.cr} ${e.gender_race_class} ${e.special_attacks || ''}`.toLowerCase();
+      return full.includes(q);
+    });
+  });
+
   ngOnInit(): void {
     this.syncCharactersWithDatabase();
     this.loadNpcsFromServer();
+    this.loadBestiary();
   }
 
-  // --- TRASFORMA LINK DRIVE O NORMALI IN URL DIRETTO IMMAGINE ---
+  // --- BESTIARIO METHODS ---
+  loadBestiary(): void {
+    this.enemies.set(this.bestiaryService.getAll());
+  }
+
+  openNewEnemyModal(): void {
+    const newEnemy: EnemyStatblock = {
+      id: 'enemy_' + Date.now(),
+      name: 'Nuovo Mostro / Boss',
+      title_line: 'Guerriero 5',
+      cr: '5',
+      xp: '1600',
+      gender_race_class: 'Medium humanoid',
+      alignment_size_type: 'NE Medium humanoid',
+      init: '+2',
+      senses: 'darkvision 60 ft.',
+      perception: '+10',
+      ac: '18, touch 12, flat-footed 16 (+6 armor, +2 Dex)',
+      hp: '55 (5d10+15)',
+      fort: '+7',
+      ref: '+3',
+      will: '+2',
+      speed: '30 ft. (9 m)',
+      melee: 'Spada lunga +8 (1d8+4/19-20)',
+      space_reach: '5 ft.; Reach 5 ft.',
+      abilities: { str: '16', dex: '14', con: '16', int: '10', wis: '12', cha: '10' },
+      bab: '+5',
+      cmb: '+8',
+      cmd: '20',
+      feats: 'Power Attack, Weapon Focus (Longsword)',
+      skills: 'Intimidate +8, Perception +10',
+      languages: 'Common',
+      special_abilities: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    this.selectedEnemy.set(newEnemy);
+    this.editorTab.set('general');
+  }
+
+  editEnemy(enemy: EnemyStatblock, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.selectedEnemy.set(JSON.parse(JSON.stringify(enemy)));
+    this.editorTab.set('general');
+  }
+
+  saveEnemyFromEditor(): void {
+    const current = this.selectedEnemy();
+    if (!current) return;
+    this.bestiaryService.save(current);
+    this.loadBestiary();
+    this.selectedEnemy.set(null);
+  }
+
+  deleteEnemy(id: string, name: string, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!confirm(`Vuoi eliminare definitivamente lo statblock di "${name}" dal tuo Bestiario locale?`)) return;
+    this.bestiaryService.delete(id);
+    this.loadBestiary();
+  }
+
+  downloadPdf(enemy: EnemyStatblock, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.pdfExportService.downloadStatblockPdf(enemy);
+  }
+
+  addSpecialAbility(): void {
+    const cur = this.selectedEnemy();
+    if (!cur || !this.newAbilityName.trim()) return;
+
+    if (!cur.special_abilities) cur.special_abilities = [];
+    cur.special_abilities.push({
+      name: this.newAbilityName.trim(),
+      type: this.newAbilityType,
+      description: this.newAbilityDesc.trim()
+    });
+
+    this.newAbilityName = '';
+    this.newAbilityDesc = '';
+  }
+
+  removeSpecialAbility(index: number): void {
+    this.selectedEnemy()?.special_abilities.splice(index, 1);
+  }
+
+  exportBackupBestiary(): void {
+    this.bestiaryService.exportBackupJson();
+  }
+
+  onImportBestiaryFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    this.bestiaryService.importBackupJson(input.files[0], (count) => {
+      alert(`Importati con successo ${count} mostri nel Bestiario locale!`);
+      this.loadBestiary();
+    });
+  }
+
+  // --- ALTRI METODI ---
   formatImageUrl(url: string | null | undefined): string {
     if (!url) return '';
-    if (url.startsWith('data:image/')) return url; // È già un file caricato in Base64
-
-    // Riconosce e trasforma i link di Google Drive (es. /file/d/ID/view o id=ID)
+    if (url.startsWith('data:image/')) return url;
     const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (driveMatch && driveMatch[1]) {
       return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
@@ -145,21 +231,17 @@ export class CharactersListComponent implements OnInit {
     return url;
   }
 
-  // --- CARICAMENTO FILE DAL PC CON RIDIMENSIONAMENTO AUTOMATICO ---
   onImageFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
-
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        // Ridimensionamento a max 800px per ottimizzare lo spazio su database
         const maxDim = 800;
         let width = img.width;
         let height = img.height;
-
         if (width > height && width > maxDim) {
           height = Math.round((height * maxDim) / width);
           width = maxDim;
@@ -167,14 +249,11 @@ export class CharactersListComponent implements OnInit {
           width = Math.round((width * maxDim) / height);
           height = maxDim;
         }
-
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, width, height);
-
-        // Converte in JPEG ottimizzato
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
 
         const current = this.selectedNpc();
@@ -234,7 +313,6 @@ export class CharactersListComponent implements OnInit {
   saveNpcChanges(): void {
     const current = this.selectedNpc();
     if (!current) return;
-
     this.isSavingNpc.set(true);
     this.npcService.saveNpc(current).subscribe({
       next: (res) => {
@@ -242,10 +320,7 @@ export class CharactersListComponent implements OnInit {
         this.isSavingNpc.set(false);
         this.selectedNpc.set(null);
       },
-      error: (err) => {
-        console.error('Errore salvataggio NPC:', err);
-        this.isSavingNpc.set(false);
-      }
+      error: () => this.isSavingNpc.set(false)
     });
   }
 
