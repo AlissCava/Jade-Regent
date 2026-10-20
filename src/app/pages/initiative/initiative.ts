@@ -1,518 +1,337 @@
-$gold: #f59e0b;
-$crimson: #ef4444;
-$emerald: #10b981;
-$purple: #a855f7;
-$blue: #38bdf8;
-$bg-card: #0c1424;
-$border: #1e2c48;
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Subject, interval } from 'rxjs';
+import { takeUntil, filter } from 'rxjs/operators';
 
-.initiative-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 8px 10px 85px;
-  color: #fff;
-  box-sizing: border-box;
-  overflow-x: hidden; // Previene qualsiasi scroll orizzontale
+export type CombatantType = 'pc' | 'npc' | 'enemy' | 'ally';
+
+export interface Combatant {
+  id: string;
+  name: string;
+  type: CombatantType;
+  initiative: number;
+  conditions: string[];
+  damage?: number;
+  is_ko?: boolean;
+  tempDamageInput?: number;
 }
 
-/* HEADER TRACKER ROUND */
-.tracker-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  background: #090e1a;
-  border: 1px solid #1c2b44;
-  border-radius: 12px;
-  padding: 8px 12px;
-
-  .round-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: #cbd5e1;
-
-    .round-icon { font-size: 1.1rem; }
-    strong {
-      color: $gold;
-      font-size: 1.1rem;
-      font-family: 'Cinzel', serif;
-    }
-  }
-
-  .header-actions {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-
-    button {
-      height: 34px;
-      padding: 0 10px;
-      border-radius: 7px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid $border;
-      background: #111c33;
-      color: #cbd5e1;
-      transition: all 0.15s ease;
-
-      &:hover { background: #1a2c4e; color: #fff; }
-    }
-
-    .btn-next-highlight {
-      background: $gold;
-      border-color: $gold;
-      color: #000;
-      font-weight: 800;
-      &:hover { filter: brightness(1.15); }
-    }
-
-    .btn-action { color: $blue; border-color: rgba($blue, 0.4); }
-    .btn-reset { color: #94a3b8; }
-  }
+export interface CombatEncounter {
+  id: number;
+  title: string;
+  current_round: number;
+  active_turn_index: number;
+  is_active: boolean;
+  combatants: Combatant[];
 }
 
-/* ========================================================= */
-/* BOX CREATORE COMBATTENTI (RESPONSIVE ANTI-SBORDAMENTO)    */
-/* ========================================================= */
-.enemy-creator-box {
-  background: rgba(239, 68, 68, 0.05);
-  border: 1px dashed rgba(239, 68, 68, 0.4);
-  border-radius: 12px;
-  padding: 10px 10px;
-  width: 100%;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
+@Component({
+  selector: 'app-initiative',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './initiative.html',
+  styleUrl: './initiative.scss'
+})
+export class InitiativeComponent implements OnInit, OnDestroy {
+  private http = inject(HttpClient);
+  private destroy$ = new Subject<void>();
 
-  &.is-ally-box {
-    background: rgba(16, 185, 129, 0.05);
-    border-color: rgba(16, 185, 129, 0.4);
+  encounter = signal<CombatEncounter | null>(null);
+  combatants = signal<Combatant[]>([]);
+  currentRound = signal<number>(1);
+  activeTurnIndex = signal<number>(0);
+
+  // Form rapido: scelta se inserire Nemico o Alleato
+  newCombatantType: 'enemy' | 'ally' = 'enemy';
+  newEnemyName = '';
+  newEnemyInit: number | null = 10;
+
+  isLoading = signal<boolean>(true);
+  isSaving = signal<boolean>(false);
+
+  // Tracciamento attività e focus per impedire reset mentre si digita
+  private lastUserActionTime = 0;
+  focusedCombatantId = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.loadEncounter();
+
+    // LIVE POLLING: ogni 2 secondi
+    interval(2000)
+      .pipe(
+        takeUntil(this.destroy$),
+        // Non fa richieste e non disturba se la scheda è in background, se sta salvando o se l'utente sta digitando
+        filter(() => document.visibilityState === 'visible' && !this.isSaving() && !this.isUserTyping())
+      )
+      .subscribe(() => {
+        this.syncEncounterInBackground();
+      });
   }
 
-  .creator-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-    gap: 6px;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    .box-title {
-      font-size: 0.76rem;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      color: #fca5a5;
+  // Rileva se un elemento di input/textarea ha il focus
+  private isUserTyping(): boolean {
+    if (typeof document === 'undefined') return false;
+    const active = document.activeElement;
+    if (!active) return false;
+    const tag = active.tagName?.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || active.getAttribute('contenteditable') === 'true';
+  }
+
+  touchUserActivity(): void {
+    this.lastUserActionTime = Date.now();
+  }
+
+  // --- SINCRONIZZAZIONE E CARICAMENTO ---
+  loadEncounter(): void {
+    this.http.get<CombatEncounter>('/api/initiative').subscribe({
+      next: (data) => {
+        this.applyEncounterData(data, false);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Errore caricamento iniziativa:', err);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  private syncEncounterInBackground(): void {
+    // Se l'utente ha toccato o digitato qualcosa negli ultimi 3.5 secondi, salta il refresh
+    if (this.isUserTyping() || Date.now() - this.lastUserActionTime < 3500) {
+      return;
+    }
+
+    this.http.get<CombatEncounter>('/api/initiative').subscribe({
+      next: (data) => {
+        const currentJson = JSON.stringify({
+          r: this.currentRound(),
+          t: this.activeTurnIndex(),
+          c: this.combatants().map(c => ({ id: c.id, init: c.initiative, dmg: c.damage, ko: c.is_ko, type: c.type }))
+        });
+
+        const incomingJson = JSON.stringify({
+          r: data.current_round,
+          t: data.active_turn_index,
+          c: (data.combatants || []).map(c => ({ id: c.id, init: c.initiative, dmg: c.damage, ko: c.is_ko, type: c.type }))
+        });
+
+        if (currentJson !== incomingJson) {
+          this.applyEncounterData(data, true);
+        }
+      },
+      error: (err) => console.error('Errore sync iniziativa:', err)
+    });
+  }
+
+  private applyEncounterData(data: CombatEncounter, isFromPolling: boolean): void {
+    this.encounter.set(data);
+    this.currentRound.set(data.current_round || 1);
+    this.activeTurnIndex.set(data.active_turn_index || 0);
+
+    const focusedId = this.focusedCombatantId();
+    const localMap = new Map(this.combatants().map(c => [c.id, c]));
+
+    const mergedList = (data.combatants || []).map(serverC => {
+      const localC = localMap.get(serverC.id);
+      // Se il combattente è in fase di modifica locale, protegge il valore digitato
+      const isBeingEdited = focusedId === serverC.id;
+
+      return {
+        ...serverC,
+        initiative: isBeingEdited && localC ? localC.initiative : serverC.initiative,
+        damage: serverC.damage ?? 0,
+        is_ko: serverC.is_ko ?? false,
+        tempDamageInput: isBeingEdited && localC ? localC.tempDamageInput : (serverC.tempDamageInput ?? 0)
+      };
+    });
+
+    // Se stiamo ricevendo un polling e l'utente ha aperto un campo, non riordina per non far saltare la card sotto le dita
+    if (isFromPolling && this.isUserTyping()) {
+      this.combatants.set(mergedList);
+    } else {
+      this.combatants.set(this.sortCombatantsList(mergedList));
     }
   }
 
-  &.is-ally-box .creator-header .box-title {
-    color: #6ee7b7;
+  private saveCurrentState(): void {
+    const enc = this.encounter();
+    if (!enc) return;
+
+    this.touchUserActivity();
+    this.isSaving.set(true);
+
+    const payload = {
+      id: enc.id,
+      title: enc.title,
+      current_round: this.currentRound(),
+      active_turn_index: this.activeTurnIndex(),
+      combatants: this.combatants().map(c => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        initiative: c.initiative,
+        conditions: c.conditions || [],
+        damage: c.damage || 0,
+        is_ko: !!c.is_ko
+      }))
+    };
+
+    this.http.put<CombatEncounter>('/api/initiative', payload).subscribe({
+      next: (updated) => {
+        this.encounter.set(updated);
+        this.isSaving.set(false);
+      },
+      error: (err) => {
+        console.error('Errore salvataggio iniziativa:', err);
+        this.isSaving.set(false);
+      }
+    });
   }
 
-  .type-toggle-group {
-    display: flex;
-    gap: 4px;
-    background: #060a12;
-    border: 1px solid #1e2c48;
-    border-radius: 8px;
-    padding: 2px;
-    flex-shrink: 0;
+  // --- GESTIONE TURNI E ROUND ---
+  nextTurn(): void {
+    const list = this.combatants();
+    if (list.length === 0) return;
 
-    .btn-type-toggle {
-      height: 28px;
-      padding: 0 8px;
-      font-size: 0.72rem;
-      font-weight: 800;
-      border: none;
-      border-radius: 6px;
-      background: transparent;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.15s ease;
+    let nextIndex = this.activeTurnIndex() + 1;
+    if (nextIndex >= list.length) {
+      nextIndex = 0;
+      this.currentRound.update(r => r + 1);
+    }
 
-      &.toggle-enemy.active {
-        background: rgba(239, 68, 68, 0.25);
-        color: #fca5a5;
-        border: 1px solid rgba(239, 68, 68, 0.45);
+    this.activeTurnIndex.set(nextIndex);
+    this.saveCurrentState();
+  }
+
+  prevTurn(): void {
+    const list = this.combatants();
+    if (list.length === 0) return;
+
+    let prevIndex = this.activeTurnIndex() - 1;
+    if (prevIndex < 0) {
+      prevIndex = list.length - 1;
+      this.currentRound.update(r => Math.max(1, r - 1));
+    }
+
+    this.activeTurnIndex.set(prevIndex);
+    this.saveCurrentState();
+  }
+
+  // --- FORM AGGIUNTA NEMICO / ALLEATO ---
+  setNewCombatantType(type: 'enemy' | 'ally'): void {
+    this.newCombatantType = type;
+    this.touchUserActivity();
+  }
+
+  addCombatant(): void {
+    const name = this.newEnemyName.trim();
+    if (!name) return;
+
+    this.touchUserActivity();
+    const newEntry: Combatant = {
+      id: `${this.newCombatantType}_${Date.now()}`,
+      name,
+      type: this.newCombatantType,
+      initiative: Number(this.newEnemyInit) || 0,
+      conditions: [],
+      damage: 0,
+      is_ko: false,
+      tempDamageInput: 0
+    };
+
+    const updated = this.sortCombatantsList([...this.combatants(), newEntry]);
+    this.combatants.set(updated);
+    this.newEnemyName = '';
+    this.newEnemyInit = 10;
+    this.saveCurrentState();
+  }
+
+  removeCombatant(id: string): void {
+    this.touchUserActivity();
+    const updated = this.combatants().filter(c => c.id !== id);
+    this.combatants.set(updated);
+    if (this.activeTurnIndex() >= updated.length) {
+      this.activeTurnIndex.set(Math.max(0, updated.length - 1));
+    }
+    this.saveCurrentState();
+  }
+
+  // --- EDITING INIZIATIVA IN CARD ---
+  onInitiativeInput(c: Combatant, newVal: any): void {
+    this.touchUserActivity();
+    c.initiative = Number(newVal) || 0;
+  }
+
+  onInputFocus(combatantId: string): void {
+    this.touchUserActivity();
+    this.focusedCombatantId.set(combatantId);
+  }
+
+  onInitiativeBlur(c: Combatant): void {
+    this.touchUserActivity();
+    this.focusedCombatantId.set(null);
+    this.saveCurrentState();
+  }
+
+  sortCombatants(): void {
+    this.touchUserActivity();
+    this.combatants.update(list => this.sortCombatantsList(list));
+    this.saveCurrentState();
+  }
+
+  private sortCombatantsList(list: Combatant[]): Combatant[] {
+    return [...list].sort((a, b) => {
+      // Gli NPC della carovana restano sempre in fondo al round (iniziativa < -50)
+      if (a.initiative < -50 && b.initiative < -50) {
+        return b.initiative - a.initiative;
       }
+      if (a.initiative < -50) return 1;
+      if (b.initiative < -50) return -1;
+      return b.initiative - a.initiative;
+    });
+  }
 
-      &.toggle-ally.active {
-        background: rgba(16, 185, 129, 0.25);
-        color: #6ee7b7;
-        border: 1px solid rgba(16, 185, 129, 0.45);
-      }
+  // --- GESTIONE DANNI (PER NEMICI, ALLEATI E CAROVANA) ---
+  addQuickDamage(c: Combatant, delta: number): void {
+    this.touchUserActivity();
+    c.damage = Math.max(0, (c.damage || 0) + delta);
+    this.saveCurrentState();
+  }
+
+  applyInputDamage(c: Combatant): void {
+    this.touchUserActivity();
+    const amount = Number(c.tempDamageInput);
+    if (!isNaN(amount) && amount !== 0) {
+      c.damage = Math.max(0, (c.damage || 0) + amount);
+      c.tempDamageInput = 0;
+      this.saveCurrentState();
     }
   }
 
-  .enemy-form {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
-
-    input[type="text"] {
-      flex: 1 1 0;
-      min-width: 0 !important; // RISOLVE LO SBORDAMENTO: permette all'input di stringersi liberamente
-      height: 38px;
-      background: #060a12;
-      border: 1px solid $border;
-      border-radius: 7px;
-      color: #fff;
-      font-size: 0.84rem;
-      padding: 0 8px;
-      outline: none;
-      box-sizing: border-box;
-
-      &:focus { border-color: $crimson; }
-    }
-
-    .init-input-wrap {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      font-size: 0.76rem;
-      color: #94a3b8;
-      flex-shrink: 0;
-
-      input {
-        width: 40px;
-        height: 38px;
-        background: #060a12;
-        border: 1px solid $border;
-        border-radius: 7px;
-        color: $gold;
-        font-weight: 800;
-        font-size: 0.95rem;
-        text-align: center;
-        outline: none;
-        box-sizing: border-box;
-      }
-    }
-
-    .btn-add-enemy {
-      height: 38px;
-      padding: 0 10px;
-      background: rgba(239, 68, 68, 0.25);
-      border: 1px solid $crimson;
-      color: #fff;
-      font-weight: 800;
-      font-size: 0.78rem;
-      border-radius: 7px;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-      box-sizing: border-box;
-      transition: all 0.15s ease;
-
-      &:hover { background: $crimson; }
-
-      &.btn-add-ally {
-        background: rgba(16, 185, 129, 0.25);
-        border-color: $emerald;
-        &:hover { background: $emerald; }
-      }
-    }
-
-    /* Se la vista laterale è molto stretta (< 340px), passa su due righe armoniose */
-    @media (max-width: 340px) {
-      flex-wrap: wrap;
-
-      input[type="text"] {
-        flex: 1 1 100%;
-        width: 100%;
-      }
-
-      .init-input-wrap {
-        flex: 1;
-        justify-content: flex-start;
-      }
-
-      .btn-add-enemy {
-        flex: 1;
-      }
-    }
+  setKo(c: Combatant, isKo: boolean): void {
+    this.touchUserActivity();
+    c.is_ko = isKo;
+    this.saveCurrentState();
   }
 
-  &.is-ally-box .enemy-form input[type="text"]:focus {
-    border-color: $emerald;
-  }
-}
+  resetCombat(): void {
+    const enc = this.encounter();
+    if (!enc) return;
 
-/* LISTA COMBATTENTI */
-.combatants-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.combatant-card {
-  background: $bg-card;
-  border: 1px solid $border;
-  border-radius: 12px;
-  padding: 9px 12px;
-  box-sizing: border-box;
-  transition: all 0.15s ease;
-
-  &.card-enemy { border-left: 3px solid $crimson; }
-  &.card-ally { border-left: 3px solid $emerald; }
-  &.card-pc { border-left: 3px solid $blue; }
-  &.card-npc { border-left: 3px solid $purple; }
-
-  &.active-turn {
-    border-color: $gold !important;
-    background: #0f1a30;
-    box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
-  }
-
-  &.is-defeated {
-    opacity: 0.6;
-    background: #140d12;
-  }
-
-  .card-top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-
-    .left-col {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      flex-wrap: wrap;
-      min-width: 0;
-
-      .turn-badge-btn {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: #000;
-        font-weight: 900;
-        font-size: 0.72rem;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 6px;
-        padding: 3px 8px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-
-        &:hover { filter: brightness(1.15); }
-      }
-
-      .index-badge {
-        font-family: 'Cinzel', serif;
-        font-size: 0.88rem;
-        color: #64748b;
-        font-weight: 800;
-      }
-
-      .combatant-name {
-        font-family: 'Cinzel', serif;
-        font-weight: 800;
-        font-size: 0.98rem;
-        color: #fff;
-        word-break: break-word;
-      }
-
-      .type-pill {
-        font-size: 0.62rem;
-        font-weight: 800;
-        padding: 2px 6px;
-        border-radius: 4px;
-
-        &.pill-enemy { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
-        &.pill-ally { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
-        &.pill-pc { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
-        &.pill-npc { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
-      }
-    }
-
-    .right-col {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-
-      .init-value-box {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-
-        .init-lbl {
-          font-size: 0.74rem;
-          color: #94a3b8;
-        }
-
-        .init-input {
-          width: 44px;
-          height: 30px;
-          background: #060a12;
-          border: 1px solid $border;
-          border-radius: 5px;
-          color: $gold;
-          font-weight: 900;
-          font-size: 0.95rem;
-          text-align: center;
-          outline: none;
-          box-sizing: border-box;
-
-          &:focus {
-            border-color: $gold;
-            box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
-          }
-        }
-      }
-
-      .btn-delete {
-        background: transparent;
-        border: none;
-        color: #64748b;
-        font-size: 0.95rem;
-        cursor: pointer;
-        padding: 2px 4px;
-        &:hover { color: $crimson; }
-      }
-    }
-  }
-
-  .npc-note {
-    font-size: 0.72rem;
-    color: #a78bfa;
-    margin-top: 2px;
-  }
-
-  /* PANNELLO DANNI */
-  .damage-panel {
-    background: #070b14;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 8px;
-    padding: 6px 10px;
-    margin-top: 8px;
-
-    .damage-status-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-
-      .damage-counter {
-        display: flex;
-        align-items: baseline;
-        gap: 5px;
-
-        .lbl {
-          font-size: 0.72rem;
-          font-weight: 800;
-          color: #f87171 !important;
-          letter-spacing: 0.04em;
-        }
-
-        .val {
-          font-family: 'Cinzel', serif;
-          font-size: 1.25rem;
-          font-weight: 900;
-          color: #ef4444 !important;
-          line-height: 1;
-          text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-        }
-      }
-
-      .ko-actions {
-        .btn-ko {
-          background: rgba(239, 68, 68, 0.15);
-          border: 1px solid rgba(239, 68, 68, 0.4);
-          color: #fca5a5;
-          font-size: 0.7rem;
-          font-weight: 700;
-          padding: 3px 8px;
-          border-radius: 5px;
-          cursor: pointer;
-          &:hover { background: $crimson; color: #fff; }
-        }
-
-        .btn-revive {
-          background: rgba(16, 185, 129, 0.2);
-          border: 1px solid rgba(16, 185, 129, 0.4);
-          color: #6ee7b7;
-          font-size: 0.7rem;
-          font-weight: 700;
-          padding: 3px 8px;
-          border-radius: 5px;
-          cursor: pointer;
-        }
-      }
-    }
-
-    .damage-controls-row {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-
-      .btn-dmg-quick {
-        flex: 1;
-        min-width: 0;
-        height: 32px;
-        background: #141f36;
-        border: 1px solid #1e2c48;
-        color: #cbd5e1;
-        font-size: 0.78rem;
-        font-weight: 800;
-        border-radius: 5px;
-        cursor: pointer;
-
-        &:hover { background: #1e2e50; color: #fff; border-color: $gold; }
-
-        &.btn-heal {
-          color: #6ee7b7;
-          border-color: rgba(16, 185, 129, 0.35);
-        }
-      }
-
-      .input-custom-dmg {
-        width: 44px;
-        height: 32px;
-        background: #080d18;
-        border: 1px solid rgba(239, 68, 68, 0.6) !important;
-        border-radius: 5px;
-        color: #ef4444 !important;
-        font-weight: 800;
-        font-size: 0.95rem;
-        text-align: center;
-        padding: 0 2px;
-        outline: none;
-        box-sizing: border-box;
-
-        &::placeholder {
-          color: rgba(239, 68, 68, 0.45);
-        }
-
-        &:focus {
-          border-color: #ef4444 !important;
-          box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
-        }
-      }
-
-      .btn-apply-dmg {
-        height: 32px;
-        padding: 0 10px;
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        border: 1px solid #f87171;
-        color: #fff;
-        font-size: 0.76rem;
-        font-weight: 800;
-        border-radius: 5px;
-        cursor: pointer;
-        flex-shrink: 0;
-
-        &:hover { filter: brightness(1.15); }
-      }
+    if (confirm('Vuoi davvero resettare lo scontro al Round 1 e rimuovere nemici e alleati extra?')) {
+      this.http.post<CombatEncounter>('/api/initiative', { id: enc.id }).subscribe({
+        next: (resetData) => {
+          this.applyEncounterData(resetData, false);
+        },
+        error: (err) => console.error('Errore reset scontro:', err)
+      });
     }
   }
 }

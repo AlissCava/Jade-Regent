@@ -16,6 +16,7 @@ $border: #1e2c48;
   padding: 8px 10px 85px;
   color: #fff;
   box-sizing: border-box;
+  overflow-x: hidden; // Previene qualsiasi scroll orizzontale
 }
 
 /* HEADER TRACKER ROUND */
@@ -78,12 +79,16 @@ $border: #1e2c48;
   }
 }
 
-/* BOX CREATORE COMBATTENTI (NEMICO / ALLEATO) */
+/* ========================================================= */
+/* BOX CREATORE COMBATTENTI (RESPONSIVE ANTI-SBORDAMENTO)    */
+/* ========================================================= */
 .enemy-creator-box {
   background: rgba(239, 68, 68, 0.05);
   border: 1px dashed rgba(239, 68, 68, 0.4);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 10px 10px;
+  width: 100%;
+  box-sizing: border-box;
   transition: all 0.2s ease;
 
   &.is-ally-box {
@@ -118,10 +123,11 @@ $border: #1e2c48;
     border: 1px solid #1e2c48;
     border-radius: 8px;
     padding: 2px;
+    flex-shrink: 0;
 
     .btn-type-toggle {
       height: 28px;
-      padding: 0 10px;
+      padding: 0 8px;
       font-size: 0.72rem;
       font-weight: 800;
       border: none;
@@ -149,17 +155,21 @@ $border: #1e2c48;
     display: flex;
     gap: 6px;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 
     input[type="text"] {
-      flex: 1;
+      flex: 1 1 0;
+      min-width: 0 !important; // RISOLVE LO SBORDAMENTO: permette all'input di stringersi liberamente
       height: 38px;
       background: #060a12;
       border: 1px solid $border;
       border-radius: 7px;
       color: #fff;
-      font-size: 0.86rem;
-      padding: 0 10px;
+      font-size: 0.84rem;
+      padding: 0 8px;
       outline: none;
+      box-sizing: border-box;
 
       &:focus { border-color: $crimson; }
     }
@@ -167,12 +177,13 @@ $border: #1e2c48;
     .init-input-wrap {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.78rem;
+      gap: 3px;
+      font-size: 0.76rem;
       color: #94a3b8;
+      flex-shrink: 0;
 
       input {
-        width: 48px;
+        width: 40px;
         height: 38px;
         background: #060a12;
         border: 1px solid $border;
@@ -182,20 +193,23 @@ $border: #1e2c48;
         font-size: 0.95rem;
         text-align: center;
         outline: none;
+        box-sizing: border-box;
       }
     }
 
     .btn-add-enemy {
       height: 38px;
-      padding: 0 14px;
+      padding: 0 10px;
       background: rgba(239, 68, 68, 0.25);
       border: 1px solid $crimson;
       color: #fff;
       font-weight: 800;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       border-radius: 7px;
       cursor: pointer;
       white-space: nowrap;
+      flex-shrink: 0;
+      box-sizing: border-box;
       transition: all 0.15s ease;
 
       &:hover { background: $crimson; }
@@ -204,6 +218,25 @@ $border: #1e2c48;
         background: rgba(16, 185, 129, 0.25);
         border-color: $emerald;
         &:hover { background: $emerald; }
+      }
+    }
+
+    /* Se la vista laterale è molto stretta (< 340px), passa su due righe armoniose */
+    @media (max-width: 340px) {
+      flex-wrap: wrap;
+
+      input[type="text"] {
+        flex: 1 1 100%;
+        width: 100%;
+      }
+
+      .init-input-wrap {
+        flex: 1;
+        justify-content: flex-start;
+      }
+
+      .btn-add-enemy {
+        flex: 1;
       }
     }
   }
@@ -225,6 +258,7 @@ $border: #1e2c48;
   border: 1px solid $border;
   border-radius: 12px;
   padding: 9px 12px;
+  box-sizing: border-box;
   transition: all 0.15s ease;
 
   &.card-enemy { border-left: 3px solid $crimson; }
@@ -254,6 +288,7 @@ $border: #1e2c48;
       align-items: center;
       gap: 7px;
       flex-wrap: wrap;
+      min-width: 0;
 
       .turn-badge-btn {
         background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
@@ -283,6 +318,7 @@ $border: #1e2c48;
         font-weight: 800;
         font-size: 0.98rem;
         color: #fff;
+        word-break: break-word;
       }
 
       .type-pill {
@@ -302,6 +338,7 @@ $border: #1e2c48;
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
 
       .init-value-box {
         display: flex;
@@ -324,6 +361,7 @@ $border: #1e2c48;
           font-size: 0.95rem;
           text-align: center;
           outline: none;
+          box-sizing: border-box;
 
           &:focus {
             border-color: $gold;
@@ -350,7 +388,7 @@ $border: #1e2c48;
     margin-top: 2px;
   }
 
-  /* ==================== PANNELLO DANNI (IN ROSSO) ==================== */
+  /* PANNELLO DANNI */
   .damage-panel {
     background: #070b14;
     border: 1px solid rgba(239, 68, 68, 0.2);
@@ -364,7 +402,6 @@ $border: #1e2c48;
       align-items: center;
       margin-bottom: 6px;
 
-      /* DANNI INFLITTI / SUBITI: IN ROSSO ACCESO */
       .damage-counter {
         display: flex;
         align-items: baseline;
@@ -373,7 +410,7 @@ $border: #1e2c48;
         .lbl {
           font-size: 0.72rem;
           font-weight: 800;
-          color: #f87171 !important; // ROSSO!
+          color: #f87171 !important;
           letter-spacing: 0.04em;
         }
 
@@ -381,7 +418,7 @@ $border: #1e2c48;
           font-family: 'Cinzel', serif;
           font-size: 1.25rem;
           font-weight: 900;
-          color: #ef4444 !important; // ROSSO FUOCO!
+          color: #ef4444 !important;
           line-height: 1;
           text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
         }
@@ -413,7 +450,6 @@ $border: #1e2c48;
       }
     }
 
-    /* CONTROLLI DANNI CON INPUT DA INFLIGGERE IN ROSSO */
     .damage-controls-row {
       display: flex;
       gap: 5px;
@@ -421,6 +457,7 @@ $border: #1e2c48;
 
       .btn-dmg-quick {
         flex: 1;
+        min-width: 0;
         height: 32px;
         background: #141f36;
         border: 1px solid #1e2c48;
@@ -438,19 +475,19 @@ $border: #1e2c48;
         }
       }
 
-      /* DANNI DA INFLIGGERE: INPUT IN ROSSO */
       .input-custom-dmg {
-        width: 48px;
+        width: 44px;
         height: 32px;
         background: #080d18;
-        border: 1px solid rgba(239, 68, 68, 0.6) !important; // BORDO ROSSO
+        border: 1px solid rgba(239, 68, 68, 0.6) !important;
         border-radius: 5px;
-        color: #ef4444 !important; // NUMERO IN ROSSO
+        color: #ef4444 !important;
         font-weight: 800;
         font-size: 0.95rem;
         text-align: center;
         padding: 0 2px;
         outline: none;
+        box-sizing: border-box;
 
         &::placeholder {
           color: rgba(239, 68, 68, 0.45);
@@ -472,6 +509,7 @@ $border: #1e2c48;
         font-weight: 800;
         border-radius: 5px;
         cursor: pointer;
+        flex-shrink: 0;
 
         &:hover { filter: brightness(1.15); }
       }
