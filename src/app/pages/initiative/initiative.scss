@@ -1,115 +1,165 @@
-$bg-dark: #070b14;
-$bg-card: #0c1426;
-$border-color: #1a2742;
 $gold: #f59e0b;
-$blue: #38bdf8;
-$purple: #a855f7;
 $crimson: #ef4444;
-$green: #10b981;
+$emerald: #10b981;
+$purple: #a855f7;
+$blue: #38bdf8;
+$bg-card: #0c1424;
+$border: #1e2c48;
 
 .initiative-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 8px 10px 85px;
+  color: #fff;
   box-sizing: border-box;
 }
 
-/* ========================================================
-   HEADER TRACKER & AZIONI ROUND
-   ======================================================== */
+/* HEADER TRACKER ROUND */
 .tracker-header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
-  background: #0b1324;
-  border: 1px solid $border-color;
-  border-radius: 10px;
+  flex-wrap: wrap;
+  background: #090e1a;
+  border: 1px solid #1c2b44;
+  border-radius: 12px;
   padding: 8px 12px;
 
   .round-badge {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 6px;
     font-size: 0.85rem;
-    font-weight: 700;
-    color: #e2e8f0;
+    color: #cbd5e1;
 
     .round-icon { font-size: 1.1rem; }
-    strong { color: $gold; font-size: 1.1rem; font-weight: 900; }
+    strong {
+      color: $gold;
+      font-size: 1.1rem;
+      font-family: 'Cinzel', serif;
+    }
   }
 
   .header-actions {
     display: flex;
-    align-items: center;
     gap: 5px;
+    align-items: center;
 
-    .btn-step, .btn-action, .btn-reset {
-      background: #111d38;
-      border: 1px solid $border-color;
-      color: #cbd5e1;
-      font-size: 0.75rem;
+    button {
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 7px;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 5px 8px;
-      border-radius: 6px;
       cursor: pointer;
+      border: 1px solid $border;
+      background: #111c33;
+      color: #cbd5e1;
       transition: all 0.15s ease;
 
-      &:hover { border-color: $gold; color: #fff; }
+      &:hover { background: #1a2c4e; color: #fff; }
     }
 
     .btn-next-highlight {
       background: $gold;
+      border-color: $gold;
       color: #000;
       font-weight: 800;
-      border-color: $gold;
-
-      &:hover { filter: brightness(1.1); transform: scale(1.02); }
+      &:hover { filter: brightness(1.15); }
     }
 
-    .btn-reset {
-      color: #94a3b8;
-      &:hover { border-color: $crimson; color: $crimson; }
-    }
+    .btn-action { color: $blue; border-color: rgba($blue, 0.4); }
+    .btn-reset { color: #94a3b8; }
   }
 }
 
-/* ========================================================
-   FORM INSERIMENTO NEMICO
-   ======================================================== */
+/* BOX CREATORE COMBATTENTI (NEMICO / ALLEATO) */
 .enemy-creator-box {
-  background: rgba(239, 68, 68, 0.04);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 10px;
-  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px dashed rgba(239, 68, 68, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
 
-  .box-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #fca5a5;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
+  &.is-ally-box {
+    background: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+
+  .creator-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .box-title {
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #fca5a5;
+    }
+  }
+
+  &.is-ally-box .creator-header .box-title {
+    color: #6ee7b7;
+  }
+
+  .type-toggle-group {
+    display: flex;
+    gap: 4px;
+    background: #060a12;
+    border: 1px solid #1e2c48;
+    border-radius: 8px;
+    padding: 2px;
+
+    .btn-type-toggle {
+      height: 28px;
+      padding: 0 10px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &.toggle-enemy.active {
+        background: rgba(239, 68, 68, 0.25);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.45);
+      }
+
+      &.toggle-ally.active {
+        background: rgba(16, 185, 129, 0.25);
+        color: #6ee7b7;
+        border: 1px solid rgba(16, 185, 129, 0.45);
+      }
+    }
   }
 
   .enemy-form {
     display: flex;
-    align-items: center;
     gap: 6px;
+    align-items: center;
 
     input[type="text"] {
       flex: 1;
-      background: #050811;
-      border: 1px solid $border-color;
+      height: 38px;
+      background: #060a12;
+      border: 1px solid $border;
+      border-radius: 7px;
       color: #fff;
-      font-size: 0.8rem;
-      padding: 6px 8px;
-      border-radius: 6px;
+      font-size: 0.86rem;
+      padding: 0 10px;
       outline: none;
-      min-width: 0;
 
       &:focus { border-color: $crimson; }
     }
@@ -117,45 +167,53 @@ $green: #10b981;
     .init-input-wrap {
       display: flex;
       align-items: center;
-      gap: 3px;
-      background: #050811;
-      border: 1px solid $border-color;
-      border-radius: 6px;
-      padding: 0 6px;
+      gap: 4px;
+      font-size: 0.78rem;
+      color: #94a3b8;
 
-      label { font-size: 0.7rem; color: #94a3b8; font-weight: 700; }
       input {
-        width: 38px;
-        background: transparent;
-        border: none;
+        width: 48px;
+        height: 38px;
+        background: #060a12;
+        border: 1px solid $border;
+        border-radius: 7px;
         color: $gold;
-        font-size: 0.82rem;
         font-weight: 800;
+        font-size: 0.95rem;
         text-align: center;
         outline: none;
-        padding: 5px 0;
       }
     }
 
     .btn-add-enemy {
-      background: rgba(239, 68, 68, 0.2);
+      height: 38px;
+      padding: 0 14px;
+      background: rgba(239, 68, 68, 0.25);
       border: 1px solid $crimson;
-      color: #fca5a5;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 6px 10px;
-      border-radius: 6px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.8rem;
+      border-radius: 7px;
       cursor: pointer;
       white-space: nowrap;
+      transition: all 0.15s ease;
 
-      &:hover { background: $crimson; color: #fff; }
+      &:hover { background: $crimson; }
+
+      &.btn-add-ally {
+        background: rgba(16, 185, 129, 0.25);
+        border-color: $emerald;
+        &:hover { background: $emerald; }
+      }
     }
+  }
+
+  &.is-ally-box .enemy-form input[type="text"]:focus {
+    border-color: $emerald;
   }
 }
 
-/* ========================================================
-   LISTA COMBATTENTI
-   ======================================================== */
+/* LISTA COMBATTENTI */
 .combatants-list {
   display: flex;
   flex-direction: column;
@@ -164,103 +222,79 @@ $green: #10b981;
 
 .combatant-card {
   background: $bg-card;
-  border: 1px solid $border-color;
-  border-radius: 10px;
-  padding: 10px 12px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 9px 12px;
+  transition: all 0.15s ease;
 
+  &.card-enemy { border-left: 3px solid $crimson; }
+  &.card-ally { border-left: 3px solid $emerald; }
   &.card-pc { border-left: 3px solid $blue; }
   &.card-npc { border-left: 3px solid $purple; }
-  &.card-enemy { border-left: 3px solid $crimson; }
 
-  // Turno attivo evidenziato
   &.active-turn {
     border-color: $gold !important;
-    border-left-width: 4px !important;
-    background: #111a31;
-    box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+    background: #0f1a30;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
   }
 
   &.is-defeated {
-    opacity: 0.45;
-    filter: grayscale(0.8);
+    opacity: 0.6;
+    background: #140d12;
   }
 
   .card-top-row {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     gap: 8px;
 
     .left-col {
       display: flex;
       align-items: center;
-      gap: 6px;
-      flex: 1;
-      min-width: 0;
+      gap: 7px;
+      flex-wrap: wrap;
 
-      // IL PULSANTE ARANCIONE DEL TURNO CLICCABILE
       .turn-badge-btn {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #000;
+        font-weight: 900;
+        font-size: 0.72rem;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 6px;
+        padding: 3px 8px;
+        cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        background: $gold;
-        color: #000;
-        font-size: 0.68rem;
-        font-weight: 900;
-        padding: 3px 8px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-        animation: pulseTurn 1.8s infinite;
-        transition: transform 0.1s ease, filter 0.15s ease;
+        gap: 3px;
 
-        &:hover {
-          filter: brightness(1.15);
-          transform: scale(1.04);
-        }
-
-        &:active { transform: scale(0.96); }
-
-        .pulse-play { font-size: 0.65rem; }
-        .pass-hint {
-          font-size: 0.62rem;
-          font-weight: 700;
-          opacity: 0.8;
-          border-left: 1px solid rgba(0, 0, 0, 0.25);
-          padding-left: 4px;
-          margin-left: 2px;
-        }
+        &:hover { filter: brightness(1.15); }
       }
 
       .index-badge {
-        font-size: 0.78rem;
-        font-weight: 800;
+        font-family: 'Cinzel', serif;
+        font-size: 0.88rem;
         color: #64748b;
-        min-width: 22px;
+        font-weight: 800;
       }
 
       .combatant-name {
         font-family: 'Cinzel', serif;
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #ffffff;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-weight: 800;
+        font-size: 0.98rem;
+        color: #fff;
       }
 
       .type-pill {
-        font-size: 0.58rem;
+        font-size: 0.62rem;
         font-weight: 800;
         padding: 2px 6px;
         border-radius: 4px;
-        letter-spacing: 0.04em;
 
-        &.pill-enemy { background: rgba($crimson, 0.15); color: #fca5a5; border: 1px solid rgba($crimson, 0.3); }
-        &.pill-pc { background: rgba($blue, 0.15); color: #7dd3fc; border: 1px solid rgba($blue, 0.3); }
-        &.pill-npc { background: rgba($purple, 0.15); color: #d8b4fe; border: 1px solid rgba($purple, 0.3); }
+        &.pill-enemy { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        &.pill-ally { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+        &.pill-pc { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
+        &.pill-npc { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
       }
     }
 
@@ -274,20 +308,27 @@ $green: #10b981;
         align-items: center;
         gap: 4px;
 
-        .init-lbl { font-size: 0.68rem; color: #94a3b8; font-weight: 600; }
+        .init-lbl {
+          font-size: 0.74rem;
+          color: #94a3b8;
+        }
+
         .init-input {
           width: 44px;
-          background: #050811;
-          border: 1px solid $border-color;
+          height: 30px;
+          background: #060a12;
+          border: 1px solid $border;
+          border-radius: 5px;
           color: $gold;
-          font-size: 0.85rem;
-          font-weight: 800;
+          font-weight: 900;
+          font-size: 0.95rem;
           text-align: center;
-          padding: 3px 0;
-          border-radius: 6px;
           outline: none;
 
-          &:focus { border-color: $gold; }
+          &:focus {
+            border-color: $gold;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+          }
         }
       }
 
@@ -295,64 +336,63 @@ $green: #10b981;
         background: transparent;
         border: none;
         color: #64748b;
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         cursor: pointer;
         padding: 2px 4px;
-        border-radius: 4px;
-        &:hover { color: $crimson; background: rgba(239, 68, 68, 0.1); }
+        &:hover { color: $crimson; }
       }
     }
   }
 
   .npc-note {
-    font-size: 0.7rem;
-    color: #a855f7;
-    margin-top: 4px;
-    margin-left: 28px;
+    font-size: 0.72rem;
+    color: #a78bfa;
+    margin-top: 2px;
   }
 
-  /* ========================================================
-     PANNELLO DANNI (NEMICI ED NPC)
-     ======================================================== */
+  /* ==================== PANNELLO DANNI (IN ROSSO) ==================== */
   .damage-panel {
+    background: #070b14;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    padding: 6px 10px;
     margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.08);
 
     .damage-status-line {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 6px;
 
+      /* DANNI INFLITTI / SUBITI: IN ROSSO ACCESO */
       .damage-counter {
         display: flex;
         align-items: baseline;
-        gap: 6px;
+        gap: 5px;
 
         .lbl {
-          font-size: 0.68rem;
+          font-size: 0.72rem;
           font-weight: 800;
-          color: #94a3b8;
+          color: #f87171 !important; // ROSSO!
           letter-spacing: 0.04em;
         }
 
         .val {
-          font-size: 1.15rem;
+          font-family: 'Cinzel', serif;
+          font-size: 1.25rem;
           font-weight: 900;
-          color: #ffffff;
+          color: #ef4444 !important; // ROSSO FUOCO!
+          line-height: 1;
+          text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
         }
       }
 
       .ko-actions {
-        display: flex;
-        gap: 4px;
-
         .btn-ko {
-          background: rgba($crimson, 0.15);
-          border: 1px solid rgba($crimson, 0.4);
+          background: rgba(239, 68, 68, 0.15);
+          border: 1px solid rgba(239, 68, 68, 0.4);
           color: #fca5a5;
-          font-size: 0.68rem;
+          font-size: 0.7rem;
           font-weight: 700;
           padding: 3px 8px;
           border-radius: 5px;
@@ -361,78 +401,80 @@ $green: #10b981;
         }
 
         .btn-revive {
-          background: rgba($green, 0.15);
-          border: 1px solid rgba($green, 0.4);
+          background: rgba(16, 185, 129, 0.2);
+          border: 1px solid rgba(16, 185, 129, 0.4);
           color: #6ee7b7;
-          font-size: 0.68rem;
+          font-size: 0.7rem;
           font-weight: 700;
           padding: 3px 8px;
           border-radius: 5px;
           cursor: pointer;
-          &:hover { background: $green; color: #fff; }
         }
       }
     }
 
+    /* CONTROLLI DANNI CON INPUT DA INFLIGGERE IN ROSSO */
     .damage-controls-row {
       display: flex;
+      gap: 5px;
       align-items: center;
-      gap: 4px;
 
       .btn-dmg-quick {
         flex: 1;
-        background: #101a30;
-        border: 1px solid $border-color;
-        color: #e2e8f0;
-        font-size: 0.72rem;
+        height: 32px;
+        background: #141f36;
+        border: 1px solid #1e2c48;
+        color: #cbd5e1;
+        font-size: 0.78rem;
         font-weight: 800;
-        padding: 5px 0;
         border-radius: 5px;
         cursor: pointer;
-        transition: all 0.1s ease;
 
-        &:hover { background: #18284d; border-color: $gold; }
+        &:hover { background: #1e2e50; color: #fff; border-color: $gold; }
 
         &.btn-heal {
           color: #6ee7b7;
-          &:hover { border-color: $green; background: rgba($green, 0.1); }
+          border-color: rgba(16, 185, 129, 0.35);
         }
       }
 
+      /* DANNI DA INFLIGGERE: INPUT IN ROSSO */
       .input-custom-dmg {
-        width: 38px;
-        background: #050811;
-        border: 1px solid $border-color;
-        color: #fff;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-align: center;
-        padding: 4px 0;
+        width: 48px;
+        height: 32px;
+        background: #080d18;
+        border: 1px solid rgba(239, 68, 68, 0.6) !important; // BORDO ROSSO
         border-radius: 5px;
+        color: #ef4444 !important; // NUMERO IN ROSSO
+        font-weight: 800;
+        font-size: 0.95rem;
+        text-align: center;
+        padding: 0 2px;
         outline: none;
 
-        &:focus { border-color: $crimson; }
+        &::placeholder {
+          color: rgba(239, 68, 68, 0.45);
+        }
+
+        &:focus {
+          border-color: #ef4444 !important;
+          box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
       }
 
       .btn-apply-dmg {
-        background: $crimson;
-        border: none;
+        height: 32px;
+        padding: 0 10px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border: 1px solid #f87171;
         color: #fff;
-        font-size: 0.72rem;
+        font-size: 0.76rem;
         font-weight: 800;
-        padding: 5px 10px;
         border-radius: 5px;
         cursor: pointer;
-        transition: filter 0.15s ease;
 
         &:hover { filter: brightness(1.15); }
       }
     }
   }
-}
-
-@keyframes pulseTurn {
-  0% { box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
-  50% { box-shadow: 0 0 14px rgba(245, 158, 11, 0.8); }
-  100% { box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
 }

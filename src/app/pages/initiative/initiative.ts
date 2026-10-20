@@ -5,15 +5,17 @@ import { HttpClient } from '@angular/common/http';
 import { Subject, interval } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 
+export type CombatantType = 'pc' | 'npc' | 'enemy' | 'ally';
+
 export interface Combatant {
   id: string;
   name: string;
-  type: 'pc' | 'npc' | 'enemy';
+  type: CombatantType;
   initiative: number;
   conditions: string[];
   damage?: number;
   is_ko?: boolean;
-  tempDamageInput?: number; // Valore temporaneo dell'input danni
+  tempDamageInput?: number;
 }
 
 export interface CombatEncounter {
@@ -41,24 +43,27 @@ export class InitiativeComponent implements OnInit, OnDestroy {
   currentRound = signal<number>(1);
   activeTurnIndex = signal<number>(0);
 
-  // Form rapido per inserimento nemico
+  // Form rapido: scelta se inserire Nemico o Alleato
+  newCombatantType: 'enemy' | 'ally' = 'enemy';
   newEnemyName = '';
   newEnemyInit: number | null = 10;
 
-  // Stato di caricamento/salvataggio
   isLoading = signal<boolean>(true);
   isSaving = signal<boolean>(false);
 
+  // Tracciamento attività e focus per impedire reset mentre si digita
+  private lastUserActionTime = 0;
+  focusedCombatantId = signal<string | null>(null);
+
   ngOnInit(): void {
-    // 1. Primo caricamento immediato
     this.loadEncounter();
 
-    // 2. LIVE SYNC: Polling ogni 2 secondi
+    // LIVE POLLING: ogni 2 secondi
     interval(2000)
       .pipe(
         takeUntil(this.destroy$),
-        // Non fa richieste inutili se la schermata del telefono è bloccata o la scheda non è visibile
-        filter(() => document.visibilityState === 'visible' && !this.isSaving())
+        // Non fa richieste e non disturba se la scheda è in background, se sta salvando o se l'utente sta digitando
+        filter(() => document.visibilityState === 'visible' && !this.isSaving() && !this.isUserTyping())
       )
       .subscribe(() => {
         this.syncEncounterInBackground();
@@ -70,11 +75,24 @@ export class InitiativeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // --- CARICAMENTO E SINCRONIZZAZIONE ---
+  // Rileva se un elemento di input/textarea ha il focus
+  private isUserTyping(): boolean {
+    if (typeof document === 'undefined') return false;
+    const active = document.activeElement;
+    if (!active) return false;
+    const tag = active.tagName?.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || active.getAttribute('contenteditable') === 'true';
+  }
+
+  touchUserActivity(): void {
+    this.lastUserActionTime = Date.now();
+  }
+
+  // --- SINCRONIZZAZIONE E CARICAMENTO ---
   loadEncounter(): void {
     this.http.get<CombatEncounter>('/api/initiative').subscribe({
       next: (data) => {
-        this.applyEncounterData(data);
+        this.applyEncounterData(data, false);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -85,48 +103,68 @@ export class InitiativeComponent implements OnInit, OnDestroy {
   }
 
   private syncEncounterInBackground(): void {
+    // Se l'utente ha toccato o digitato qualcosa negli ultimi 3.5 secondi, salta il refresh
+    if (this.isUserTyping() || Date.now() - this.lastUserActionTime < 3500) {
+      return;
+    }
+
     this.http.get<CombatEncounter>('/api/initiative').subscribe({
       next: (data) => {
         const currentJson = JSON.stringify({
           r: this.currentRound(),
           t: this.activeTurnIndex(),
-          c: this.combatants().map(c => ({ id: c.id, init: c.initiative, dmg: c.damage, ko: c.is_ko }))
+          c: this.combatants().map(c => ({ id: c.id, init: c.initiative, dmg: c.damage, ko: c.is_ko, type: c.type }))
         });
 
         const incomingJson = JSON.stringify({
           r: data.current_round,
           t: data.active_turn_index,
-          c: (data.combatants || []).map(c => ({ id: c.id, init: c.initiative, dmg: c.damage, ko: c.is_ko }))
+          c: (data.combatants || []).map(c => ({ id: c.id, init: c.initiative, dmg: c.damage, ko: c.is_ko, type: c.type }))
         });
 
-        // Aggiorna solo se c'è stata una reale modifica dal master o da altri dispositivi
         if (currentJson !== incomingJson) {
-          this.applyEncounterData(data);
+          this.applyEncounterData(data, true);
         }
       },
-      error: (err) => console.error('Errore sync polling iniziativa:', err)
+      error: (err) => console.error('Errore sync iniziativa:', err)
     });
   }
 
-  private applyEncounterData(data: CombatEncounter): void {
+  private applyEncounterData(data: CombatEncounter, isFromPolling: boolean): void {
     this.encounter.set(data);
     this.currentRound.set(data.current_round || 1);
     this.activeTurnIndex.set(data.active_turn_index || 0);
 
-    const list = (data.combatants || []).map(c => ({
-      ...c,
-      damage: c.damage ?? 0,
-      is_ko: c.is_ko ?? false,
-      tempDamageInput: c.tempDamageInput ?? 0
-    }));
+    const focusedId = this.focusedCombatantId();
+    const localMap = new Map(this.combatants().map(c => [c.id, c]));
 
-    this.combatants.set(this.sortCombatantsList(list));
+    const mergedList = (data.combatants || []).map(serverC => {
+      const localC = localMap.get(serverC.id);
+      // Se il combattente è in fase di modifica locale, protegge il valore digitato
+      const isBeingEdited = focusedId === serverC.id;
+
+      return {
+        ...serverC,
+        initiative: isBeingEdited && localC ? localC.initiative : serverC.initiative,
+        damage: serverC.damage ?? 0,
+        is_ko: serverC.is_ko ?? false,
+        tempDamageInput: isBeingEdited && localC ? localC.tempDamageInput : (serverC.tempDamageInput ?? 0)
+      };
+    });
+
+    // Se stiamo ricevendo un polling e l'utente ha aperto un campo, non riordina per non far saltare la card sotto le dita
+    if (isFromPolling && this.isUserTyping()) {
+      this.combatants.set(mergedList);
+    } else {
+      this.combatants.set(this.sortCombatantsList(mergedList));
+    }
   }
 
   private saveCurrentState(): void {
     const enc = this.encounter();
     if (!enc) return;
 
+    this.touchUserActivity();
     this.isSaving.set(true);
 
     const payload = {
@@ -186,15 +224,21 @@ export class InitiativeComponent implements OnInit, OnDestroy {
     this.saveCurrentState();
   }
 
-  // --- AGGIUNTA NEMICO & ORDINAMENTO ---
-  addEnemy(): void {
+  // --- FORM AGGIUNTA NEMICO / ALLEATO ---
+  setNewCombatantType(type: 'enemy' | 'ally'): void {
+    this.newCombatantType = type;
+    this.touchUserActivity();
+  }
+
+  addCombatant(): void {
     const name = this.newEnemyName.trim();
     if (!name) return;
 
-    const newEnemy: Combatant = {
-      id: 'enemy_' + Date.now(),
+    this.touchUserActivity();
+    const newEntry: Combatant = {
+      id: `${this.newCombatantType}_${Date.now()}`,
       name,
-      type: 'enemy',
+      type: this.newCombatantType,
       initiative: Number(this.newEnemyInit) || 0,
       conditions: [],
       damage: 0,
@@ -202,7 +246,7 @@ export class InitiativeComponent implements OnInit, OnDestroy {
       tempDamageInput: 0
     };
 
-    const updated = this.sortCombatantsList([...this.combatants(), newEnemy]);
+    const updated = this.sortCombatantsList([...this.combatants(), newEntry]);
     this.combatants.set(updated);
     this.newEnemyName = '';
     this.newEnemyInit = 10;
@@ -210,6 +254,7 @@ export class InitiativeComponent implements OnInit, OnDestroy {
   }
 
   removeCombatant(id: string): void {
+    this.touchUserActivity();
     const updated = this.combatants().filter(c => c.id !== id);
     this.combatants.set(updated);
     if (this.activeTurnIndex() >= updated.length) {
@@ -218,28 +263,50 @@ export class InitiativeComponent implements OnInit, OnDestroy {
     this.saveCurrentState();
   }
 
+  // --- EDITING INIZIATIVA IN CARD ---
+  onInitiativeInput(c: Combatant, newVal: any): void {
+    this.touchUserActivity();
+    c.initiative = Number(newVal) || 0;
+  }
+
+  onInputFocus(combatantId: string): void {
+    this.touchUserActivity();
+    this.focusedCombatantId.set(combatantId);
+  }
+
+  onInitiativeBlur(c: Combatant): void {
+    this.touchUserActivity();
+    this.focusedCombatantId.set(null);
+    this.saveCurrentState();
+  }
+
   sortCombatants(): void {
+    this.touchUserActivity();
     this.combatants.update(list => this.sortCombatantsList(list));
     this.saveCurrentState();
   }
 
   private sortCombatantsList(list: Combatant[]): Combatant[] {
     return [...list].sort((a, b) => {
-      // Gli NPC restano sempre in fondo al round (iniziativa < -50)
+      // Gli NPC della carovana restano sempre in fondo al round (iniziativa < -50)
       if (a.initiative < -50 && b.initiative < -50) {
-        return b.initiative - a.initiative; // Mantiene ordine Ameiko, Zaya, Sandru, Shalelu
+        return b.initiative - a.initiative;
       }
+      if (a.initiative < -50) return 1;
+      if (b.initiative < -50) return -1;
       return b.initiative - a.initiative;
     });
   }
 
-  // --- GESTIONE DANNI (PER NEMICI E PER NPC DELLA CAROVANA) ---
+  // --- GESTIONE DANNI (PER NEMICI, ALLEATI E CAROVANA) ---
   addQuickDamage(c: Combatant, delta: number): void {
+    this.touchUserActivity();
     c.damage = Math.max(0, (c.damage || 0) + delta);
     this.saveCurrentState();
   }
 
   applyInputDamage(c: Combatant): void {
+    this.touchUserActivity();
     const amount = Number(c.tempDamageInput);
     if (!isNaN(amount) && amount !== 0) {
       c.damage = Math.max(0, (c.damage || 0) + amount);
@@ -249,6 +316,7 @@ export class InitiativeComponent implements OnInit, OnDestroy {
   }
 
   setKo(c: Combatant, isKo: boolean): void {
+    this.touchUserActivity();
     c.is_ko = isKo;
     this.saveCurrentState();
   }
@@ -257,10 +325,10 @@ export class InitiativeComponent implements OnInit, OnDestroy {
     const enc = this.encounter();
     if (!enc) return;
 
-    if (confirm('Vuoi davvero resettare lo scontro al Round 1 e rimuovere i nemici?')) {
+    if (confirm('Vuoi davvero resettare lo scontro al Round 1 e rimuovere nemici e alleati extra?')) {
       this.http.post<CombatEncounter>('/api/initiative', { id: enc.id }).subscribe({
         next: (resetData) => {
-          this.applyEncounterData(resetData);
+          this.applyEncounterData(resetData, false);
         },
         error: (err) => console.error('Errore reset scontro:', err)
       });

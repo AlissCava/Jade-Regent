@@ -14,15 +14,40 @@
     </div>
   </header>
 
-  <!-- FORM RAPIDO INSERIMENTO NEMICI -->
-  <section class="enemy-creator-box">
-    <div class="box-title">⚔️ INSERISCI NEMICO</div>
-    <form (ngSubmit)="addEnemy()" class="enemy-form">
+  <!-- FORM RAPIDO: SELETTORE NEMICO / ALLEATO -->
+  <section class="enemy-creator-box" [class.is-ally-box]="newCombatantType === 'ally'">
+    <div class="creator-header">
+      <div class="box-title">
+        <span *ngIf="newCombatantType === 'enemy'">⚔️ INSERISCI NEMICO</span>
+        <span *ngIf="newCombatantType === 'ally'">🛡️ INSERISCI ALLEATO</span>
+      </div>
+
+      <!-- TASTI TOGGLE NEMICO / ALLEATO -->
+      <div class="type-toggle-group">
+        <button 
+          type="button" 
+          class="btn-type-toggle toggle-enemy" 
+          [class.active]="newCombatantType === 'enemy'" 
+          (click)="setNewCombatantType('enemy')">
+          🔴 Nemico
+        </button>
+        <button 
+          type="button" 
+          class="btn-type-toggle toggle-ally" 
+          [class.active]="newCombatantType === 'ally'" 
+          (click)="setNewCombatantType('ally')">
+          🟢 Alleato
+        </button>
+      </div>
+    </div>
+
+    <form (ngSubmit)="addCombatant()" class="enemy-form">
       <input 
         type="text" 
         [(ngModel)]="newEnemyName" 
         name="enemyName" 
-        placeholder="Nome (es. Goblin 1, Lupo Leader)..." 
+        [placeholder]="newCombatantType === 'enemy' ? 'Nome (es. Goblin 1, Lupo Leader)...' : 'Nome (es. Guardia, Chierico alleato)...'" 
+        (focus)="touchUserActivity()"
         required />
 
       <div class="init-input-wrap">
@@ -31,10 +56,16 @@
           type="number" 
           [(ngModel)]="newEnemyInit" 
           name="enemyInit" 
+          (focus)="touchUserActivity()"
           required />
       </div>
 
-      <button type="submit" class="btn-add-enemy">+ Aggiungi</button>
+      <button 
+        type="submit" 
+        class="btn-add-enemy"
+        [class.btn-add-ally]="newCombatantType === 'ally'">
+        + Aggiungi
+      </button>
     </form>
   </section>
 
@@ -45,6 +76,7 @@
       class="combatant-card"
       [class.active-turn]="i === activeTurnIndex()"
       [class.card-enemy]="c.type === 'enemy'"
+      [class.card-ally]="c.type === 'ally'"
       [class.card-pc]="c.type === 'pc'"
       [class.card-npc]="c.type === 'npc'"
       [class.is-defeated]="c.is_ko">
@@ -52,7 +84,6 @@
       <!-- RIGA SUPERIORE CARD: NUMERO, NOME, BADGE E INIZIATIVA -->
       <div class="card-top-row">
         <div class="left-col">
-          <!-- PULSANTE INDICATORE TURNO: CLICCABILE PER PASSARE AL PROSSIMO -->
           <button 
             *ngIf="i === activeTurnIndex()" 
             type="button" 
@@ -68,6 +99,7 @@
 
           <!-- BADGE TIPO COMBATTENTE -->
           <span class="type-pill pill-enemy" *ngIf="c.type === 'enemy'">NEMICO</span>
+          <span class="type-pill pill-ally" *ngIf="c.type === 'ally'">ALLEATO</span>
           <span class="type-pill pill-pc" *ngIf="c.type === 'pc'">PG</span>
           <span class="type-pill pill-npc" *ngIf="c.type === 'npc'">CAROVANA</span>
         </div>
@@ -75,21 +107,25 @@
         <div class="right-col">
           <div class="init-value-box">
             <span class="init-lbl">Iniziativa:</span>
+            <!-- INPUT PROTETTO: NON SI RESETTA MENTRE DIGITI -->
             <input 
               type="number" 
               class="init-input" 
-              [(ngModel)]="c.initiative" 
-              (change)="sortCombatants()" 
+              [ngModel]="c.initiative" 
+              (ngModelChange)="onInitiativeInput(c, $event)"
+              (focus)="onInputFocus(c.id)"
+              (blur)="onInitiativeBlur(c)"
+              (keydown.enter)="$event.target.blur()"
               [readonly]="c.type === 'npc'" />
           </div>
 
-          <!-- Solo i nemici inseriti al volo possono essere eliminati con la X -->
+          <!-- Pulsante elimina per nemici ed alleati aggiunti al volo -->
           <button 
-            *ngIf="c.type === 'enemy'" 
+            *ngIf="c.type === 'enemy' || c.type === 'ally'" 
             type="button" 
             class="btn-delete" 
             (click)="removeCombatant(c.id)" 
-            title="Rimuovi nemico">✕</button>
+            title="Rimuovi">✕</button>
         </div>
       </div>
 
@@ -98,8 +134,8 @@
         <em>Agisce a fine round con la carovana</em>
       </div>
 
-      <!-- PANNELLO DANNI SUBITI (VISIBILE SIA PER I NEMICI CHE PER GLI NPC DELLA CAROVANA) -->
-      <div class="damage-panel" *ngIf="c.type === 'enemy' || c.type === 'npc'">
+      <!-- PANNELLO DANNI SUBITI IN ROSSO ACCESO (PER NEMICI, ALLEATI E CAROVANA) -->
+      <div class="damage-panel" *ngIf="c.type === 'enemy' || c.type === 'npc' || c.type === 'ally'">
         <div class="damage-status-line">
           <div class="damage-counter">
             <span class="lbl">DANNI SUBITI:</span>
@@ -124,17 +160,21 @@
           </div>
         </div>
 
-        <!-- CONTROLLI RAPIDI DANNI -->
+        <!-- CONTROLLI RAPIDI DANNI CON INPUT IN ROSSO -->
         <div class="damage-controls-row">
           <button type="button" class="btn-dmg-quick" (click)="addQuickDamage(c, 1)">+1</button>
           <button type="button" class="btn-dmg-quick" (click)="addQuickDamage(c, 5)">+5</button>
           <button type="button" class="btn-dmg-quick" (click)="addQuickDamage(c, 10)">+10</button>
           <button type="button" class="btn-dmg-quick btn-heal" (click)="addQuickDamage(c, -5)">-5</button>
 
+          <!-- INPUT DANNO DA INFLIGGERE IN ROSSO -->
           <input 
             type="number" 
             class="input-custom-dmg" 
             [(ngModel)]="c.tempDamageInput" 
+            (focus)="onInputFocus(c.id)"
+            (blur)="touchUserActivity()"
+            (keydown.enter)="applyInputDamage(c)"
             placeholder="0" />
 
           <button type="button" class="btn-apply-dmg" (click)="applyInputDamage(c)">Infliggi</button>
