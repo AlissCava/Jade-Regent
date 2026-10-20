@@ -881,3 +881,59 @@ $text-muted: #94a3b8;
     border-radius: 0 !important;
   }
 }
+
+/* BARRA INFORMAZIONI E RESET FILTRI */
+.filter-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+  margin-top: -2px;
+
+  .results-count {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    strong { color: #fde68a; }
+  }
+
+  .btn-reset-filters {
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+  }
+}
+
+/* STILI CHIP STATO AGGIUNTIVI */
+.f-chip {
+  &.status-alive.active {
+    background: rgba(56, 189, 248, 0.25) !important;
+    border-color: #38bdf8 !important;
+    color: #bae6fd !important;
+  }
+  &.status-prisoner.active {
+    background: rgba(245, 158, 11, 0.25) !important;
+    border-color: #f59e0b !important;
+    color: #fde68a !important;
+  }
+  &.status-cultist.active {
+    background: rgba(168, 85, 247, 0.25) !important;
+    border-color: #a855f7 !important;
+    color: #e9d5ff !important;
+  }
+  &.cat-npc.active {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #fff !important;
+  }
+}

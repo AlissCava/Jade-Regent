@@ -69,7 +69,7 @@
   </ng-container>
 
   <!-- ========================================================= -->
-  <!-- SEZIONE 2: PNG & CAROVANA (NEON SERVER)                   -->
+  <!-- SEZIONE 2: PNG & CAROVANA (MULTI-FILTRO SINERGICO)         -->
   <!-- ========================================================= -->
   <ng-container *ngIf="activeMainTab() === 'npcs'">
     <header class="characters-header">
@@ -78,13 +78,49 @@
       <p class="subtitle">Tutti gli alleati, nemici, contatti e luoghi incontrati durante il viaggio.</p>
     </header>
 
+    <!-- PANNELLO MULTI-FILTRO -->
     <div class="npc-filter-panel">
+      <!-- 1. BARRA DI RICERCA -->
       <div class="search-wrap">
         <span class="s-icon">🔍</span>
-        <input type="search" [ngModel]="npcSearch()" (ngModelChange)="npcSearch.set($event)" placeholder="Cerca PNG per nome, alter ego, luogo o note..." />
+        <input 
+          type="search" 
+          [ngModel]="npcSearch()" 
+          (ngModelChange)="npcSearch.set($event)" 
+          placeholder="Cerca per nome, alter ego, luogo o note..." />
         <button *ngIf="npcSearch()" class="btn-clear" (click)="npcSearch.set('')">✕</button>
       </div>
 
+      <!-- INTESTAZIONE STATO DEI FILTRI & RESET -->
+      <div class="filter-header-row">
+        <span class="results-count">Visualizzati: <strong>{{ filteredNpcs().length }}</strong> su {{ npcs().length }}</span>
+        <button *ngIf="hasActiveNpcFilters()" type="button" class="btn-reset-filters" (click)="resetNpcFilters()">
+          ✕ Reset Filtri
+        </button>
+      </div>
+
+      <!-- RIGA 1: TIPO / CATEGORIA -->
+      <div class="chips-scroll-bar">
+        <span class="chip-lbl">TIPO:</span>
+        <button type="button" class="f-chip" [class.active]="selectedCategory() === 'Tutti'" (click)="selectedCategory.set('Tutti')">Tutti</button>
+        <button type="button" class="f-chip cat-npc" [class.active]="selectedCategory() === 'NPC'" (click)="selectedCategory.set('NPC')">👤 PNG</button>
+        <button type="button" class="f-chip status-lore" [class.active]="selectedCategory() === 'Luogo'" (click)="selectedCategory.set('Luogo')">🏯 Luoghi</button>
+        <button type="button" class="f-chip status-deity" [class.active]="selectedCategory() === 'Divinità'" (click)="selectedCategory.set('Divinità')">⛩️ Divinità</button>
+      </div>
+
+      <!-- RIGA 2: STATO DEI PNG (CON "ATTIVI" FINALMENTE PRESENTE!) -->
+      <div class="chips-scroll-bar" *ngIf="selectedCategory() !== 'Luogo' && selectedCategory() !== 'Divinità'">
+        <span class="chip-lbl">STATO:</span>
+        <button type="button" class="f-chip" [class.active]="selectedStatus() === 'Tutti'" (click)="selectedStatus.set('Tutti')">Tutti</button>
+        <button type="button" class="f-chip status-alive" [class.active]="selectedStatus() === 'alive'" (click)="selectedStatus.set('alive')">⚪ Attivi</button>
+        <button type="button" class="f-chip status-ally" [class.active]="selectedStatus() === 'ally'" (click)="selectedStatus.set('ally')">🟢 Alleati</button>
+        <button type="button" class="f-chip status-enemy" [class.active]="selectedStatus() === 'enemy'" (click)="selectedStatus.set('enemy')">🔴 Nemici</button>
+        <button type="button" class="f-chip status-dead" [class.active]="selectedStatus() === 'dead'" (click)="selectedStatus.set('dead')">💀 Deceduti</button>
+        <button type="button" class="f-chip status-prisoner" [class.active]="selectedStatus() === 'prisoner'" (click)="selectedStatus.set('prisoner')">🔒 Prigionieri</button>
+        <button type="button" class="f-chip status-cultist" [class.active]="selectedStatus() === 'cultist'" (click)="selectedStatus.set('cultist')">🟣 Cultisti</button>
+      </div>
+
+      <!-- RIGA 3: LUOGO -->
       <div class="chips-scroll-bar">
         <span class="chip-lbl">LUOGO:</span>
         <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Tutti'" (click)="selectedLocation.set('Tutti')">Tutti</button>
@@ -94,28 +130,18 @@
         <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Bian Jie'" (click)="selectedLocation.set('Bian Jie')">Bian Jie</button>
         <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Kaoling'" (click)="selectedLocation.set('Kaoling')">Kaoling</button>
         <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Minkai'" (click)="selectedLocation.set('Minkai')">Minkai</button>
-      </div>
-
-      <!-- FILTRO CATEGORIA & STATO: LUOGHI E DIVINITÀ SEPARATI -->
-      <div class="chips-scroll-bar">
-        <span class="chip-lbl">FILTRO:</span>
-        <button type="button" class="f-chip" [class.active]="selectedStatus() === 'Tutti'" (click)="selectedStatus.set('Tutti')">Tutti</button>
-        <button type="button" class="f-chip status-ally" [class.active]="selectedStatus() === 'ally'" (click)="selectedStatus.set('ally')">🟢 Alleati</button>
-        <button type="button" class="f-chip status-enemy" [class.active]="selectedStatus() === 'enemy'" (click)="selectedStatus.set('enemy')">🔴 Nemici</button>
-        <button type="button" class="f-chip status-dead" [class.active]="selectedStatus() === 'dead'" (click)="selectedStatus.set('dead')">💀 Deceduti</button>
-        <button type="button" class="f-chip status-lore" [class.active]="selectedStatus() === 'places'" (click)="selectedStatus.set('places')">🏯 Luoghi</button>
-        <button type="button" class="f-chip status-deity" [class.active]="selectedStatus() === 'deities'" (click)="selectedStatus.set('deities')">⛩️ Divinità</button>
+        <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Piani'" (click)="selectedLocation.set('Piani')">Piani</button>
       </div>
     </div>
 
     <div *ngIf="loadingNpcs()" class="loading-state"><div class="spinner"></div><span>Caricamento registro PNG...</span></div>
 
+    <!-- GRIGLIA CARDS PNG -->
     <div class="modules-grid" *ngIf="!loadingNpcs()">
       <div *ngFor="let npc of filteredNpcs()" class="module-card npc-card" (click)="openNpcDetails(npc)">
         <div class="npc-card-top">
           <span class="loc-pill">{{ npc.location }}</span>
 
-          <!-- BADGE DEDICATO PER LUOGHI E DIVINITÀ (NON PIÙ STATUS GENERICO) -->
           <ng-container [ngSwitch]="npc.category">
             <span *ngSwitchCase="'Luogo'" class="status-badge status-lore">🏯 Luogo</span>
             <span *ngSwitchCase="'Divinità'" class="status-badge status-deity">⛩️ Divinità</span>
@@ -136,6 +162,10 @@
           </div>
         </div>
         <div class="card-action-hint">Dettagli / Modifica ➔</div>
+      </div>
+
+      <div *ngIf="filteredNpcs().length === 0" class="empty-hint">
+        Nessun elemento trovato per i filtri selezionati. Clicca su <strong>Reset Filtri</strong> per ripristinare.
       </div>
     </div>
   </ng-container>
@@ -181,7 +211,6 @@
     <!-- GRIGLIA MOSTRI -->
     <div class="modules-grid bestiary-grid">
       <div *ngFor="let enemy of filteredEnemies()" class="module-card enemy-card" (click)="editEnemy(enemy)">
-        
         <div class="enemy-card-top">
           <span class="cr-badge">CR {{ enemy.cr || '?' }}</span>
           
@@ -256,7 +285,6 @@
       </div>
 
       <div class="modal-body">
-        
         <!-- 1. GENERAL -->
         <div *ngIf="editorTab() === 'general'" class="ed-section">
           <div class="fields-row">
@@ -277,7 +305,7 @@
           <div class="field-group"><label>Aura (opzionale)</label><input type="text" [(ngModel)]="en.aura" /></div>
         </div>
 
-        <!-- 2. DEFENSE (4 CA SEPARATE) -->
+        <!-- 2. DEFENSE -->
         <div *ngIf="editorTab() === 'defense'" class="ed-section">
           <div class="field-group"><label>Punti Ferita (hp)</label><input type="text" [(ngModel)]="en.hp" /></div>
           
@@ -297,7 +325,7 @@
           </div>
           <div class="field-group">
             <label>Modificatori / Scorporo CA</label>
-            <input type="text" [(ngModel)]="en.ac_modifiers" (ngModelChange)="syncAc(en)" placeholder="es. +4 Dex, +5 natural oppure +4 armor, +3 dex" />
+            <input type="text" [(ngModel)]="en.ac_modifiers" (ngModelChange)="syncAc(en)" placeholder="es. +4 Dex, +5 natural" />
           </div>
 
           <div class="fields-row-3">
@@ -419,7 +447,7 @@
           </div>
         </div>
 
-        <!-- 7. ANTEPRIMA PAIZO BLINDATA (SENZA BANDA NERA, TITOLI BOLD PULITI) -->
+        <!-- 7. ANTEPRIMA PAIZO PULITA -->
         <div *ngIf="editorTab() === 'preview'" class="paizo-statblock-preview">
           <div class="sb-head-row">
             <span class="sb-title">{{ en.name || 'Senza Nome' }}, {{ en.title_line || '' }}</span>
@@ -434,7 +462,6 @@
             <span *ngIf="en.aura">; <strong>Aura</strong> {{ en.aura }}</span>
           </div>
 
-          <!-- TITOLO SEZIONE PULITO -->
           <div class="sb-sec-bar">Defense</div>
           <div>
             <strong>AC</strong> {{ en.ac_total || en.ac?.split(',')[0] || '10' }}, 
@@ -452,7 +479,6 @@
             <strong>Defensive Abilities</strong> {{ en.defensive_abilities || '' }}; {{ en.dr ? 'DR ' + en.dr + ';' : '' }} {{ en.immune ? 'Immune ' + en.immune + ';' : '' }} {{ en.resist ? 'Resist ' + en.resist + ';' : '' }} {{ en.sr ? 'SR ' + en.sr : '' }}
           </div>
 
-          <!-- TITOLO SEZIONE PULITO -->
           <div class="sb-sec-bar">Offense</div>
           <div><strong>Spd</strong> {{ en.speed || '30 ft.' }}</div>
           <div *ngIf="en.melee"><strong>Melee</strong> {{ en.melee }}</div>
@@ -471,14 +497,12 @@
             <div class="sb-spells-block" [innerHTML]="formatSpellsHtml(en.spells_known)"></div>
           </div>
 
-          <!-- TITOLO SEZIONE PULITO -->
           <div class="sb-sec-bar" *ngIf="en.before_combat || en.during_combat || en.morale || en.base_statistics">Tactics</div>
           <div *ngIf="en.before_combat"><strong>Before Combat</strong> {{ en.before_combat }}</div>
           <div *ngIf="en.during_combat"><strong>During Combat</strong> {{ en.during_combat }}</div>
           <div *ngIf="en.morale"><strong>Morale</strong> {{ en.morale }}</div>
           <div *ngIf="en.base_statistics"><strong>Base Statistics</strong> {{ en.base_statistics }}</div>
 
-          <!-- TITOLO SEZIONE PULITO -->
           <div class="sb-sec-bar">Statistics</div>
           <div>
             <strong>Str</strong> {{ en.abilities?.str || '10' }}, 
@@ -499,7 +523,6 @@
           <div *ngIf="en.sq"><strong>SQ</strong> {{ en.sq }}</div>
           <div *ngIf="en.gear"><strong>Gear</strong> {{ en.gear }}</div>
 
-          <!-- TITOLO SEZIONE PULITO -->
           <div class="sb-sec-bar" *ngIf="en.special_abilities && en.special_abilities.length > 0">Special Abilities</div>
           <div *ngFor="let sa of en.special_abilities" style="margin-bottom: 4px;">
             <strong>{{ sa.name }}{{ sa.type ? ' (' + sa.type + ')' : '' }}:</strong> {{ sa.description }}

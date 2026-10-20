@@ -43,19 +43,24 @@ export class CharactersListComponent implements OnInit {
   private pdfExportService = inject(PdfExportService);
   private router = inject(Router);
 
+  // Switcher a 3 schede principali
   activeMainTab = signal<'party' | 'npcs' | 'bestiary'>('party');
 
+  // 1. Eroi Party
   characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
   loadingHeroes = signal<boolean>(false);
 
+  // 2. PNG & Carovana (Multi-Filtro)
   npcs = signal<NpcRecord[]>([]);
   loadingNpcs = signal<boolean>(false);
   npcSearch = signal<string>('');
   selectedLocation = signal<string>('Tutti');
-  selectedStatus = signal<string>('Tutti');
+  selectedCategory = signal<string>('Tutti'); // 'Tutti' | 'NPC' | 'Luogo' | 'Divinità'
+  selectedStatus = signal<string>('Tutti');   // 'Tutti' | 'alive' | 'ally' | 'enemy' | 'dead' | 'prisoner' | 'cultist'
   selectedNpc = signal<NpcRecord | null>(null);
   isSavingNpc = signal<boolean>(false);
 
+  // 3. Bestiario Locale
   enemies = signal<EnemyStatblock[]>([]);
   enemySearch = signal<string>('');
   selectedEnemy = signal<EnemyStatblock | null>(null);
@@ -65,6 +70,7 @@ export class CharactersListComponent implements OnInit {
   newAbilityType: 'Ex' | 'Sp' | 'Su' | '' = 'Ex';
   newAbilityDesc = '';
 
+  // Modale creazione eroe
   showCreateModal = signal<boolean>(false);
   newName = '';
   newClass = 'Guerriero';
@@ -72,29 +78,56 @@ export class CharactersListComponent implements OnInit {
   newLevel = 7;
   isCreating = signal<boolean>(false);
 
-  // FILTRI REATTIVI: LUOGHI E DIVINITÀ SEPARATI
+  // Verifica se almeno un filtro è attivo
+  hasActiveNpcFilters = computed(() => {
+    return this.selectedLocation() !== 'Tutti' ||
+           this.selectedCategory() !== 'Tutti' ||
+           this.selectedStatus() !== 'Tutti' ||
+           this.npcSearch().trim().length > 0;
+  });
+
+  resetNpcFilters(): void {
+    this.selectedLocation.set('Tutti');
+    this.selectedCategory.set('Tutti');
+    this.selectedStatus.set('Tutti');
+    this.npcSearch.set('');
+  }
+
+  // DOPPIO / TRIPLO FILTRO SINERGICO (AND)
   filteredNpcs = computed(() => {
     const q = this.npcSearch().toLowerCase().trim();
     const loc = this.selectedLocation();
+    const cat = this.selectedCategory();
     const st = this.selectedStatus();
 
     return this.npcs().filter((n) => {
+      // 1. Ricerca testuale
       if (q) {
         const full = `${n.first_name} ${n.last_name || ''} ${n.alter_ego || ''} ${n.description || ''} ${n.notes || ''}`.toLowerCase();
         if (!full.includes(q)) return false;
       }
-      if (loc !== 'Tutti' && n.location !== loc) return false;
 
+      // 2. Filtro Categoria (Tutti, NPC, Luogo, Divinità)
+      if (cat !== 'Tutti' && n.category !== cat) {
+        return false;
+      }
+
+      // 3. Filtro Luogo
+      if (loc !== 'Tutti' && n.location !== loc) {
+        return false;
+      }
+
+      // 4. Filtro Stato
       if (st !== 'Tutti') {
-        if (st === 'places') {
-          if (n.category !== 'Luogo') return false;
-        } else if (st === 'deities') {
-          if (n.category !== 'Divinità') return false;
-        } else {
-          if (n.category !== 'NPC') return false;
+        if (n.category === 'NPC') {
           if (n.status !== st) return false;
+        } else {
+          // Se si filtra per uno stato specifico dei PNG (es. alive, ally, enemy...),
+          // escludiamo Luoghi e Divinità a meno che non siano selezionati esplicitamente
+          if (cat === 'Tutti') return false;
         }
       }
+
       return true;
     });
   });
@@ -126,6 +159,7 @@ export class CharactersListComponent implements OnInit {
     }
   }
 
+  // ==================== BESTIARIO ====================
   loadBestiary(): void {
     this.enemies.set(this.bestiaryService.getAll());
   }
@@ -135,9 +169,7 @@ export class CharactersListComponent implements OnInit {
       let str = en.ac_total || '10';
       str += `, touch ${en.ac_touch || '10'}`;
       str += `, flat-footed ${en.ac_flat_footed || '10'}`;
-      if (en.ac_modifiers) {
-        str += ` (${en.ac_modifiers})`;
-      }
+      if (en.ac_modifiers) str += ` (${en.ac_modifiers})`;
       en.ac = str;
     }
   }
@@ -187,12 +219,8 @@ export class CharactersListComponent implements OnInit {
       event.stopPropagation();
     }
     const clone: EnemyStatblock = JSON.parse(JSON.stringify(enemy));
-    if (!clone.abilities) {
-      clone.abilities = { str: '10', dex: '10', con: '10', int: '10', wis: '10', cha: '10' };
-    }
-    if (!clone.special_abilities) {
-      clone.special_abilities = [];
-    }
+    if (!clone.abilities) clone.abilities = { str: '10', dex: '10', con: '10', int: '10', wis: '10', cha: '10' };
+    if (!clone.special_abilities) clone.special_abilities = [];
 
     if (!clone.ac_total && clone.ac) {
       const m = clone.ac.match(/^([^,]+)(?:,\s*touch\s*([^,]+))?(?:,\s*flat-footed\s*([^(]+))?(?:\s*\((.*)\))?/i);
@@ -205,7 +233,6 @@ export class CharactersListComponent implements OnInit {
         clone.ac_total = clone.ac;
       }
     }
-
     this.selectedEnemy.set(clone);
     this.editorTab.set('general');
   }
@@ -303,6 +330,7 @@ export class CharactersListComponent implements OnInit {
     });
   }
 
+  // ==================== PNG & CAROVANA ====================
   formatImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     if (url.startsWith('data:image/')) return url;
@@ -386,6 +414,7 @@ export class CharactersListComponent implements OnInit {
     });
   }
 
+  // ==================== EROI PARTY ====================
   private getDeletedSlugs(): Set<string> {
     try {
       const raw = localStorage.getItem('jade_regent_deleted_slugs');
