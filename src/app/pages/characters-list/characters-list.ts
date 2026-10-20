@@ -22,57 +22,11 @@ export interface CharacterEntry {
 }
 
 const DEFAULT_HEROES: CharacterEntry[] = [
-  {
-    slug: 'ryoujin',
-    name: 'Ryoujin',
-    kanji: '竜刃',
-    className: 'Samurai (Ordine del Ronin)',
-    race: 'Tiefling (Oni-Spawn)',
-    level: 7,
-    icon: '⚔️',
-    theme: 'crimson',
-    subtitle: 'Spadaccino in prima linea • Lupo Hisui'
-  },
-  {
-    slug: 'airyn',
-    name: 'Airyn',
-    className: 'Druido',
-    race: 'Silfide',
-    level: 7,
-    icon: '🌿',
-    theme: 'emerald',
-    subtitle: 'Magia divina e forme selvatiche'
-  },
-  {
-    slug: 'azoi',
-    name: 'Azoi',
-    className: 'Magus',
-    race: 'Tengu',
-    level: 7,
-    icon: '⚡',
-    theme: 'blue',
-    subtitle: 'Spellstrike e combattimento arcano'
-  },
-  {
-    slug: 'kaede',
-    name: 'Kaede',
-    className: 'Ninja',
-    race: 'Kitsune',
-    level: 7,
-    icon: '🦊',
-    theme: 'amber',
-    subtitle: 'Arti ninja, furtività e colpi letali'
-  },
-  {
-    slug: 'nijena',
-    name: 'Nijena',
-    className: 'Barda',
-    race: 'Aasimar',
-    level: 7,
-    icon: '🪕',
-    theme: 'violet',
-    subtitle: 'Canti, ispirazione coraggio e supporto'
-  }
+  { slug: 'ryoujin', name: 'Ryoujin', kanji: '竜刃', className: 'Samurai (Ordine del Ronin)', race: 'Tiefling (Oni-Spawn)', level: 7, icon: '⚔️', theme: 'crimson', subtitle: 'Spadaccino in prima linea • Lupo Hisui' },
+  { slug: 'airyn', name: 'Airyn', className: 'Druido', race: 'Silfide', level: 7, icon: '🌿', theme: 'emerald', subtitle: 'Magia divina e forme selvatiche' },
+  { slug: 'azoi', name: 'Azoi', className: 'Magus', race: 'Tengu', level: 7, icon: '⚡', theme: 'blue', subtitle: 'Spellstrike e combattimento arcano' },
+  { slug: 'kaede', name: 'Kaede', className: 'Ninja', race: 'Kitsune', level: 7, icon: '🦊', theme: 'amber', subtitle: 'Arti ninja, furtività e colpi letali' },
+  { slug: 'nijena', name: 'Nijena', className: 'Barda', race: 'Aasimar', level: 7, icon: '🪕', theme: 'violet', subtitle: 'Canti, ispirazione coraggio e supporto' }
 ];
 
 @Component({
@@ -92,11 +46,11 @@ export class CharactersListComponent implements OnInit {
   // SWITCHER A 3 SCHEDE
   activeMainTab = signal<'party' | 'npcs' | 'bestiary'>('party');
 
-  // 1. EROI PARTY
+  // EROI PARTY
   characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
   loadingHeroes = signal<boolean>(false);
 
-  // 2. PNG & CAROVANA (NEON SERVER)
+  // PNG & CAROVANA (NEON SERVER)
   npcs = signal<NpcRecord[]>([]);
   loadingNpcs = signal<boolean>(false);
   npcSearch = signal<string>('');
@@ -105,7 +59,7 @@ export class CharactersListComponent implements OnInit {
   selectedNpc = signal<NpcRecord | null>(null);
   isSavingNpc = signal<boolean>(false);
 
-  // 3. BESTIARIO DEL MASTER (LOCALE)
+  // BESTIARIO DEL MASTER (LOCALE)
   enemies = signal<EnemyStatblock[]>([]);
   enemySearch = signal<string>('');
   selectedEnemy = signal<EnemyStatblock | null>(null);
@@ -123,7 +77,6 @@ export class CharactersListComponent implements OnInit {
   newLevel = 7;
   isCreating = signal<boolean>(false);
 
-  // FILTRI REATTIVI
   filteredNpcs = computed(() => {
     const q = this.npcSearch().toLowerCase().trim();
     const loc = this.selectedLocation();
@@ -161,7 +114,6 @@ export class CharactersListComponent implements OnInit {
     this.loadBestiary();
   }
 
-  // ETICHETTE PULITE PER LO STATO DEI PNG
   getStatusLabel(status: string | null | undefined): string {
     switch (status) {
       case 'ally': return '🟢 Alleato';
@@ -179,6 +131,19 @@ export class CharactersListComponent implements OnInit {
     this.enemies.set(this.bestiaryService.getAll());
   }
 
+  // Sincronizzazione automatica delle 4 caselle AC
+  syncAc(en: EnemyStatblock): void {
+    if (en.ac_total || en.ac_touch || en.ac_flat_footed || en.ac_modifiers) {
+      let str = en.ac_total || '10';
+      str += `, touch ${en.ac_touch || '10'}`;
+      str += `, flat-footed ${en.ac_flat_footed || '10'}`;
+      if (en.ac_modifiers) {
+        str += ` (${en.ac_modifiers})`;
+      }
+      en.ac = str;
+    }
+  }
+
   openNewEnemyModal(): void {
     const newEnemy: EnemyStatblock = {
       id: 'enemy_' + Date.now(),
@@ -191,6 +156,10 @@ export class CharactersListComponent implements OnInit {
       init: '+2',
       senses: 'darkvision 60 ft.',
       perception: '+10',
+      ac_total: '18',
+      ac_touch: '12',
+      ac_flat_footed: '16',
+      ac_modifiers: '+6 armor, +2 Dex',
       ac: '18, touch 12, flat-footed 16 (+6 armor, +2 Dex)',
       hp: '55 (5d10+15)',
       fort: '+7',
@@ -219,13 +188,27 @@ export class CharactersListComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    const clone = JSON.parse(JSON.stringify(enemy));
+    const clone: EnemyStatblock = JSON.parse(JSON.stringify(enemy));
     if (!clone.abilities) {
       clone.abilities = { str: '10', dex: '10', con: '10', int: '10', wis: '10', cha: '10' };
     }
     if (!clone.special_abilities) {
       clone.special_abilities = [];
     }
+
+    // Parsing retrocompatibile delle AC se erano salvate in un'unica stringa
+    if (!clone.ac_total && clone.ac) {
+      const m = clone.ac.match(/^([^,]+)(?:,\s*touch\s*([^,]+))?(?:,\s*flat-footed\s*([^(]+))?(?:\s*\((.*)\))?/i);
+      if (m) {
+        clone.ac_total = m[1]?.trim() || '';
+        clone.ac_touch = m[2]?.trim() || '';
+        clone.ac_flat_footed = m[3]?.trim() || '';
+        clone.ac_modifiers = m[4]?.trim() || '';
+      } else {
+        clone.ac_total = clone.ac;
+      }
+    }
+
     this.selectedEnemy.set(clone);
     this.editorTab.set('general');
   }
@@ -233,6 +216,7 @@ export class CharactersListComponent implements OnInit {
   saveEnemyFromEditor(): void {
     const current = this.selectedEnemy();
     if (!current) return;
+    this.syncAc(current);
     this.bestiaryService.save(current);
     this.loadBestiary();
     this.selectedEnemy.set(null);
@@ -259,7 +243,44 @@ export class CharactersListComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    this.pdfExportService.printStatblockNative(enemy);
+    this.pdfExportService.downloadStatblockPdf(enemy);
+  }
+
+  // Inserimento rapido formattazione per incantesimi
+  insertSpellFormat(en: EnemyStatblock, type: 'prepared' | 'known', format: 'italic' | 'sup'): void {
+    const field = type === 'prepared' ? 'spells_prepared' : 'spells_known';
+    const cur = en[field] || '';
+    const tag = format === 'italic' ? '*incantesimo*' : '^apice^';
+    en[field] = cur ? `${cur} ${tag}` : tag;
+  }
+
+  insertSpellText(en: EnemyStatblock, type: 'prepared' | 'known', text: string): void {
+    const field = type === 'prepared' ? 'spells_prepared' : 'spells_known';
+    const cur = en[field] || '';
+    en[field] = cur ? `${cur}\n${text}` : text;
+  }
+
+  // Rendering HTML sicuro dell'anteprima incantesimi con corsivo e apici
+  formatSpellsHtml(text: string | null | undefined): string {
+    if (!text) return '';
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    html = html
+      .replace(/&lt;em&gt;(.*?)&lt;\/em&gt;/gi, '<em>$1</em>')
+      .replace(/&lt;i&gt;(.*?)&lt;\/i&gt;/gi, '<em>$1</em>')
+      .replace(/&lt;sup&gt;(.*?)&lt;\/sup&gt;/gi, '<sup>$1</sup>')
+      .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/gi, '<strong>$1</strong>')
+      .replace(/&lt;strong&gt;(.*?)&lt;\/strong&gt;/gi, '<strong>$1</strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/_(.*?)_/g, '<em>$1</em>')
+      .replace(/\^(.*?)\^/g, '<sup>$1</sup>')
+      .replace(/\n/g, '<br/>');
+
+    return html;
   }
 
   addSpecialAbility(): void {
@@ -379,7 +400,7 @@ export class CharactersListComponent implements OnInit {
     });
   }
 
-  // ==================== SEZIONE EROI DEL PARTY ====================
+  // ==================== SEZIONE EROI PARTY ====================
   private getDeletedSlugs(): Set<string> {
     try {
       const raw = localStorage.getItem('jade_regent_deleted_slugs');

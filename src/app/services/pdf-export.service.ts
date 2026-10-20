@@ -7,7 +7,6 @@ import { EnemyStatblock } from '../models/enemy-statblock.model';
 export class PdfExportService {
   private pdfMakePromise: Promise<any> | null = null;
 
-  // Caricamento asincrono sicuro degli script pdfMake
   private loadPdfMakeGlobal(): Promise<any> {
     if (typeof window === 'undefined') return Promise.reject();
     if ((window as any).pdfMake && (window as any).pdfMake.createPdf) {
@@ -31,7 +30,6 @@ export class PdfExportService {
         });
       };
 
-      // Carica da CDN affidabile in scope globale (dove window.pdfMake e vfs funzionano al 100%)
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js')
         .then(() => loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js'))
         .then(() => {
@@ -54,102 +52,45 @@ export class PdfExportService {
       const docDefinition = this.buildDocDefinition(enemy);
       const filename = `${(enemy.name || 'Statblock').replace(/[^a-zA-Z0-9_-]/g, '_')}_CR${enemy.cr || 'X'}.pdf`;
       pdfMake.createPdf(docDefinition).download(filename);
-    } catch (err) {
-      console.warn('pdfMake bloccato o non disponibile, avvio fallback su Stampa/Salva PDF nativo:', err);
-      this.printStatblockNative(enemy);
+    } catch (err: any) {
+      console.error('Errore generazione PDF:', err);
+      alert('Errore durante la generazione del PDF. Riprova tra qualche istante.');
     }
   }
 
-  // Fallback nativo: crea una finestra con impaginazione A4 Paizo e apre "Salva come PDF"
-  printStatblockNative(enemy: EnemyStatblock): void {
-    const w = window.open('', '_blank');
-    if (!w) {
-      alert('Finestra pop-up bloccata. Abilita i popup per salvare il PDF.');
-      return;
+  // Parser per testo con corsivo (*...*) e apice (^...^)
+  parseRichTextToPdfChunks(text: string, baseFontSize = 9): any[] {
+    if (!text) return [];
+
+    // Riconosce tag HTML o Markdown per grassetto, corsivo e apice
+    const regex = /(\*\*.*?\*\*|<b>.*?<\/b>|<strong>.*?<\/strong>|\*.*?\*|_.*?_|<i>.*?<\/i>|<em>.*?<\/em>|\^.*?\^|<sup>.*?<\/sup>)/g;
+    const parts = text.split(regex);
+    const chunks: any[] = [];
+
+    for (const part of parts) {
+      if (!part) continue;
+
+      if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('<b>') && part.endsWith('</b>')) || (part.startsWith('<strong>') && part.endsWith('</strong>'))) {
+        const clean = part.replace(/^(\*\*|<b>|<strong>)/, '').replace(/(\*\*|<\/b>|<\/strong>)$/, '');
+        chunks.push({ text: clean, bold: true });
+      } else if ((part.startsWith('*') && part.endsWith('*')) || (part.startsWith('_') && part.endsWith('_')) || (part.startsWith('<i>') && part.endsWith('</i>')) || (part.startsWith('<em>') && part.endsWith('</em>'))) {
+        const clean = part.replace(/^(\*|_|<i>|<em>)/, '').replace(/(\*|_|<\/i>|<\/em>)$/, '');
+        chunks.push({ text: clean, italics: true });
+      } else if ((part.startsWith('^') && part.endsWith('^')) || (part.startsWith('<sup>') && part.endsWith('</sup>'))) {
+        const clean = part.replace(/^(\^|<sup>)/, '').replace(/(\^|<\/sup>)$/, '');
+        chunks.push({ text: clean, fontSize: Math.max(6, Math.round(baseFontSize * 0.72)) });
+      } else {
+        chunks.push({ text: part });
+      }
     }
-
-    const ab = enemy.abilities || { str: '10', dex: '10', con: '10', int: '10', wis: '10', cha: '10' };
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>${enemy.name} - Statblock Pathfinder 1E</title>
-        <style>
-          @page { size: A4; margin: 15mm; }
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10pt; line-height: 1.25; color: #000; margin: 0; }
-          .header-row { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #000; padding-bottom: 3px; margin-bottom: 4px; }
-          .title { font-size: 13pt; font-weight: bold; }
-          .cr { font-size: 11pt; font-weight: bold; }
-          .sec-header { background: #1c2438; color: #f59e0b; font-weight: bold; font-size: 9pt; letter-spacing: 0.05em; padding: 2px 6px; margin: 6px 0 3px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .line { margin-bottom: 2px; }
-          strong { font-weight: bold; }
-          .italic { font-style: italic; }
-        </style>
-      </head>
-      <body>
-        <div class="header-row">
-          <span class="title">${enemy.name}${enemy.title_line ? ', ' + enemy.title_line : ''}</span>
-          <span class="cr">CR ${enemy.cr || '?'} ${enemy.xp ? '(XP ' + enemy.xp + ')' : ''}</span>
-        </div>
-        ${enemy.gender_race_class ? `<div class="line italic">${enemy.gender_race_class}</div>` : ''}
-        ${enemy.alignment_size_type ? `<div class="line">${enemy.alignment_size_type}</div>` : ''}
-        <div class="line"><strong>Init</strong> ${enemy.init || '+0'}; <strong>Senses</strong> ${enemy.senses || '-'}; <strong>Perception</strong> ${enemy.perception || '+0'}</div>
-
-        <div class="sec-header">DEFENSE</div>
-        <div class="line"><strong>AC</strong> ${enemy.ac || '10'}</div>
-        <div class="line"><strong>hp</strong> ${enemy.hp || '10'}</div>
-        <div class="line"><strong>Fort</strong> ${enemy.fort || '+0'}, <strong>Ref</strong> ${enemy.ref || '+0'}, <strong>Will</strong> ${enemy.will || '+0'}</div>
-        ${enemy.defensive_abilities || enemy.dr || enemy.immune || enemy.resist || enemy.sr ? `
-          <div class="line"><strong>Defensive Abilities</strong> ${[enemy.defensive_abilities, enemy.dr ? 'DR ' + enemy.dr : '', enemy.immune ? 'Immune ' + enemy.immune : '', enemy.resist ? 'Resist ' + enemy.resist : '', enemy.sr ? 'SR ' + enemy.sr : ''].filter(Boolean).join('; ')}</div>
-        ` : ''}
-
-        <div class="sec-header">OFFENSE</div>
-        <div class="line"><strong>Spd</strong> ${enemy.speed || '30 ft.'}</div>
-        ${enemy.melee ? `<div class="line"><strong>Melee</strong> ${enemy.melee}</div>` : ''}
-        ${enemy.ranged ? `<div class="line"><strong>Ranged</strong> ${enemy.ranged}</div>` : ''}
-        ${enemy.space_reach ? `<div class="line"><strong>Space</strong> ${enemy.space_reach}</div>` : ''}
-        ${enemy.special_attacks ? `<div class="line"><strong>Special Attacks</strong> ${enemy.special_attacks}</div>` : ''}
-        ${enemy.spells_prepared ? `<div class="line"><strong>Spells Prepared:</strong><br>${enemy.spells_prepared.replace(/\n/g, '<br>')}</div>` : ''}
-        ${enemy.spells_known ? `<div class="line"><strong>Spells Known:</strong><br>${enemy.spells_known.replace(/\n/g, '<br>')}</div>` : ''}
-
-        ${enemy.before_combat || enemy.during_combat || enemy.morale || enemy.base_statistics ? `
-          <div class="sec-header">TACTICS</div>
-          ${enemy.before_combat ? `<div class="line"><strong>Before Combat</strong> ${enemy.before_combat}</div>` : ''}
-          ${enemy.during_combat ? `<div class="line"><strong>During Combat</strong> ${enemy.during_combat}</div>` : ''}
-          ${enemy.morale ? `<div class="line"><strong>Morale</strong> ${enemy.morale}</div>` : ''}
-          ${enemy.base_statistics ? `<div class="line"><strong>Base Statistics</strong> ${enemy.base_statistics}</div>` : ''}
-        ` : ''}
-
-        <div class="sec-header">STATISTICS</div>
-        <div class="line"><strong>Str</strong> ${ab.str}, <strong>Dex</strong> ${ab.dex}, <strong>Con</strong> ${ab.con || '-'}, <strong>Int</strong> ${ab.int}, <strong>Wis</strong> ${ab.wis}, <strong>Cha</strong> ${ab.cha}</div>
-        <div class="line"><strong>Base Atk</strong> ${enemy.bab || '+0'}; <strong>CMB</strong> ${enemy.cmb || '+0'}; <strong>CMD</strong> ${enemy.cmd || '10'}</div>
-        ${enemy.feats ? `<div class="line"><strong>Feats</strong> ${enemy.feats}</div>` : ''}
-        ${enemy.skills ? `<div class="line"><strong>Skills</strong> ${enemy.skills}</div>` : ''}
-        ${enemy.languages ? `<div class="line"><strong>Languages</strong> ${enemy.languages}</div>` : ''}
-        ${enemy.sq ? `<div class="line"><strong>SQ</strong> ${enemy.sq}</div>` : ''}
-        ${enemy.gear ? `<div class="line"><strong>Gear</strong> ${enemy.gear}</div>` : ''}
-
-        ${enemy.special_abilities && enemy.special_abilities.length > 0 ? `
-          <div class="sec-header">SPECIAL ABILITIES</div>
-          ${enemy.special_abilities.map(sa => `<div class="line"><strong>${sa.name}${sa.type ? ' (' + sa.type + ')' : ''}:</strong> ${sa.description}</div>`).join('')}
-        ` : ''}
-
-        <script>
-          window.onload = function() { window.print(); };
-        </script>
-      </body>
-      </html>
-    `;
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
+    return chunks;
   }
 
   private buildDocDefinition(enemy: EnemyStatblock): any {
     const content: any[] = [];
     const crXp = `CR ${enemy.cr || '?'}` + (enemy.xp ? ` (XP ${enemy.xp})` : '');
 
+    // HEADER
     content.push({
       columns: [
         { text: `${enemy.name || 'Senza Nome'}, ${enemy.title_line || ''}`, fontSize: 13, bold: true, width: '*' },
@@ -161,17 +102,52 @@ export class PdfExportService {
     if (enemy.gender_race_class) content.push({ text: enemy.gender_race_class, fontSize: 9.5, italics: true, margin: [0, 0, 0, 2] });
     if (enemy.alignment_size_type) content.push({ text: enemy.alignment_size_type, fontSize: 9.5, margin: [0, 0, 0, 2] });
 
-    let initSenses = `Init ${enemy.init || '+0'};`;
-    if (enemy.senses) initSenses += ` Senses ${enemy.senses};`;
-    initSenses += ` Perception ${enemy.perception || '+0'}`;
-    if (enemy.aura) initSenses += `; Aura ${enemy.aura}`;
-    content.push({ text: initSenses, fontSize: 9.5, margin: [0, 0, 0, 6] });
+    // INIT, SENSES, PERCEPTION, AURA (TUTTE ETICHETTE IN GRASSETTO)
+    const initSensesLine: any[] = [
+      { text: 'Init ', bold: true },
+      { text: `${enemy.init || '+0'}; ` },
+      { text: 'Senses ', bold: true },
+      { text: `${enemy.senses || '-'}; ` },
+      { text: 'Perception ', bold: true },
+      { text: `${enemy.perception || '+0'}` }
+    ];
+    if (enemy.aura) {
+      initSensesLine.push({ text: '; Aura ', bold: true }, { text: enemy.aura });
+    }
+    content.push({ text: initSensesLine, fontSize: 9.5, margin: [0, 0, 0, 6] });
 
     // DEFENSE
     content.push(this.sectionHeader('DEFENSE'));
-    content.push({ text: [{ text: 'AC ', bold: true }, enemy.ac || '10'], fontSize: 9.5, margin: [0, 2, 0, 2] });
+
+    // AC (gestione sia campi separati che stringa legacy)
+    const acLine: any[] = [{ text: 'AC ', bold: true }];
+    if (enemy.ac_total) {
+      acLine.push(
+        { text: `${enemy.ac_total}, touch ${enemy.ac_touch || '10'}, flat-footed ${enemy.ac_flat_footed || '10'}` }
+      );
+      if (enemy.ac_modifiers) {
+        acLine.push({ text: ` (${enemy.ac_modifiers})` });
+      }
+    } else {
+      acLine.push({ text: enemy.ac || '10' });
+    }
+    content.push({ text: acLine, fontSize: 9.5, margin: [0, 2, 0, 2] });
+
     content.push({ text: [{ text: 'hp ', bold: true }, enemy.hp || '10'], fontSize: 9.5, margin: [0, 0, 0, 2] });
-    content.push({ text: `Fort ${enemy.fort || '+0'}, Ref ${enemy.ref || '+0'}, Will ${enemy.will || '+0'}`, fontSize: 9.5, margin: [0, 0, 0, 2] });
+
+    // FORT, REF, WILL (IN GRASSETTO)
+    content.push({
+      text: [
+        { text: 'Fort ', bold: true },
+        { text: `${enemy.fort || '+0'}, ` },
+        { text: 'Ref ', bold: true },
+        { text: `${enemy.ref || '+0'}, ` },
+        { text: 'Will ', bold: true },
+        { text: `${enemy.will || '+0'}` }
+      ],
+      fontSize: 9.5,
+      margin: [0, 0, 0, 2]
+    });
 
     const defArr: string[] = [];
     if (enemy.defensive_abilities) defArr.push(enemy.defensive_abilities);
@@ -180,16 +156,53 @@ export class PdfExportService {
     if (enemy.resist) defArr.push(`Resist ${enemy.resist}`);
     if (enemy.sr) defArr.push(`SR ${enemy.sr}`);
     if (defArr.length > 0) content.push({ text: [{ text: 'Defensive Abilities ', bold: true }, defArr.join('; ')], fontSize: 9.5, margin: [0, 0, 0, 2] });
+    if (enemy.weaknesses) content.push({ text: [{ text: 'Weaknesses ', bold: true }, enemy.weaknesses], fontSize: 9.5, margin: [0, 0, 0, 4] });
 
     // OFFENSE
     content.push(this.sectionHeader('OFFENSE'));
     content.push({ text: [{ text: 'Spd ', bold: true }, enemy.speed || '30 ft.'], fontSize: 9.5, margin: [0, 2, 0, 2] });
     if (enemy.melee) content.push({ text: [{ text: 'Melee ', bold: true }, enemy.melee], fontSize: 9.5, margin: [0, 0, 0, 2] });
     if (enemy.ranged) content.push({ text: [{ text: 'Ranged ', bold: true }, enemy.ranged], fontSize: 9.5, margin: [0, 0, 0, 2] });
-    if (enemy.space_reach) content.push({ text: [{ text: 'Space ', bold: true }, enemy.space_reach], fontSize: 9.5, margin: [0, 0, 0, 2] });
+
+    // SPACE & REACH (IN GRASSETTO)
+    if (enemy.space_reach) {
+      const parts = enemy.space_reach.split(/;\s*reach\s*/i);
+      const spaceVal = parts[0]?.replace(/^space\s*/i, '').trim() || '5 ft.';
+      const reachVal = parts[1]?.trim() || '5 ft.';
+      content.push({
+        text: [
+          { text: 'Space ', bold: true },
+          { text: `${spaceVal}; ` },
+          { text: 'Reach ', bold: true },
+          { text: reachVal }
+        ],
+        fontSize: 9.5,
+        margin: [0, 0, 0, 2]
+      });
+    }
+
     if (enemy.special_attacks) content.push({ text: [{ text: 'Special Attacks ', bold: true }, enemy.special_attacks], fontSize: 9.5, margin: [0, 0, 0, 2] });
-    if (enemy.spells_prepared) content.push({ text: [{ text: 'Spells Prepared\n', bold: true }, enemy.spells_prepared], fontSize: 9, margin: [0, 2, 0, 2] });
-    if (enemy.spells_known) content.push({ text: [{ text: 'Spells Known\n', bold: true }, enemy.spells_known], fontSize: 9, margin: [0, 2, 0, 2] });
+
+    // INCANTESIMI CON PARSER CORSIVO & APICE RIGA PER RIGA
+    if (enemy.spells_prepared) {
+      content.push({ text: 'Spells Prepared', bold: true, fontSize: 9.5, margin: [0, 3, 0, 2] });
+      for (const line of enemy.spells_prepared.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed) {
+          content.push({ text: this.parseRichTextToPdfChunks(trimmed, 9), fontSize: 9, margin: [0, 0, 0, 1.5] });
+        }
+      }
+    }
+
+    if (enemy.spells_known) {
+      content.push({ text: 'Spells Known', bold: true, fontSize: 9.5, margin: [0, 3, 0, 2] });
+      for (const line of enemy.spells_known.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed) {
+          content.push({ text: this.parseRichTextToPdfChunks(trimmed, 9), fontSize: 9, margin: [0, 0, 0, 1.5] });
+        }
+      }
+    }
 
     // TACTICS
     if (enemy.before_combat || enemy.during_combat || enemy.morale || enemy.base_statistics) {
@@ -200,11 +213,42 @@ export class PdfExportService {
       if (enemy.base_statistics) content.push({ text: [{ text: 'Base Statistics ', bold: true }, enemy.base_statistics], fontSize: 9.5, margin: [0, 0, 0, 4] });
     }
 
-    // STATISTICS
+    // STATISTICS: STR, DEX, CON, INT, WIS, CHA (IN GRASSETTO)
     content.push(this.sectionHeader('STATISTICS'));
     const ab = enemy.abilities || { str: '10', dex: '10', con: '10', int: '10', wis: '10', cha: '10' };
-    content.push({ text: `Str ${ab.str}, Dex ${ab.dex}, Con ${ab.con || '-'}, Int ${ab.int}, Wis ${ab.wis}, Cha ${ab.cha}`, fontSize: 9.5, margin: [0, 2, 0, 2] });
-    content.push({ text: `Base Atk ${enemy.bab || '+0'}; CMB ${enemy.cmb || '+0'}; CMD ${enemy.cmd || '10'}`, fontSize: 9.5, margin: [0, 0, 0, 2] });
+    content.push({
+      text: [
+        { text: 'Str ', bold: true },
+        { text: `${ab.str || '10'}, ` },
+        { text: 'Dex ', bold: true },
+        { text: `${ab.dex || '10'}, ` },
+        { text: 'Con ', bold: true },
+        { text: `${ab.con || '-'}, ` },
+        { text: 'Int ', bold: true },
+        { text: `${ab.int || '10'}, ` },
+        { text: 'Wis ', bold: true },
+        { text: `${ab.wis || '10'}, ` },
+        { text: 'Cha ', bold: true },
+        { text: `${ab.cha || '10'}` }
+      ],
+      fontSize: 9.5,
+      margin: [0, 2, 0, 2]
+    });
+
+    // BASE ATK, CMB, CMD (IN GRASSETTO)
+    content.push({
+      text: [
+        { text: 'Base Atk ', bold: true },
+        { text: `${enemy.bab || '+0'}; ` },
+        { text: 'CMB ', bold: true },
+        { text: `${enemy.cmb || '+0'}; ` },
+        { text: 'CMD ', bold: true },
+        { text: `${enemy.cmd || '10'}` }
+      ],
+      fontSize: 9.5,
+      margin: [0, 0, 0, 2]
+    });
+
     if (enemy.feats) content.push({ text: [{ text: 'Feats ', bold: true }, enemy.feats], fontSize: 9.5, margin: [0, 0, 0, 2] });
     if (enemy.skills) content.push({ text: [{ text: 'Skills ', bold: true }, enemy.skills], fontSize: 9.5, margin: [0, 0, 0, 2] });
     if (enemy.languages) content.push({ text: [{ text: 'Languages ', bold: true }, enemy.languages], fontSize: 9.5, margin: [0, 0, 0, 2] });

@@ -783,3 +783,64 @@ $text-muted: #94a3b8;
   color: $text-muted;
   font-size: 0.9rem;
 }
+
+/* TOOLBAR FORMATTAZIONE INCANTESIMI */
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 3px;
+
+  label {
+    margin: 0 !important;
+  }
+
+  .fmt-tools {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .fmt-sep {
+      color: #334155;
+      font-size: 0.75rem;
+      margin: 0 2px;
+    }
+
+    .btn-fmt {
+      background: #141f36;
+      border: 1px solid #283958;
+      color: #93c5fd;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+
+      &:hover {
+        background: #1e293b;
+        color: #fef08a;
+        border-color: $gold;
+      }
+    }
+  }
+}
+
+/* BLOCCO INCANTESIMI ANTEPRIMA PAIZO */
+.sb-spells-block {
+  margin-top: 3px;
+  line-height: 1.35;
+  font-size: 0.84rem;
+  color: #0f172a;
+
+  em {
+    font-style: italic;
+  }
+
+  sup {
+    font-size: 0.7em;
+    vertical-align: super;
+  }
+}

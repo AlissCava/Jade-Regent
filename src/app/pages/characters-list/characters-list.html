@@ -24,9 +24,7 @@
     </button>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- SEZIONE 1: EROI PARTY                                     -->
-  <!-- ========================================================= -->
+  <!-- SEZIONE 1: EROI PARTY -->
   <ng-container *ngIf="activeMainTab() === 'party'">
     <header class="characters-header">
       <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
@@ -36,7 +34,6 @@
 
     <div class="modules-grid">
       <a *ngFor="let hero of characters()" [routerLink]="['/characters', hero.slug]" class="module-card">
-        <!-- PULSANTE CESTINO PICCOLO E PULITO IN ALTO A DESTRA -->
         <button 
           type="button" 
           class="btn-delete-card" 
@@ -69,9 +66,7 @@
     </div>
   </ng-container>
 
-  <!-- ========================================================= -->
-  <!-- SEZIONE 2: PNG & CAROVANA (NEON SERVER)                   -->
-  <!-- ========================================================= -->
+  <!-- SEZIONE 2: PNG & CAROVANA -->
   <ng-container *ngIf="activeMainTab() === 'npcs'">
     <header class="characters-header">
       <div class="campaign-pill">Database Server Neon</div>
@@ -200,7 +195,7 @@
             </div>
             <div class="stat-pill ac-pill">
               <span class="pill-icon">🛡️</span>
-              <span class="pill-val">CA {{ enemy.ac?.split(',')[0] || '10' }}</span>
+              <span class="pill-val">CA {{ enemy.ac_total || enemy.ac?.split(',')[0] || '10' }}</span>
             </div>
           </div>
 
@@ -224,7 +219,7 @@
   </ng-container>
 
   <!-- ========================================================= -->
-  <!-- MODALE EDITOR BESTIARIO (CON ANTEPRIMA PAIZO BLINDATA)    -->
+  <!-- MODALE EDITOR BESTIARIO                                   -->
   <!-- ========================================================= -->
   <div class="modal-backdrop" *ngIf="selectedEnemy()" (click)="selectedEnemy.set(null)">
     <div class="modal-card bestiary-editor-card" (click)="$event.stopPropagation()" *ngIf="selectedEnemy() as en">
@@ -269,14 +264,34 @@
           <div class="field-group"><label>Aura (opzionale)</label><input type="text" [(ngModel)]="en.aura" /></div>
         </div>
 
-        <!-- 2. DEFENSE -->
+        <!-- 2. DEFENSE (CON LE 4 CA SEPARATE) -->
         <div *ngIf="editorTab() === 'defense'" class="ed-section">
           <div class="field-group"><label>Punti Ferita (hp)</label><input type="text" [(ngModel)]="en.hp" /></div>
-          <div class="field-group"><label>Classe Armatura (AC)</label><input type="text" [(ngModel)]="en.ac" /></div>
+          
+          <!-- LE 4 CA SEPARATE -->
           <div class="fields-row-3">
-            <div class="field-group"><label>Tempra</label><input type="text" [(ngModel)]="en.fort" /></div>
-            <div class="field-group"><label>Riflessi</label><input type="text" [(ngModel)]="en.ref" /></div>
-            <div class="field-group"><label>Volontà</label><input type="text" [(ngModel)]="en.will" /></div>
+            <div class="field-group">
+              <label>CA Totale</label>
+              <input type="text" [(ngModel)]="en.ac_total" (ngModelChange)="syncAc(en)" placeholder="es. 19" />
+            </div>
+            <div class="field-group">
+              <label>Contatto (touch)</label>
+              <input type="text" [(ngModel)]="en.ac_touch" (ngModelChange)="syncAc(en)" placeholder="es. 14" />
+            </div>
+            <div class="field-group">
+              <label>Impreparato</label>
+              <input type="text" [(ngModel)]="en.ac_flat_footed" (ngModelChange)="syncAc(en)" placeholder="es. 15" />
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Modificatori / Scorporo CA</label>
+            <input type="text" [(ngModel)]="en.ac_modifiers" (ngModelChange)="syncAc(en)" placeholder="es. +4 Dex, +5 natural oppure +4 armor, +3 dex" />
+          </div>
+
+          <div class="fields-row-3">
+            <div class="field-group"><label>Tempra (Fort)</label><input type="text" [(ngModel)]="en.fort" /></div>
+            <div class="field-group"><label>Riflessi (Ref)</label><input type="text" [(ngModel)]="en.ref" /></div>
+            <div class="field-group"><label>Volontà (Will)</label><input type="text" [(ngModel)]="en.will" /></div>
           </div>
           <div class="field-group"><label>Capacità Difensive</label><input type="text" [(ngModel)]="en.defensive_abilities" /></div>
           <div class="fields-row">
@@ -290,17 +305,51 @@
           <div class="field-group"><label>Debolezze (Weaknesses)</label><input type="text" [(ngModel)]="en.weaknesses" /></div>
         </div>
 
-        <!-- 3. OFFENSE -->
+        <!-- 3. OFFENSE (CON TOOLBAR INCANTESIMI PER CORSIVO E APICE) -->
         <div *ngIf="editorTab() === 'offense'" class="ed-section">
           <div class="fields-row">
             <div class="field-group"><label>Velocità (Spd)</label><input type="text" [(ngModel)]="en.speed" /></div>
-            <div class="field-group"><label>Spazio / Portata</label><input type="text" [(ngModel)]="en.space_reach" /></div>
+            <div class="field-group"><label>Spazio / Portata</label><input type="text" [(ngModel)]="en.space_reach" placeholder="5 ft.; Reach 5 ft." /></div>
           </div>
           <div class="field-group"><label>Mischia (Melee)</label><input type="text" [(ngModel)]="en.melee" /></div>
           <div class="field-group"><label>Distanza (Ranged)</label><input type="text" [(ngModel)]="en.ranged" /></div>
           <div class="field-group"><label>Attacchi Speciali</label><input type="text" [(ngModel)]="en.special_attacks" /></div>
-          <div class="field-group"><label>Incantesimi Preparati</label><textarea rows="3" [(ngModel)]="en.spells_prepared"></textarea></div>
-          <div class="field-group"><label>Incantesimi Conosciuti</label><textarea rows="3" [(ngModel)]="en.spells_known"></textarea></div>
+          
+          <!-- INCANTESIMI PREPARATI CON FORMATTAZIONE RAPIDA -->
+          <div class="field-group">
+            <div class="field-label-row">
+              <label>Incantesimi Preparati (Spells Prepared)</label>
+              <div class="fmt-tools">
+                <button type="button" class="btn-fmt" (click)="insertSpellFormat(en, 'prepared', 'italic')" title="Inserisci *corsivo*"><em>*Corsivo*</em></button>
+                <button type="button" class="btn-fmt" (click)="insertSpellFormat(en, 'prepared', 'sup')" title="Inserisci ^apice^">x<sup>^apice^</sup></button>
+                <span class="fmt-sep">|</span>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'prepared', '1^st^ ')">1ˢᵗ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'prepared', '2^nd^ ')">2ⁿᵈ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'prepared', '3^rd^ ')">3ʳᵈ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'prepared', '4^th^ ')">4ᵗʰ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'prepared', '5^th^ ')">5ᵗʰ</button>
+              </div>
+            </div>
+            <textarea rows="3" [(ngModel)]="en.spells_prepared" placeholder="es. 3^rd^ (5/day) - *animate dead*, *fear* (DC 18)"></textarea>
+          </div>
+
+          <!-- INCANTESIMI CONOSCIUTI CON FORMATTAZIONE RAPIDA -->
+          <div class="field-group">
+            <div class="field-label-row">
+              <label>Incantesimi Conosciuti (Spells Known)</label>
+              <div class="fmt-tools">
+                <button type="button" class="btn-fmt" (click)="insertSpellFormat(en, 'known', 'italic')" title="Inserisci *corsivo*"><em>*Corsivo*</em></button>
+                <button type="button" class="btn-fmt" (click)="insertSpellFormat(en, 'known', 'sup')" title="Inserisci ^apice^">x<sup>^apice^</sup></button>
+                <span class="fmt-sep">|</span>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'known', '1^st^ ')">1ˢᵗ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'known', '2^nd^ ')">2ⁿᵈ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'known', '3^rd^ ')">3ʳᵈ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'known', '4^th^ ')">4ᵗʰ</button>
+                <button type="button" class="btn-fmt" (click)="insertSpellText(en, 'known', '5^th^ ')">5ᵗʰ</button>
+              </div>
+            </div>
+            <textarea rows="3" [(ngModel)]="en.spells_known" placeholder="es. 2^nd^ (4/day) - *bull's strength*, *create pit*"></textarea>
+          </div>
         </div>
 
         <!-- 4. TACTICS -->
@@ -360,7 +409,7 @@
           </div>
         </div>
 
-        <!-- 7. ANTEPRIMA PAIZO BLINDATA CON SAFE NAVIGATION -->
+        <!-- 7. ANTEPRIMA PAIZO BLINDATA (TUTTI I LABELS IN GRASSETTO) -->
         <div *ngIf="editorTab() === 'preview'" class="paizo-statblock-preview">
           <div class="sb-head-row">
             <span class="sb-title">{{ en.name || 'Senza Nome' }}, {{ en.title_line || '' }}</span>
@@ -368,12 +417,26 @@
           </div>
           <div class="sb-italic" *ngIf="en.gender_race_class">{{ en.gender_race_class }}</div>
           <div *ngIf="en.alignment_size_type">{{ en.alignment_size_type }}</div>
-          <div><strong>Init</strong> {{ en.init || '+0' }}; <strong>Senses</strong> {{ en.senses || '-' }}; <strong>Perception</strong> {{ en.perception || '+0' }}</div>
+          <div>
+            <strong>Init</strong> {{ en.init || '+0' }}; 
+            <strong>Senses</strong> {{ en.senses || '-' }}; 
+            <strong>Perception</strong> {{ en.perception || '+0' }}
+            <span *ngIf="en.aura">; <strong>Aura</strong> {{ en.aura }}</span>
+          </div>
 
           <div class="sb-sec-bar">DEFENSE</div>
-          <div><strong>AC</strong> {{ en.ac || '10' }}</div>
+          <div>
+            <strong>AC</strong> {{ en.ac_total || en.ac?.split(',')[0] || '10' }}, 
+            touch {{ en.ac_touch || '10' }}, 
+            flat-footed {{ en.ac_flat_footed || '10' }}
+            <span *ngIf="en.ac_modifiers"> ({{ en.ac_modifiers }})</span>
+          </div>
           <div><strong>hp</strong> {{ en.hp || '10' }}</div>
-          <div><strong>Fort</strong> {{ en.fort || '+0' }}, <strong>Ref</strong> {{ en.ref || '+0' }}, <strong>Will</strong> {{ en.will || '+0' }}</div>
+          <div>
+            <strong>Fort</strong> {{ en.fort || '+0' }}, 
+            <strong>Ref</strong> {{ en.ref || '+0' }}, 
+            <strong>Will</strong> {{ en.will || '+0' }}
+          </div>
           <div *ngIf="en.defensive_abilities || en.dr || en.immune || en.resist || en.sr">
             <strong>Defensive Abilities</strong> {{ en.defensive_abilities || '' }}; {{ en.dr ? 'DR ' + en.dr + ';' : '' }} {{ en.immune ? 'Immune ' + en.immune + ';' : '' }} {{ en.resist ? 'Resist ' + en.resist + ';' : '' }} {{ en.sr ? 'SR ' + en.sr : '' }}
           </div>
@@ -382,10 +445,19 @@
           <div><strong>Spd</strong> {{ en.speed || '30 ft.' }}</div>
           <div *ngIf="en.melee"><strong>Melee</strong> {{ en.melee }}</div>
           <div *ngIf="en.ranged"><strong>Ranged</strong> {{ en.ranged }}</div>
-          <div *ngIf="en.space_reach"><strong>Space</strong> {{ en.space_reach }}</div>
+          <div *ngIf="en.space_reach">
+            <strong>Space</strong> {{ en.space_reach.split(';')[0] || '5 ft.' }}; 
+            <strong>Reach</strong> {{ en.space_reach.split(';')[1]?.replace('Reach', '')?.replace('reach', '') || ' 5 ft.' }}
+          </div>
           <div *ngIf="en.special_attacks"><strong>Special Attacks</strong> {{ en.special_attacks }}</div>
-          <div *ngIf="en.spells_prepared"><strong>Spells Prepared:</strong> <pre class="spell-pre">{{ en.spells_prepared }}</pre></div>
-          <div *ngIf="en.spells_known"><strong>Spells Known:</strong> <pre class="spell-pre">{{ en.spells_known }}</pre></div>
+          <div *ngIf="en.spells_prepared">
+            <strong>Spells Prepared:</strong>
+            <div class="sb-spells-block" [innerHTML]="formatSpellsHtml(en.spells_prepared)"></div>
+          </div>
+          <div *ngIf="en.spells_known">
+            <strong>Spells Known:</strong>
+            <div class="sb-spells-block" [innerHTML]="formatSpellsHtml(en.spells_known)"></div>
+          </div>
 
           <div class="sb-sec-bar" *ngIf="en.before_combat || en.during_combat || en.morale || en.base_statistics">TACTICS</div>
           <div *ngIf="en.before_combat"><strong>Before Combat</strong> {{ en.before_combat }}</div>
@@ -402,7 +474,11 @@
             <strong>Wis</strong> {{ en.abilities?.wis || '10' }}, 
             <strong>Cha</strong> {{ en.abilities?.cha || '10' }}
           </div>
-          <div><strong>Base Atk</strong> {{ en.bab || '+0' }}; <strong>CMB</strong> {{ en.cmb || '+0' }}; <strong>CMD</strong> {{ en.cmd || '10' }}</div>
+          <div>
+            <strong>Base Atk</strong> {{ en.bab || '+0' }}; 
+            <strong>CMB</strong> {{ en.cmb || '+0' }}; 
+            <strong>CMD</strong> {{ en.cmd || '10' }}
+          </div>
           <div *ngIf="en.feats"><strong>Feats</strong> {{ en.feats }}</div>
           <div *ngIf="en.skills"><strong>Skills</strong> {{ en.skills }}</div>
           <div *ngIf="en.languages"><strong>Languages</strong> {{ en.languages }}</div>
@@ -421,16 +497,13 @@
         <button type="button" class="btn-download-pdf-modal" (click)="downloadPdf(en)">
           📄 Scarica PDF
         </button>
-
         <button type="button" class="btn-cancel" (click)="selectedEnemy.set(null)">Annulla</button>
         <button type="button" class="btn-submit" (click)="saveEnemyFromEditor()">💾 Salva</button>
       </footer>
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- MODALE DETTAGLI NPC ESISTENTE                             -->
-  <!-- ========================================================= -->
+  <!-- MODALE DETTAGLI NPC ESISTENTE -->
   <div class="modal-backdrop" *ngIf="selectedNpc()" (click)="selectedNpc.set(null)">
     <div class="modal-card npc-modal-card" (click)="$event.stopPropagation()" *ngIf="selectedNpc() as npc">
       <header class="modal-head">
@@ -481,9 +554,7 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- MODALE CREA EROE                                          -->
-  <!-- ========================================================= -->
+  <!-- MODALE CREA EROE -->
   <div class="modal-backdrop" *ngIf="showCreateModal()" (click)="showCreateModal.set(false)">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <header class="modal-head">

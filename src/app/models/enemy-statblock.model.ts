@@ -17,8 +17,13 @@ export interface EnemyStatblock {
   perception?: string;
   aura?: string;
 
-  // DEFENSE
-  ac?: string;
+  // DEFENSE (AC separate)
+  ac?: string; // stringa unificata di fallback
+  ac_total?: string;
+  ac_touch?: string;
+  ac_flat_footed?: string;
+  ac_modifiers?: string;
+
   hp?: string;
   fort?: string;
   ref?: string;
