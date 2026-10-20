@@ -24,7 +24,9 @@
     </button>
   </div>
 
-  <!-- SEZIONE 1: EROI PARTY -->
+  <!-- ========================================================= -->
+  <!-- SEZIONE 1: EROI PARTY                                     -->
+  <!-- ========================================================= -->
   <ng-container *ngIf="activeMainTab() === 'party'">
     <header class="characters-header">
       <div class="campaign-pill">Pathfinder 1E • Jade Regent</div>
@@ -66,7 +68,9 @@
     </div>
   </ng-container>
 
-  <!-- SEZIONE 2: PNG & CAROVANA -->
+  <!-- ========================================================= -->
+  <!-- SEZIONE 2: PNG & CAROVANA (NEON SERVER)                   -->
+  <!-- ========================================================= -->
   <ng-container *ngIf="activeMainTab() === 'npcs'">
     <header class="characters-header">
       <div class="campaign-pill">Database Server Neon</div>
@@ -92,13 +96,15 @@
         <button type="button" class="f-chip" [class.active]="selectedLocation() === 'Minkai'" (click)="selectedLocation.set('Minkai')">Minkai</button>
       </div>
 
+      <!-- FILTRO CATEGORIA & STATO: LUOGHI E DIVINITÀ SEPARATI -->
       <div class="chips-scroll-bar">
-        <span class="chip-lbl">STATO:</span>
+        <span class="chip-lbl">FILTRO:</span>
         <button type="button" class="f-chip" [class.active]="selectedStatus() === 'Tutti'" (click)="selectedStatus.set('Tutti')">Tutti</button>
         <button type="button" class="f-chip status-ally" [class.active]="selectedStatus() === 'ally'" (click)="selectedStatus.set('ally')">🟢 Alleati</button>
         <button type="button" class="f-chip status-enemy" [class.active]="selectedStatus() === 'enemy'" (click)="selectedStatus.set('enemy')">🔴 Nemici</button>
         <button type="button" class="f-chip status-dead" [class.active]="selectedStatus() === 'dead'" (click)="selectedStatus.set('dead')">💀 Deceduti</button>
-        <button type="button" class="f-chip status-lore" [class.active]="selectedStatus() === 'lore'" (click)="selectedStatus.set('lore')">🏯 Luoghi</button>
+        <button type="button" class="f-chip status-lore" [class.active]="selectedStatus() === 'places'" (click)="selectedStatus.set('places')">🏯 Luoghi</button>
+        <button type="button" class="f-chip status-deity" [class.active]="selectedStatus() === 'deities'" (click)="selectedStatus.set('deities')">⛩️ Divinità</button>
       </div>
     </div>
 
@@ -108,8 +114,15 @@
       <div *ngFor="let npc of filteredNpcs()" class="module-card npc-card" (click)="openNpcDetails(npc)">
         <div class="npc-card-top">
           <span class="loc-pill">{{ npc.location }}</span>
-          <span class="status-badge" [ngClass]="npc.status">{{ getStatusLabel(npc.status) }}</span>
+
+          <!-- BADGE DEDICATO PER LUOGHI E DIVINITÀ (NON PIÙ STATUS GENERICO) -->
+          <ng-container [ngSwitch]="npc.category">
+            <span *ngSwitchCase="'Luogo'" class="status-badge status-lore">🏯 Luogo</span>
+            <span *ngSwitchCase="'Divinità'" class="status-badge status-deity">⛩️ Divinità</span>
+            <span *ngSwitchDefault class="status-badge" [ngClass]="npc.status">{{ getStatusLabel(npc.status) }}</span>
+          </ng-container>
         </div>
+
         <div class="npc-card-body-row">
           <div class="npc-thumb-avatar" *ngIf="npc.image_url">
             <img [src]="formatImageUrl(npc.image_url)" alt="{{ npc.first_name }}" loading="lazy" />
@@ -165,7 +178,7 @@
       </div>
     </div>
 
-    <!-- GRIGLIA MOSTRI OTTIMIZZATA -->
+    <!-- GRIGLIA MOSTRI -->
     <div class="modules-grid bestiary-grid">
       <div *ngFor="let enemy of filteredEnemies()" class="module-card enemy-card" (click)="editEnemy(enemy)">
         
@@ -264,11 +277,10 @@
           <div class="field-group"><label>Aura (opzionale)</label><input type="text" [(ngModel)]="en.aura" /></div>
         </div>
 
-        <!-- 2. DEFENSE (CON LE 4 CA SEPARATE) -->
+        <!-- 2. DEFENSE (4 CA SEPARATE) -->
         <div *ngIf="editorTab() === 'defense'" class="ed-section">
           <div class="field-group"><label>Punti Ferita (hp)</label><input type="text" [(ngModel)]="en.hp" /></div>
           
-          <!-- LE 4 CA SEPARATE -->
           <div class="fields-row-3">
             <div class="field-group">
               <label>CA Totale</label>
@@ -305,7 +317,7 @@
           <div class="field-group"><label>Debolezze (Weaknesses)</label><input type="text" [(ngModel)]="en.weaknesses" /></div>
         </div>
 
-        <!-- 3. OFFENSE (CON TOOLBAR INCANTESIMI PER CORSIVO E APICE) -->
+        <!-- 3. OFFENSE -->
         <div *ngIf="editorTab() === 'offense'" class="ed-section">
           <div class="fields-row">
             <div class="field-group"><label>Velocità (Spd)</label><input type="text" [(ngModel)]="en.speed" /></div>
@@ -315,7 +327,6 @@
           <div class="field-group"><label>Distanza (Ranged)</label><input type="text" [(ngModel)]="en.ranged" /></div>
           <div class="field-group"><label>Attacchi Speciali</label><input type="text" [(ngModel)]="en.special_attacks" /></div>
           
-          <!-- INCANTESIMI PREPARATI CON FORMATTAZIONE RAPIDA -->
           <div class="field-group">
             <div class="field-label-row">
               <label>Incantesimi Preparati (Spells Prepared)</label>
@@ -333,7 +344,6 @@
             <textarea rows="3" [(ngModel)]="en.spells_prepared" placeholder="es. 3^rd^ (5/day) - *animate dead*, *fear* (DC 18)"></textarea>
           </div>
 
-          <!-- INCANTESIMI CONOSCIUTI CON FORMATTAZIONE RAPIDA -->
           <div class="field-group">
             <div class="field-label-row">
               <label>Incantesimi Conosciuti (Spells Known)</label>
@@ -409,7 +419,7 @@
           </div>
         </div>
 
-        <!-- 7. ANTEPRIMA PAIZO BLINDATA (TUTTI I LABELS IN GRASSETTO) -->
+        <!-- 7. ANTEPRIMA PAIZO BLINDATA (SENZA BANDA NERA, TITOLI BOLD PULITI) -->
         <div *ngIf="editorTab() === 'preview'" class="paizo-statblock-preview">
           <div class="sb-head-row">
             <span class="sb-title">{{ en.name || 'Senza Nome' }}, {{ en.title_line || '' }}</span>
@@ -424,7 +434,8 @@
             <span *ngIf="en.aura">; <strong>Aura</strong> {{ en.aura }}</span>
           </div>
 
-          <div class="sb-sec-bar">DEFENSE</div>
+          <!-- TITOLO SEZIONE PULITO -->
+          <div class="sb-sec-bar">Defense</div>
           <div>
             <strong>AC</strong> {{ en.ac_total || en.ac?.split(',')[0] || '10' }}, 
             touch {{ en.ac_touch || '10' }}, 
@@ -441,7 +452,8 @@
             <strong>Defensive Abilities</strong> {{ en.defensive_abilities || '' }}; {{ en.dr ? 'DR ' + en.dr + ';' : '' }} {{ en.immune ? 'Immune ' + en.immune + ';' : '' }} {{ en.resist ? 'Resist ' + en.resist + ';' : '' }} {{ en.sr ? 'SR ' + en.sr : '' }}
           </div>
 
-          <div class="sb-sec-bar">OFFENSE</div>
+          <!-- TITOLO SEZIONE PULITO -->
+          <div class="sb-sec-bar">Offense</div>
           <div><strong>Spd</strong> {{ en.speed || '30 ft.' }}</div>
           <div *ngIf="en.melee"><strong>Melee</strong> {{ en.melee }}</div>
           <div *ngIf="en.ranged"><strong>Ranged</strong> {{ en.ranged }}</div>
@@ -459,13 +471,15 @@
             <div class="sb-spells-block" [innerHTML]="formatSpellsHtml(en.spells_known)"></div>
           </div>
 
-          <div class="sb-sec-bar" *ngIf="en.before_combat || en.during_combat || en.morale || en.base_statistics">TACTICS</div>
+          <!-- TITOLO SEZIONE PULITO -->
+          <div class="sb-sec-bar" *ngIf="en.before_combat || en.during_combat || en.morale || en.base_statistics">Tactics</div>
           <div *ngIf="en.before_combat"><strong>Before Combat</strong> {{ en.before_combat }}</div>
           <div *ngIf="en.during_combat"><strong>During Combat</strong> {{ en.during_combat }}</div>
           <div *ngIf="en.morale"><strong>Morale</strong> {{ en.morale }}</div>
           <div *ngIf="en.base_statistics"><strong>Base Statistics</strong> {{ en.base_statistics }}</div>
 
-          <div class="sb-sec-bar">STATISTICS</div>
+          <!-- TITOLO SEZIONE PULITO -->
+          <div class="sb-sec-bar">Statistics</div>
           <div>
             <strong>Str</strong> {{ en.abilities?.str || '10' }}, 
             <strong>Dex</strong> {{ en.abilities?.dex || '10' }}, 
@@ -485,7 +499,8 @@
           <div *ngIf="en.sq"><strong>SQ</strong> {{ en.sq }}</div>
           <div *ngIf="en.gear"><strong>Gear</strong> {{ en.gear }}</div>
 
-          <div class="sb-sec-bar" *ngIf="en.special_abilities && en.special_abilities.length > 0">SPECIAL ABILITIES</div>
+          <!-- TITOLO SEZIONE PULITO -->
+          <div class="sb-sec-bar" *ngIf="en.special_abilities && en.special_abilities.length > 0">Special Abilities</div>
           <div *ngFor="let sa of en.special_abilities" style="margin-bottom: 4px;">
             <strong>{{ sa.name }}{{ sa.type ? ' (' + sa.type + ')' : '' }}:</strong> {{ sa.description }}
           </div>

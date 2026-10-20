@@ -844,3 +844,40 @@ $text-muted: #94a3b8;
     vertical-align: super;
   }
 }
+
+/* BADGE STATO E FILTRI PER DIVINITÀ E LUOGHI */
+.status-badge {
+  &.status-deity {
+    background: rgba(245, 158, 11, 0.18) !important;
+    color: #fde68a !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  }
+
+  &.status-lore {
+    background: rgba(139, 92, 246, 0.18) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  }
+}
+
+.f-chip {
+  &.status-deity.active {
+    background: #f59e0b !important;
+    border-color: #f59e0b !important;
+    color: #000 !important;
+  }
+}
+
+/* ANTEPRIMA STATBLOCK PAIZO: TITOLI BOLD PULITI SENZA BANDA NERA */
+.paizo-statblock-preview {
+  .sb-sec-bar {
+    background: transparent !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: normal !important;
+    padding: 0 !important;
+    margin: 8px 0 2px !important;
+    border-radius: 0 !important;
+  }
+}

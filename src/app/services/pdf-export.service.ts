@@ -58,11 +58,9 @@ export class PdfExportService {
     }
   }
 
-  // Parser per testo con corsivo (*...*) e apice (^...^)
   parseRichTextToPdfChunks(text: string, baseFontSize = 9): any[] {
     if (!text) return [];
 
-    // Riconosce tag HTML o Markdown per grassetto, corsivo e apice
     const regex = /(\*\*.*?\*\*|<b>.*?<\/b>|<strong>.*?<\/strong>|\*.*?\*|_.*?_|<i>.*?<\/i>|<em>.*?<\/em>|\^.*?\^|<sup>.*?<\/sup>)/g;
     const parts = text.split(regex);
     const chunks: any[] = [];
@@ -117,9 +115,8 @@ export class PdfExportService {
     content.push({ text: initSensesLine, fontSize: 9.5, margin: [0, 0, 0, 6] });
 
     // DEFENSE
-    content.push(this.sectionHeader('DEFENSE'));
+    content.push(this.sectionHeader('Defense'));
 
-    // AC (gestione sia campi separati che stringa legacy)
     const acLine: any[] = [{ text: 'AC ', bold: true }];
     if (enemy.ac_total) {
       acLine.push(
@@ -159,7 +156,7 @@ export class PdfExportService {
     if (enemy.weaknesses) content.push({ text: [{ text: 'Weaknesses ', bold: true }, enemy.weaknesses], fontSize: 9.5, margin: [0, 0, 0, 4] });
 
     // OFFENSE
-    content.push(this.sectionHeader('OFFENSE'));
+    content.push(this.sectionHeader('Offense'));
     content.push({ text: [{ text: 'Spd ', bold: true }, enemy.speed || '30 ft.'], fontSize: 9.5, margin: [0, 2, 0, 2] });
     if (enemy.melee) content.push({ text: [{ text: 'Melee ', bold: true }, enemy.melee], fontSize: 9.5, margin: [0, 0, 0, 2] });
     if (enemy.ranged) content.push({ text: [{ text: 'Ranged ', bold: true }, enemy.ranged], fontSize: 9.5, margin: [0, 0, 0, 2] });
@@ -183,7 +180,7 @@ export class PdfExportService {
 
     if (enemy.special_attacks) content.push({ text: [{ text: 'Special Attacks ', bold: true }, enemy.special_attacks], fontSize: 9.5, margin: [0, 0, 0, 2] });
 
-    // INCANTESIMI CON PARSER CORSIVO & APICE RIGA PER RIGA
+    // INCANTESIMI
     if (enemy.spells_prepared) {
       content.push({ text: 'Spells Prepared', bold: true, fontSize: 9.5, margin: [0, 3, 0, 2] });
       for (const line of enemy.spells_prepared.split('\n')) {
@@ -206,7 +203,7 @@ export class PdfExportService {
 
     // TACTICS
     if (enemy.before_combat || enemy.during_combat || enemy.morale || enemy.base_statistics) {
-      content.push(this.sectionHeader('TACTICS'));
+      content.push(this.sectionHeader('Tactics'));
       if (enemy.before_combat) content.push({ text: [{ text: 'Before Combat ', bold: true }, enemy.before_combat], fontSize: 9.5, margin: [0, 2, 0, 2] });
       if (enemy.during_combat) content.push({ text: [{ text: 'During Combat ', bold: true }, enemy.during_combat], fontSize: 9.5, margin: [0, 0, 0, 2] });
       if (enemy.morale) content.push({ text: [{ text: 'Morale ', bold: true }, enemy.morale], fontSize: 9.5, margin: [0, 0, 0, 2] });
@@ -214,7 +211,7 @@ export class PdfExportService {
     }
 
     // STATISTICS: STR, DEX, CON, INT, WIS, CHA (IN GRASSETTO)
-    content.push(this.sectionHeader('STATISTICS'));
+    content.push(this.sectionHeader('Statistics'));
     const ab = enemy.abilities || { str: '10', dex: '10', con: '10', int: '10', wis: '10', cha: '10' };
     content.push({
       text: [
@@ -257,7 +254,7 @@ export class PdfExportService {
 
     // SPECIAL ABILITIES
     if (enemy.special_abilities && enemy.special_abilities.length > 0) {
-      content.push(this.sectionHeader('SPECIAL ABILITIES'));
+      content.push(this.sectionHeader('Special Abilities'));
       for (const sa of enemy.special_abilities) {
         content.push({
           text: [
@@ -280,25 +277,13 @@ export class PdfExportService {
     };
   }
 
+  // TITOLO DI SEZIONE PULITO: SOLO TESTO BOLD A 11pt, SENZA BANDA NERA
   private sectionHeader(title: string): any {
     return {
-      table: {
-        widths: ['*'],
-        body: [
-          [
-            {
-              text: title,
-              fillColor: '#1c2438',
-              color: '#f59e0b',
-              bold: true,
-              fontSize: 9.5,
-              margin: [3, 2, 3, 2]
-            }
-          ]
-        ]
-      },
-      layout: 'noBorders',
-      margin: [0, 4, 0, 2]
+      text: title,
+      bold: true,
+      fontSize: 11,
+      margin: [0, 6, 0, 2]
     };
   }
 }

@@ -43,14 +43,11 @@ export class CharactersListComponent implements OnInit {
   private pdfExportService = inject(PdfExportService);
   private router = inject(Router);
 
-  // SWITCHER A 3 SCHEDE
   activeMainTab = signal<'party' | 'npcs' | 'bestiary'>('party');
 
-  // EROI PARTY
   characters = signal<CharacterEntry[]>([...DEFAULT_HEROES]);
   loadingHeroes = signal<boolean>(false);
 
-  // PNG & CAROVANA (NEON SERVER)
   npcs = signal<NpcRecord[]>([]);
   loadingNpcs = signal<boolean>(false);
   npcSearch = signal<string>('');
@@ -59,7 +56,6 @@ export class CharactersListComponent implements OnInit {
   selectedNpc = signal<NpcRecord | null>(null);
   isSavingNpc = signal<boolean>(false);
 
-  // BESTIARIO DEL MASTER (LOCALE)
   enemies = signal<EnemyStatblock[]>([]);
   enemySearch = signal<string>('');
   selectedEnemy = signal<EnemyStatblock | null>(null);
@@ -69,7 +65,6 @@ export class CharactersListComponent implements OnInit {
   newAbilityType: 'Ex' | 'Sp' | 'Su' | '' = 'Ex';
   newAbilityDesc = '';
 
-  // MODALE CREA EROE
   showCreateModal = signal<boolean>(false);
   newName = '';
   newClass = 'Guerriero';
@@ -77,6 +72,7 @@ export class CharactersListComponent implements OnInit {
   newLevel = 7;
   isCreating = signal<boolean>(false);
 
+  // FILTRI REATTIVI: LUOGHI E DIVINITÀ SEPARATI
   filteredNpcs = computed(() => {
     const q = this.npcSearch().toLowerCase().trim();
     const loc = this.selectedLocation();
@@ -88,11 +84,15 @@ export class CharactersListComponent implements OnInit {
         if (!full.includes(q)) return false;
       }
       if (loc !== 'Tutti' && n.location !== loc) return false;
+
       if (st !== 'Tutti') {
-        if (st === 'lore') {
-          if (n.category === 'NPC') return false;
-        } else if (n.status !== st) {
-          return false;
+        if (st === 'places') {
+          if (n.category !== 'Luogo') return false;
+        } else if (st === 'deities') {
+          if (n.category !== 'Divinità') return false;
+        } else {
+          if (n.category !== 'NPC') return false;
+          if (n.status !== st) return false;
         }
       }
       return true;
@@ -126,12 +126,10 @@ export class CharactersListComponent implements OnInit {
     }
   }
 
-  // ==================== SEZIONE BESTIARIO ====================
   loadBestiary(): void {
     this.enemies.set(this.bestiaryService.getAll());
   }
 
-  // Sincronizzazione automatica delle 4 caselle AC
   syncAc(en: EnemyStatblock): void {
     if (en.ac_total || en.ac_touch || en.ac_flat_footed || en.ac_modifiers) {
       let str = en.ac_total || '10';
@@ -196,7 +194,6 @@ export class CharactersListComponent implements OnInit {
       clone.special_abilities = [];
     }
 
-    // Parsing retrocompatibile delle AC se erano salvate in un'unica stringa
     if (!clone.ac_total && clone.ac) {
       const m = clone.ac.match(/^([^,]+)(?:,\s*touch\s*([^,]+))?(?:,\s*flat-footed\s*([^(]+))?(?:\s*\((.*)\))?/i);
       if (m) {
@@ -238,15 +235,6 @@ export class CharactersListComponent implements OnInit {
     await this.pdfExportService.downloadStatblockPdf(enemy);
   }
 
-  printPdf(enemy: EnemyStatblock, event?: Event): void {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    this.pdfExportService.downloadStatblockPdf(enemy);
-  }
-
-  // Inserimento rapido formattazione per incantesimi
   insertSpellFormat(en: EnemyStatblock, type: 'prepared' | 'known', format: 'italic' | 'sup'): void {
     const field = type === 'prepared' ? 'spells_prepared' : 'spells_known';
     const cur = en[field] || '';
@@ -260,7 +248,6 @@ export class CharactersListComponent implements OnInit {
     en[field] = cur ? `${cur}\n${text}` : text;
   }
 
-  // Rendering HTML sicuro dell'anteprima incantesimi con corsivo e apici
   formatSpellsHtml(text: string | null | undefined): string {
     if (!text) return '';
     let html = text
@@ -316,7 +303,6 @@ export class CharactersListComponent implements OnInit {
     });
   }
 
-  // ==================== SEZIONE PNG & CAROVANA ====================
   formatImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     if (url.startsWith('data:image/')) return url;
@@ -400,7 +386,6 @@ export class CharactersListComponent implements OnInit {
     });
   }
 
-  // ==================== SEZIONE EROI PARTY ====================
   private getDeletedSlugs(): Set<string> {
     try {
       const raw = localStorage.getItem('jade_regent_deleted_slugs');
@@ -413,6 +398,14 @@ export class CharactersListComponent implements OnInit {
   private markSlugAsDeleted(slug: string): void {
     const set = this.getDeletedSlugs();
     set.add(slug);
+    try {
+      localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(Array.from(set)));
+    } catch {}
+  }
+
+  private unmarkSlugAsDeleted(slug: string): void {
+    const set = this.getDeletedSlugs();
+    set.delete(slug);
     try {
       localStorage.setItem('jade_regent_deleted_slugs', JSON.stringify(Array.from(set)));
     } catch {}
@@ -487,6 +480,7 @@ export class CharactersListComponent implements OnInit {
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     this.isCreating.set(true);
+    this.unmarkSlugAsDeleted(slug);
 
     const initialData: CharacterSheetData = {
       character: {
