@@ -58,6 +58,88 @@ export class PdfExportService {
     }
   }
 
+  // Divide una riga di incantesimi per virgola, proteggendo eventuali virgole dentro le parentesi
+  private splitSpellsList(str: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let parenDepth = 0;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      if (char === '(') parenDepth++;
+      else if (char === ')') parenDepth = Math.max(0, parenDepth - 1);
+
+      if (char === ',' && parenDepth === 0) {
+        if (current.trim()) result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    if (current.trim()) result.push(current.trim());
+    return result;
+  }
+
+  // Parsing intelligente: rende AUTOMATICAMENTE in corsivo i nomi degli incantesimi
+  parseSpellLineToPdfChunks(line: string, baseFontSize = 9): any[] {
+    if (!line) return [];
+
+    // Riconosce prefissi di livello: es. "4th (3/day) -", "3^rd^ (5/day) -", "2nd-", "1 (6/day)", "0 (at will) -", "Constant -", "1/day -"
+    const match = line.match(/^((?:(?:\d+|[oO])(?:st|nd|rd|th|\^[a-zA-Z0-9]+\^)?|Constant|At\s+will|\d+\/day)(?:\s*\([^)]*\))?)\s*[-–:]?\s*(.*)$/i);
+
+    if (!match) {
+      return this.parseRichTextToPdfChunks(line, baseFontSize);
+    }
+
+    const prefixRaw = match[1];
+    const listRaw = match[2];
+
+    // Se dopo il prefisso c'è un riferimento narrativo (es. "See the adventure" o "See below")
+    if (/^see\b/i.test(listRaw.trim())) {
+      return [
+        ...this.parseRichTextToPdfChunks(prefixRaw + ' - ', baseFontSize),
+        ...this.parseRichTextToPdfChunks(listRaw, baseFontSize)
+      ];
+    }
+
+    const chunks: any[] = [];
+    chunks.push(...this.parseRichTextToPdfChunks(prefixRaw + ' - ', baseFontSize));
+
+    const spellItems = this.splitSpellsList(listRaw);
+
+    spellItems.forEach((item, index) => {
+      const parenIndex = item.indexOf('(');
+      let spellName = '';
+      let notes = '';
+
+      if (parenIndex >= 0) {
+        spellName = item.substring(0, parenIndex).trim();
+        notes = ' ' + item.substring(parenIndex).trim();
+      } else {
+        spellName = item.trim();
+      }
+
+      // Rimuove eventuali asterischi manuali per evitare doppi tag
+      const cleanSpellName = spellName.replace(/^[*_]+|[*_]+$/g, '').trim();
+
+      if (cleanSpellName) {
+        // NOME INCANTESIMO SEMPRE IN CORSIVO AUTOMATICO
+        chunks.push({ text: cleanSpellName, italics: true });
+      }
+
+      if (notes) {
+        // NOTE E CD TRA PARENTESI IN TESTO NORMALE
+        chunks.push(...this.parseRichTextToPdfChunks(notes, baseFontSize));
+      }
+
+      if (index < spellItems.length - 1) {
+        chunks.push({ text: ', ' });
+      }
+    });
+
+    return chunks;
+  }
+
   parseRichTextToPdfChunks(text: string, baseFontSize = 9): any[] {
     if (!text) return [];
 
@@ -100,7 +182,7 @@ export class PdfExportService {
     if (enemy.gender_race_class) content.push({ text: enemy.gender_race_class, fontSize: 9.5, italics: true, margin: [0, 0, 0, 2] });
     if (enemy.alignment_size_type) content.push({ text: enemy.alignment_size_type, fontSize: 9.5, margin: [0, 0, 0, 2] });
 
-    // INIT, SENSES, PERCEPTION, AURA (TUTTE ETICHETTE IN GRASSETTO)
+    // INIT, SENSES, PERCEPTION, AURA (IN GRASSETTO)
     const initSensesLine: any[] = [
       { text: 'Init ', bold: true },
       { text: `${enemy.init || '+0'}; ` },
@@ -180,13 +262,13 @@ export class PdfExportService {
 
     if (enemy.special_attacks) content.push({ text: [{ text: 'Special Attacks ', bold: true }, enemy.special_attacks], fontSize: 9.5, margin: [0, 0, 0, 2] });
 
-    // INCANTESIMI
+    // INCANTESIMI: FORMATTATI SEMPRE CON NOMI IN CORSIVO AUTOMATICO
     if (enemy.spells_prepared) {
       content.push({ text: 'Spells Prepared', bold: true, fontSize: 9.5, margin: [0, 3, 0, 2] });
       for (const line of enemy.spells_prepared.split('\n')) {
         const trimmed = line.trim();
         if (trimmed) {
-          content.push({ text: this.parseRichTextToPdfChunks(trimmed, 9), fontSize: 9, margin: [0, 0, 0, 1.5] });
+          content.push({ text: this.parseSpellLineToPdfChunks(trimmed, 9), fontSize: 9, margin: [0, 0, 0, 1.5] });
         }
       }
     }
@@ -196,7 +278,7 @@ export class PdfExportService {
       for (const line of enemy.spells_known.split('\n')) {
         const trimmed = line.trim();
         if (trimmed) {
-          content.push({ text: this.parseRichTextToPdfChunks(trimmed, 9), fontSize: 9, margin: [0, 0, 0, 1.5] });
+          content.push({ text: this.parseSpellLineToPdfChunks(trimmed, 9), fontSize: 9, margin: [0, 0, 0, 1.5] });
         }
       }
     }
@@ -277,7 +359,7 @@ export class PdfExportService {
     };
   }
 
-  // TITOLO DI SEZIONE PULITO: SOLO TESTO BOLD A 11pt, SENZA BANDA NERA
+  // TITOLO PULITO SENZA BANDE NERE
   private sectionHeader(title: string): any {
     return {
       text: title,

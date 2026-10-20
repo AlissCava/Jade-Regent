@@ -275,24 +275,72 @@ export class CharactersListComponent implements OnInit {
     en[field] = cur ? `${cur}\n${text}` : text;
   }
 
+  // Divide gli incantesimi per virgola proteggendo quelle nelle parentesi
+  private splitSpellsList(str: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let parenDepth = 0;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      if (char === '(') parenDepth++;
+      else if (char === ')') parenDepth = Math.max(0, parenDepth - 1);
+
+      if (char === ',' && parenDepth === 0) {
+        if (current.trim()) result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    if (current.trim()) result.push(current.trim());
+    return result;
+  }
+
+  // Rendering HTML dell'anteprima con corsivo automatico per gli incantesimi
   formatSpellsHtml(text: string | null | undefined): string {
     if (!text) return '';
-    let html = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+
+    const lines = text.split('\n');
+    const formattedLines: string[] = [];
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      const match = line.match(/^((?:(?:\d+|[oO])(?:st|nd|rd|th|\^[a-zA-Z0-9]+\^)?|Constant|At\s+will|\d+\/day)(?:\s*\([^)]*\))?)\s*[-–:]?\s*(.*)$/i);
+
+      if (match && !/^see\b/i.test(match[2].trim())) {
+        const prefix = match[1];
+        const rest = match[2];
+        const items = this.splitSpellsList(rest);
+        const spellChunks = items.map((item) => {
+          const pIdx = item.indexOf('(');
+          let name = '';
+          let notes = '';
+          if (pIdx >= 0) {
+            name = item.substring(0, pIdx).trim();
+            notes = ' ' + item.substring(pIdx).trim();
+          } else {
+            name = item.trim();
+          }
+          const cleanName = name.replace(/^[*_]+|[*_]+$/g, '').trim();
+          return `<em>${cleanName}</em>${notes}`;
+        });
+
+        formattedLines.push(`<strong>${prefix}</strong> - ${spellChunks.join(', ')}`);
+      } else {
+        formattedLines.push(line);
+      }
+    }
+
+    let html = formattedLines.join('<br/>');
 
     html = html
-      .replace(/&lt;em&gt;(.*?)&lt;\/em&gt;/gi, '<em>$1</em>')
-      .replace(/&lt;i&gt;(.*?)&lt;\/i&gt;/gi, '<em>$1</em>')
-      .replace(/&lt;sup&gt;(.*?)&lt;\/sup&gt;/gi, '<sup>$1</sup>')
-      .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/gi, '<strong>$1</strong>')
-      .replace(/&lt;strong&gt;(.*?)&lt;\/strong&gt;/gi, '<strong>$1</strong>')
+      .replace(/\^(.*?)\^/g, '<sup>$1</sup>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/_(.*?)_/g, '<em>$1</em>')
-      .replace(/\^(.*?)\^/g, '<sup>$1</sup>')
-      .replace(/\n/g, '<br/>');
+      .replace(/_(.*?)_/g, '<em>$1</em>');
 
     return html;
   }
