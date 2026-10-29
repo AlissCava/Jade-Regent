@@ -128,27 +128,97 @@
 
       <!-- ELENCO SCHEDE OGGETTI DELLA CATEGORIA -->
       <div class="items-list" *ngIf="!isCollapsed(group.key)">
-        <div class="item-card" *ngFor="let item of group.items">
+        <div class="item-card" *ngFor="let item of group.items" (click)="openEditModal(item)">
           <div class="item-main">
             <div class="item-title-row">
               <h3 class="item-name">{{ item.name }}</h3>
-              <span class="qty-badge" *ngIf="item.quantity > 1">x{{ item.quantity }}</span>
+              
+              <!-- CONTROLLO RAPIDO QUANTITÀ -->
+              <div class="qty-stepper" (click)="$event.stopPropagation()">
+                <button type="button" class="qty-btn" (click)="changeQuantity(item, -1, $event)" title="Riduci quantità">−</button>
+                <span class="qty-badge">x{{ item.quantity || 1 }}</span>
+                <button type="button" class="qty-btn" (click)="changeQuantity(item, 1, $event)" title="Aumenta quantità">+</button>
+              </div>
+
               <span class="cat-pill {{ item.category | lowercase }}">{{ group.name }}</span>
             </div>
 
             <div class="item-meta">
               <span class="owner-tag">👤 {{ item.assigned_to }}</span>
-              <span class="val-tag" *ngIf="item.value_gp > 0">💰 {{ item.value_gp | number:'1.2-2' }} MO</span>
+              <span class="val-tag" *ngIf="item.value_gp > 0">💰 {{ item.value_gp | number:'1.0-2' }} MO</span>
             </div>
 
             <p class="item-desc" *ngIf="item.description">{{ item.description }}</p>
           </div>
 
-          <div class="item-actions">
-            <button type="button" class="btn-del" (click)="deleteItem(item.id)" title="Rimuovi">✕</button>
+          <!-- AZIONI: MODIFICA & ELIMINA -->
+          <div class="item-actions" (click)="$event.stopPropagation()">
+            <button type="button" class="btn-edit" (click)="openEditModal(item, $event)" title="Modifica oggetto">✏️</button>
+            <button type="button" class="btn-del" (click)="deleteItem(item.id, $event)" title="Rimuovi">✕</button>
           </div>
         </div>
       </div>
     </section>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODALE DI MODIFICA OGGETTO ESISTENTE                      -->
+  <!-- ========================================================= -->
+  <div class="modal-backdrop" *ngIf="editingItem()" (click)="closeEditModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="editingItem() as ed">
+      <header class="modal-head">
+        <div>
+          <span class="modal-badge">MODIFICA OGGETTO</span>
+          <h3 class="modal-title">{{ ed.name || 'Oggetto' }}</h3>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeEditModal()">✕</button>
+      </header>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nome Oggetto</label>
+          <input type="text" [(ngModel)]="ed.name" placeholder="Nome dell'oggetto..." />
+        </div>
+
+        <div class="form-group">
+          <label>Categoria</label>
+          <select [(ngModel)]="ed.category">
+            <option *ngFor="let c of categoryOptions" [value]="c.value">{{ c.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Assegnato a</label>
+          <select [(ngModel)]="ed.assigned_to">
+            <option *ngFor="let o of owners.slice(1)" [value]="o">{{ o }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Quantità</label>
+          <input type="number" [(ngModel)]="ed.quantity" min="1" />
+        </div>
+
+        <div class="form-group">
+          <label>Valore Unitario (MO)</label>
+          <input type="number" [(ngModel)]="ed.value_gp" min="0" />
+        </div>
+
+        <div class="form-group full">
+          <label>Note / Proprietà Meccaniche</label>
+          <textarea rows="3" [(ngModel)]="ed.description" placeholder="Descrizione, cariche, effetti..."></textarea>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn-del-modal" (click)="deleteItem(ed.id, $event)">🗑️ Elimina</button>
+        <div class="right-btns">
+          <button type="button" class="btn-cancel" (click)="closeEditModal()">Annulla</button>
+          <button type="button" class="btn-save" [disabled]="!ed.name.trim() || isSavingEdit()" (click)="saveEditedItem()">
+            {{ isSavingEdit() ? 'Salvataggio...' : '💾 Salva Modifiche' }}
+          </button>
+        </div>
+      </footer>
+    </div>
   </div>
 </div>

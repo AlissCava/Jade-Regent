@@ -203,6 +203,222 @@ $text-muted: #94a3b8;
   }
 }
 
+/* Rende le card cliccabili per la modifica rapida */
+.item-card {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(#f59e0b, 0.45);
+    background: #131d33;
+  }
+}
+
+/* Stepper rapido quantità (- x1 +) */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: #080d18;
+  border: 1px solid #1e2c48;
+  border-radius: 6px;
+  padding: 1px 3px;
+
+  .qty-btn {
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+
+    &:hover {
+      background: #1e293b;
+      color: #fff;
+    }
+  }
+
+  .qty-badge {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #fef08a;
+    padding: 0 4px;
+  }
+}
+
+/* Pulsante matita accanto a elimina */
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .btn-edit {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #fde68a;
+    font-size: 0.82rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #f59e0b;
+      color: #000;
+    }
+  }
+}
+
+/* Modale di modifica oggetto */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+
+  .modal-card {
+    width: 100%;
+    max-width: 500px;
+    background: #0d1527;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    border-radius: 16px;
+    padding: 1.2rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
+    box-sizing: border-box;
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #1e2c48;
+
+      .modal-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.12);
+        padding: 2px 8px;
+        border-radius: 6px;
+        margin-bottom: 4px;
+      }
+
+      .modal-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.2rem;
+        color: #fff;
+        margin: 0;
+      }
+
+      .btn-close-modal {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #15223c;
+        border: 1px solid #283958;
+        color: #cbd5e1;
+        cursor: pointer;
+      }
+    }
+
+    textarea {
+      width: 100%;
+      background: #060a14;
+      border: 1px solid #1e2c48;
+      border-radius: 8px;
+      color: #fff;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      resize: vertical;
+      box-sizing: border-box;
+
+      &:focus {
+        border-color: #f59e0b;
+        outline: none;
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.2rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid #1e2c48;
+      gap: 0.5rem;
+
+      .btn-del-modal {
+        height: 38px;
+        padding: 0 12px;
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+
+        &:hover {
+          background: #ef4444;
+          color: #fff;
+        }
+      }
+
+      .right-btns {
+        display: flex;
+        gap: 0.5rem;
+
+        .btn-cancel {
+          height: 38px;
+          padding: 0 14px;
+          background: #15223c;
+          border: 1px solid #283958;
+          color: #cbd5e1;
+          border-radius: 8px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .btn-save {
+          height: 38px;
+          padding: 0 16px;
+          background: #f59e0b;
+          border: none;
+          color: #000;
+          border-radius: 8px;
+          font-weight: 800;
+          cursor: pointer;
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+}
+
 /* SEZIONI PER CATEGORIA */
 .categories-container {
   display: flex;
@@ -354,4 +570,6 @@ $text-muted: #94a3b8;
     color: $text-muted;
     font-size: 0.85rem;
   }
+
+
 }

@@ -47,9 +47,12 @@ export class InventoryComponent implements OnInit {
     is_identified: true
   };
 
+  // Modale Modifica Oggetto Esistente
+  editingItem = signal<InventoryItem | null>(null);
+  isSavingEdit = signal<boolean>(false);
+
   owners = ['Tutti', 'Carovana', 'Ryoujin', 'Airyn', 'Azoi', 'Kaede', 'Nijena', 'Ameiko', 'Sandru'];
-  
-  // Categorie con i nomi visualizzati come nel documento originale
+
   categoryOptions = [
     { value: 'Arma', label: 'Armi e Scudi' },
     { value: 'Armatura', label: 'Armature e Vestiti' },
@@ -81,7 +84,7 @@ export class InventoryComponent implements OnInit {
     });
   });
 
-  // Raggruppamento per Categoria (come nel file originale)
+  // Raggruppamento per Categoria
   categoryGroups = computed(() => {
     const items = this.filteredItems();
     const groupsMap = new Map<string, InventoryItem[]>();
@@ -167,9 +170,60 @@ export class InventoryComponent implements OnInit {
     this.showAddForm.set(false);
   }
 
-  async deleteItem(id: number): Promise<void> {
+  // --- MODIFICA OGGETTO ESISTENTE ---
+  openEditModal(item: InventoryItem, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    // Crea una copia indipendente per non modificare la lista finché non si preme Salva
+    this.editingItem.set({ ...item });
+  }
+
+  closeEditModal(): void {
+    this.editingItem.set(null);
+  }
+
+  async saveEditedItem(): Promise<void> {
+    const current = this.editingItem();
+    if (!current || !current.name.trim()) return;
+
+    this.isSavingEdit.set(true);
+    try {
+      const updated = await this.invService.updateItem(current);
+      this.items.update(list => list.map(i => (i.id === updated.id ? updated : i)));
+      this.editingItem.set(null);
+    } finally {
+      this.isSavingEdit.set(false);
+    }
+  }
+
+  // --- CAMBIO RAPIDO QUANTITÀ (+ / -) ---
+  async changeQuantity(item: InventoryItem, delta: number, event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const newQty = (item.quantity || 1) + delta;
+    if (newQty <= 0) {
+      await this.deleteItem(item.id, event);
+      return;
+    }
+
+    const updatedItem: InventoryItem = { ...item, quantity: newQty };
+    const saved = await this.invService.updateItem(updatedItem);
+    this.items.update(list => list.map(i => (i.id === saved.id ? saved : i)));
+  }
+
+  async deleteItem(id: number, event?: Event): Promise<void> {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     if (!confirm('Rimuovere questo oggetto dall\'inventario?')) return;
     await this.invService.deleteItem(id);
     this.items.update(list => list.filter(i => i.id !== id));
+    if (this.editingItem()?.id === id) {
+      this.editingItem.set(null);
+    }
   }
 }
