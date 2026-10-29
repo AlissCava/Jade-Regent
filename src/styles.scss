@@ -1,3 +1,17 @@
+:focus-visible {
+  outline: 2px solid #f59e0b !important;
+  outline-offset: 2px !important;
+}
+
+.npc-card:focus-visible,
+.enemy-card:focus-visible,
+.item-card:focus-visible,
+.combatant-card:focus-visible,
+.category-header:focus-visible {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.5) !important;
+}
+
 /* Reset Globale */
 *, *::before, *::after {
   box-sizing: border-box;

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { A11yService } from './services/a11y.service';
 import { InitiativeComponent } from './pages/initiative/initiative';
 
 @Component({
@@ -21,6 +22,7 @@ import { InitiativeComponent } from './pages/initiative/initiative';
 })
 export class App implements OnInit {
   private router = inject(Router);
+  private a11yService = inject(A11yService);
 
   // --- ACCESSO RISERVATO ---
   private readonly SECRET_KEY = 'J4deR3g3nt!'; 
@@ -48,6 +50,9 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
+
+    this.a11yService.init();
+    
     // 1. Verifica autorizzazione party
     if (localStorage.getItem('jade_regent_authorized') === 'true') {
       this.isUnlocked.set(true);
