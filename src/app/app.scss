@@ -132,112 +132,144 @@ $gold: #f59e0b;
 }
 
 /* ========================================================
-   LAYOUT CENTRALE (DOCKING PERFETTO A DESTRA)
+   MENU CASSETTO (DRAWER) E SOTTOMENU
    ======================================================== */
-.app-main-layout {
-  display: flex;
-  width: 100%;
-  min-height: calc(100vh - 52px);
-  position: relative;
-  overflow-x: hidden;
-}
-
-/* Espande il contenuto centrale per tutta la larghezza disponibile */
-.main-content,
-.router-content-area {
-  flex: 1 1 0%;
-  min-width: 0;
-  width: 100%;
-  box-sizing: border-box;
-  padding-bottom: 2rem;
-}
-
-/* SOTTOMENU ANNIDATO A PIÙ LIVELLI */
-.submenu-children {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding-left: 0.85rem;
-  margin-top: 2px;
-  border-left: 2px solid rgba(#f59e0b, 0.25);
-  margin-left: 0.75rem;
-  animation: fadeInSub 0.15s ease-out;
-
-  .sub-link {
+.menu-drawer {
+  .drawer-links {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 12px;
-    border-radius: 8px;
-    color: #cbd5e1;
-    text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 600;
-    transition: all 0.12s ease;
+    flex-direction: column;
+    gap: 6px;
 
-    .sub-icon {
-      font-size: 1rem;
-      line-height: 1;
-    }
+    /* Stile unificato sia per link <a> che per pulsanti <button> */
+    .drawer-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #080d18 !important;
+      border: 1px solid #16243b !important;
+      color: #cbd5e1 !important;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      text-align: left;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
 
-    &:hover {
-      background: #13223f;
-      color: #fff;
-      transform: translateX(3px);
-    }
+      .link-icon {
+        font-size: 1.2rem;
+        line-height: 1;
+        flex-shrink: 0;
+      }
 
-    &.active {
-      background: rgba(#f59e0b, 0.18);
-      border: 1px solid rgba(#f59e0b, 0.4);
-      color: #fef08a;
-      font-weight: 700;
+      .link-text {
+        flex: 1;
+      }
+
+      .submenu-arrow {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-left: auto;
+      }
+
+      &:hover {
+        border-color: rgba(#f59e0b, 0.5) !important;
+        background: #111e38 !important;
+        color: #fff !important;
+      }
+
+      &.active {
+        border-color: #f59e0b !important;
+        background: rgba(#f59e0b, 0.15) !important;
+        color: #fef08a !important;
+      }
     }
   }
 
-  /* LIVELLO 2: SCHEDE EROI */
+  /* Sottomenu di secondo livello */
+  .submenu-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &.open > .submenu-trigger {
+      border-color: rgba(#f59e0b, 0.6) !important;
+      background: rgba(#f59e0b, 0.1) !important;
+      color: #fef08a !important;
+
+      .submenu-arrow {
+        color: #f59e0b;
+      }
+    }
+
+    .submenu-children {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-left: 0.85rem;
+      margin-top: 3px;
+      border-left: 2px solid rgba(#f59e0b, 0.3);
+      margin-left: 0.85rem;
+
+      .sub-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: transparent;
+        border: 1px solid transparent;
+        color: #cbd5e1;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        text-align: left;
+        box-sizing: border-box;
+        transition: all 0.12s ease;
+
+        .sub-icon {
+          font-size: 1rem;
+          line-height: 1;
+        }
+
+        .nested-text {
+          flex: 1;
+        }
+
+        .nested-arrow {
+          font-size: 0.8rem;
+          color: #94a3b8;
+          margin-left: auto;
+        }
+
+        &:hover {
+          background: #13223f;
+          color: #fff;
+        }
+
+        &.active {
+          background: rgba(#f59e0b, 0.18);
+          border-color: rgba(#f59e0b, 0.4);
+          color: #fef08a;
+        }
+      }
+    }
+  }
+
+  /* Sottomenu di terzo livello (le 5 schede) */
   .nested-submenu {
     display: flex;
     flex-direction: column;
     gap: 3px;
 
-    .nested-trigger {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 12px;
-      border-radius: 8px;
-      background: transparent;
-      border: 1px solid transparent;
-      color: #cbd5e1;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: left;
-      width: 100%;
-      transition: all 0.12s ease;
-
-      .sub-icon {
-        font-size: 1rem;
-        line-height: 1;
-      }
-
-      .nested-text {
-        flex: 1;
-      }
-
-      .nested-arrow {
-        font-size: 0.8rem;
-        color: #94a3b8;
-      }
-
-      &:hover {
-        background: #13223f;
-        color: #fff;
-        transform: translateX(3px);
-      }
-    }
-
-    &.open .nested-trigger {
+    &.open > .nested-trigger {
       background: rgba(#38bdf8, 0.12);
       border-color: rgba(#38bdf8, 0.35);
       color: #7dd3fc;
@@ -247,16 +279,14 @@ $gold: #f59e0b;
       }
     }
 
-    /* LIVELLO 3: LE 5 SCHEDE PG */
     .nested-children {
       display: flex;
       flex-direction: column;
       gap: 2px;
-      padding-left: 0.85rem;
+      padding-left: 0.75rem;
       margin-top: 2px;
       border-left: 2px solid rgba(#38bdf8, 0.35);
-      margin-left: 0.85rem;
-      animation: fadeInSub 0.15s ease-out;
+      margin-left: 0.75rem;
 
       .nested-link {
         display: flex;
