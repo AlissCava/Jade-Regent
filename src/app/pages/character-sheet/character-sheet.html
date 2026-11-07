@@ -111,26 +111,7 @@
               <span class="ca-pill">Contatto: <strong>{{ rec.data.character.ac_touch }}</strong></span>
               <span class="ca-pill">Impreparato: <strong>{{ rec.data.character.ac_flat_footed }}</strong></span>
             </div>
-                    <!-- STRISCIA MANOVRE IN COMBATTIMENTO (BMC / DMC / DMC IMPREPARATO) -->
-        <div class="combat-maneuvers-strip" aria-label="Manovre in Combattimento">
-          <div class="maneuver-box cmb-box" tabindex="0">
-            <span class="m-label">BMC (Manovra)</span>
-            <span class="m-val">{{ charCmb >= 0 ? '+' + charCmb : charCmb }}</span>
-            <span class="m-sub">Bonus Attacco</span>
-          </div>
-
-          <div class="maneuver-box cmd-box" tabindex="0">
-            <span class="m-label">DMC (Difesa)</span>
-            <span class="m-val">{{ charCmd }}</span>
-            <span class="m-sub">Totale</span>
-          </div>
-
-          <div class="maneuver-box cmd-flat-box" tabindex="0">
-            <span class="m-label">DMC Impreparato</span>
-            <span class="m-val">{{ charCmdFlatFooted }}</span>
-            <span class="m-sub">Colto alla sprovvista</span>
-          </div>
-        </div>
+            
           </div>
 
           <div class="status-card init-card">
