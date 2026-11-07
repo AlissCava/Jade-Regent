@@ -132,7 +132,7 @@ $gold: #f59e0b;
 }
 
 /* ========================================================
-   LAYOUT CENTRALE E SIDEBAR INIZIATIVA
+   LAYOUT CENTRALE (DOCKING PERFETTO A DESTRA)
    ======================================================== */
 .app-main-layout {
   display: flex;
@@ -142,28 +142,29 @@ $gold: #f59e0b;
   overflow-x: hidden;
 }
 
+/* Espande il contenuto centrale per tutta la larghezza disponibile */
+.main-content,
 .router-content-area {
-  flex: 1;
+  flex: 1 1 0%;
   min-width: 0;
   width: 100%;
-  padding-bottom: 2rem; /* Spazio naturale sul fondo senza barre fisse */
+  box-sizing: border-box;
+  padding-bottom: 2rem;
 }
 
+/* SIDEBAR INIZIATIVA DESKTOP */
 .initiative-desktop-sidebar {
   display: none;
 }
 
-/* Schermi Desktop & Tablet Widescreen (>= 1024px) */
 @media screen and (min-width: 1024px) {
-  .app-top-header .header-right .desktop-sidebar-toggle-btn {
-    display: inline-flex;
-  }
-
   .initiative-desktop-sidebar {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 410px;
     min-width: 410px;
     max-width: 410px;
+    margin-left: auto; /* Ancoraggio forzato all'estrema destra del monitor */
     background: #080c16;
     border-left: 1px solid #1a253a;
     height: calc(100vh - 52px);
@@ -179,6 +180,42 @@ $gold: #f59e0b;
       min-width: 0;
       transform: translateX(100%);
       border-left: none;
+    }
+
+    /* Intestazione della sidebar con titolo e crocetta ben distanziati */
+    .sidebar-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #0a0f1d;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+
+      .sidebar-title {
+        font-family: 'Cinzel', serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #f59e0b;
+      }
+
+      .btn-close-sidebar {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+
+        &:hover {
+          color: #ef4444;
+          background: rgba(239, 68, 68, 0.15);
+        }
+      }
     }
 
     .sidebar-inner-wrap {
@@ -202,7 +239,6 @@ $gold: #f59e0b;
     }
   }
 }
-
 /* ========================================================
    MENU CASSETTO (DRAWER)
    ======================================================== */
