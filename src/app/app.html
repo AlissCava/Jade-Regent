@@ -101,12 +101,6 @@
       <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
     </div>
 
-    <nav class="drawer-links">
-      <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-        <span class="link-icon">🏠</span>
-        <span class="link-text">Home / Dashboard</span>
-      </a>
-
       <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
         <span class="link-icon">👥</span>
         <span class="link-text">Compagnia & Eroi del Party</span>
