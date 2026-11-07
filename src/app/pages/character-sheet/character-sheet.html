@@ -111,7 +111,6 @@
               <span class="ca-pill">Contatto: <strong>{{ rec.data.character.ac_touch }}</strong></span>
               <span class="ca-pill">Impreparato: <strong>{{ rec.data.character.ac_flat_footed }}</strong></span>
             </div>
-            
           </div>
 
           <div class="status-card init-card">
@@ -794,7 +793,7 @@
           </ng-container>
 
           <!-- B: Per tutti gli altri PG: estrazione automatica di 1° e 2° attacco e critici da rec.data.character.weapons -->
-          <ng-container *ngIf="!isRyoujin">
+          <ng-container>
             <ng-container *ngFor="let w of rec.data.character.weapons">
               <div 
                 class="dice-item-row" 
@@ -843,7 +842,7 @@
           </ng-container>
 
           <!-- Altri PG Danni (Dinamico da rec.data.character.weapons) -->
-          <ng-container *ngIf="!isRyoujin">
+          <ng-container>
             <ng-container *ngFor="let w of rec.data.character.weapons">
               <div 
                 class="dice-item-row" 
@@ -1049,7 +1048,7 @@
         </div>
 
         <!-- TAB ARMI (PER ALTRE SCHEDE) -->
-        <div *ngIf="modalTab() === 'weapons' && !isRyoujin" class="tab-content">
+        <div *ngIf="modalTab() === 'weapons'" class="tab-content">
           <div class="form-section">
             <h3>🗡️ Armi in Dotazione</h3>
             <div class="items-edit-list" *ngIf="editData.character.weapons">
@@ -1072,7 +1071,7 @@
         </div>
 
         <!-- TAB TALENTI (PER ALTRE SCHEDE) -->
-        <div *ngIf="modalTab() === 'feats' && !isRyoujin" class="tab-content">
+        <div *ngIf="modalTab() === 'feats'" class="tab-content">
           <div class="form-section">
             <h3>🥋 Talenti</h3>
             <div class="items-edit-list" *ngIf="editData.character.feats">
