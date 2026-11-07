@@ -666,6 +666,17 @@
         </button>
       </div>
 
+        <!-- 6. DADI RAPIDI -->
+      <div class="quick-dice-bar">
+        <span class="qd-lbl">RAPIDI:</span>
+        <button type="button" (click)="quickRoll(20)">d20</button>
+        <button type="button" (click)="quickRoll(8)">d8</button>
+        <button type="button" (click)="quickRoll(6)">d6</button>
+        <button type="button" (click)="quickRoll(4)">d4</button>
+        <button type="button" (click)="quickRoll(100)">d%</button>
+      </div>
+    </div>
+
       <!-- 2. CARTELLE SEZIONI -->
       <div class="roller-folders-bar" role="tablist">
         <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'combat'" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">
@@ -793,7 +804,7 @@
           </ng-container>
 
           <!-- B: Per tutti gli altri PG: estrazione automatica di 1° e 2° attacco e critici da rec.data.character.weapons -->
-          <ng-container>
+          <ng-container *ngIf="!isRyoujin">
             <ng-container *ngFor="let w of rec.data.character.weapons">
               <div 
                 class="dice-item-row" 
@@ -842,7 +853,7 @@
           </ng-container>
 
           <!-- Altri PG Danni (Dinamico da rec.data.character.weapons) -->
-          <ng-container>
+          <ng-container *ngIf="!isRyoujin">
             <ng-container *ngFor="let w of rec.data.character.weapons">
               <div 
                 class="dice-item-row" 
@@ -956,16 +967,7 @@
         </ng-container>
       </div>
 
-      <!-- 6. DADI RAPIDI -->
-      <div class="quick-dice-bar">
-        <span class="qd-lbl">RAPIDI:</span>
-        <button type="button" (click)="quickRoll(20)">d20</button>
-        <button type="button" (click)="quickRoll(8)">d8</button>
-        <button type="button" (click)="quickRoll(6)">d6</button>
-        <button type="button" (click)="quickRoll(4)">d4</button>
-        <button type="button" (click)="quickRoll(100)">d%</button>
-      </div>
-    </div>
+    
   </ng-container>
 
   <!-- ==================== MODALE LEVEL UP ONLINE (SALVA SU NEON) ==================== -->
@@ -982,10 +984,10 @@
         <div class="modal-tab-bar" role="tablist">
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'general'" class="tab-chip" [class.active]="modalTab() === 'general'" (click)="modalTab.set('general')">🎖️ Info</button>
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'stats'" class="tab-chip" [class.active]="modalTab() === 'stats'" (click)="modalTab.set('stats')">💪 Stat & TS</button>
-          <button *ngIf="!isRyoujin" type="button" class="tab-chip" [class.active]="modalTab() === 'weapons'" (click)="modalTab.set('weapons')">🗡️ Armi</button>
-          <button *ngIf="!isRyoujin" type="button" class="tab-chip" [class.active]="modalTab() === 'feats'" (click)="modalTab.set('feats')">🥋 Talenti</button>
+          <button  type="button" class="tab-chip" [class.active]="modalTab() === 'weapons'" (click)="modalTab.set('weapons')">🗡️ Armi</button>
+          <button  type="button" class="tab-chip" [class.active]="modalTab() === 'feats'" (click)="modalTab.set('feats')">🥋 Talenti</button>
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'skills'" class="tab-chip" [class.active]="modalTab() === 'skills'" (click)="modalTab.set('skills')">📊 Abilità</button>
-          <button *ngIf="isRyoujin" type="button" role="tab" [attr.aria-selected]="modalTab() === 'companion'" class="tab-chip" [class.active]="modalTab() === 'companion'" (click)="modalTab.set('companion')">🐺 Hisui</button>
+          <button  type="button" role="tab" [attr.aria-selected]="modalTab() === 'companion'" class="tab-chip" [class.active]="modalTab() === 'companion'" (click)="modalTab.set('companion')">🐺 Hisui</button>
         </div>
       </header>
 
