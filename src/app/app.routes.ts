@@ -18,5 +18,10 @@ export const routes: Routes = [
   { path: 'chronicles', component: ChroniclesComponent, title: 'Cronache della Carovana • Jade Regent' },
   { path: 'initiative', component: InitiativeComponent, title: 'Ordine d\'Iniziativa • Combattimento' },
   { path: 'inventory', component: InventoryComponent, title: 'Inventario & Tesori • Jade Regent' },
+  { 
+    path: 'notes', 
+    loadComponent: () => import('./pages/notes/notes').then(m => m.NotesComponent),
+    title: 'Note & Promemoria • Jade Regent' 
+  },
   { path: '**', redirectTo: '' }
 ];

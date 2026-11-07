@@ -108,6 +108,11 @@
       <span class="btn-icon">📖</span>
       <span class="btn-label">Diario</span>
     </a>
+
+    <a routerLink="/notes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+  <span class="link-icon">📝</span>
+  <span class="link-text">Note & Promemoria</span>
+</a>
   </nav>
 
   <!-- MENU DRAWER LATERALE -->
@@ -125,6 +130,7 @@
         <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">🐾 Forme Selvatiche</a>
         <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📜 Grimorio</a>
         <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📖 Cronache</a>
+        <a routerLink="/notes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active"> 📝 Note & Promemoria</a>
       </div>
     </div>
   </div>

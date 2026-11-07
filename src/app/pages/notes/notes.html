@@ -1,0 +1,222 @@
+<div class="notes-container">
+  <!-- HEADER -->
+  <header class="notes-header">
+    <div class="campaign-pill">Ameiko's Caravan Codex</div>
+    <h1 class="main-title">📝 Note & Promemoria</h1>
+    <p class="subtitle">Bacheca comune sincronizzata su Neon DB e blocco appunti privato sul tuo dispositivo.</p>
+  </header>
+
+  <!-- PANNELLO CONTROLLI E FILTRI -->
+  <div class="controls-panel">
+    <!-- BARRA DI RICERCA -->
+    <div class="search-wrap">
+      <span class="s-icon">🔍</span>
+      <input 
+        type="search" 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event)" 
+        placeholder="Cerca per titolo, testo, autore o categoria..." />
+      <button *ngIf="searchQuery()" type="button" class="btn-clear" (click)="searchQuery.set('')">✕</button>
+    </div>
+
+    <!-- SELETTORE AMBITO (TUTTE / COMUNI / PRIVATE) -->
+    <div class="scope-tabs-bar" role="tablist">
+      <button 
+        type="button" 
+        class="scope-tab" 
+        [class.active]="scopeFilter() === 'all'" 
+        (click)="scopeFilter.set('all')">
+        Tutte ({{ allNotes().length }})
+      </button>
+
+      <button 
+        type="button" 
+        class="scope-tab scope-server" 
+        [class.active]="scopeFilter() === 'server'" 
+        (click)="scopeFilter.set('server')">
+        🌐 Comuni Party ({{ serverNotes().length }})
+      </button>
+
+      <button 
+        type="button" 
+        class="scope-tab scope-private" 
+        [class.active]="scopeFilter() === 'private'" 
+        (click)="scopeFilter.set('private')">
+        🔒 Private Mie ({{ localNotes().length }})
+      </button>
+    </div>
+
+    <!-- RIGA CATEGORIE E PULSANTI NUOVA NOTA -->
+    <div class="actions-subrow">
+      <div class="category-select-wrap">
+        <select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)">
+          <option *ngFor="let c of categories" [value]="c">Categoria: {{ c }}</option>
+        </select>
+      </div>
+
+      <div class="create-btns-group">
+        <button type="button" class="btn-new-note btn-new-server" (click)="openCreateModal(false)">
+          + 🌐 Nota Comune
+        </button>
+        <button type="button" class="btn-new-note btn-new-private" (click)="openCreateModal(true)">
+          + 🔒 Nota Privata
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATO CARICAMENTO -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <span>Caricamento note della carovana...</span>
+  </div>
+
+  <!-- GRIGLIA DELLE NOTE -->
+  <div class="notes-grid" *ngIf="!loading()">
+    <article 
+      *ngFor="let note of filteredNotes()" 
+      class="note-card"
+      [class.is-server]="!note.is_private"
+      [class.is-private]="note.is_private"
+      [class.is-pinned]="note.is_pinned"
+      (click)="openEditModal(note)">
+      
+      <!-- TOP: BADGE TIPO, CATEGORIA, PIN ED ELIMINA -->
+      <div class="note-top-bar">
+        <div class="badges-row">
+          <span class="type-pill" [class.pill-private]="note.is_private" [class.pill-server]="!note.is_private">
+            {{ note.is_private ? '🔒 Privata' : '🌐 Comune' }}
+          </span>
+          <span class="cat-pill">{{ note.category }}</span>
+        </div>
+
+        <div class="card-actions-top" (click)="$event.stopPropagation()">
+          <button 
+            type="button" 
+            class="btn-icon-action btn-pin" 
+            [class.pinned]="note.is_pinned"
+            (click)="togglePin(note, $event)" 
+            [title]="note.is_pinned ? 'Rimuovi da in evidenza' : 'Fissa in alto'">
+            📌
+          </button>
+          <button 
+            type="button" 
+            class="btn-icon-action btn-edit" 
+            (click)="openEditModal(note, $event)" 
+            title="Modifica nota">
+            ✏️
+          </button>
+          <button 
+            type="button" 
+            class="btn-icon-action btn-del" 
+            (click)="deleteNote(note, $event)" 
+            title="Elimina nota">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <!-- TITOLO E TESTO -->
+      <h2 class="note-title">{{ note.title }}</h2>
+      <p class="note-content">{{ note.content }}</p>
+
+      <!-- FOOTER NOTA: AUTORE E DATA -->
+      <div class="note-footer">
+        <span class="note-author">✍️ {{ note.author }}</span>
+        <span class="note-date" *ngIf="note.updated_at">{{ note.updated_at | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+    </article>
+
+    <div *ngIf="filteredNotes().length === 0" class="empty-hint">
+      Nessuna nota trovata per i filtri selezionati. Clicca sui pulsanti in alto per crearne una!
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODALE CREA / MODIFICA NOTA                               -->
+  <!-- ========================================================= -->
+  <div class="modal-backdrop" *ngIf="showEditorModal()" (click)="closeEditorModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <header class="modal-head">
+        <div>
+          <span class="modal-badge" [class.badge-private]="noteDraft.is_private">
+            {{ noteDraft.is_private ? '🔒 NOTA PRIVATA (SOLO QUESTO DISPOSITIVO)' : '🌐 NOTA COMUNE (SYNCHRONIZED NEON DB)' }}
+          </span>
+          <h2 class="modal-title">{{ isEditing() ? 'Modifica Nota' : 'Nuova Nota' }}</h2>
+        </div>
+        <button type="button" class="btn-close" (click)="closeEditorModal()">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <!-- TOGGLE TIPO NOTA (COMUNE VS PRIVATA) -->
+        <div class="field-group">
+          <label>Visibilità della Nota</label>
+          <div class="scope-toggle-buttons">
+            <button 
+              type="button" 
+              class="btn-scope-opt" 
+              [class.active]="!noteDraft.is_private" 
+              (click)="noteDraft.is_private = false">
+              🌐 Comune (Tutti i giocatori su Server)
+            </button>
+            <button 
+              type="button" 
+              class="btn-scope-opt private" 
+              [class.active]="noteDraft.is_private" 
+              (click)="noteDraft.is_private = true">
+              🔒 Privata (Solo per me in locale)
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Titolo Nota *</label>
+          <input type="text" [(ngModel)]="noteDraft.title" placeholder="es. Indizio su Amatatsu, Pozioni rimaste..." />
+        </div>
+
+        <div class="fields-row">
+          <div class="field-group">
+            <label>Autore / Firmato da</label>
+            <input type="text" [(ngModel)]="noteDraft.author" placeholder="es. Ryoujin, Master, Carovana..." />
+          </div>
+
+          <div class="field-group">
+            <label>Categoria</label>
+            <select [(ngModel)]="noteDraft.category">
+              <option *ngFor="let c of categories.slice(1)" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group checkbox-group">
+          <label class="pin-check-lbl">
+            <input type="checkbox" [(ngModel)]="noteDraft.is_pinned" />
+            <span>📌 Fissa questa nota in alto</span>
+          </label>
+        </div>
+
+        <div class="field-group">
+          <label>Contenuto della Nota *</label>
+          <textarea rows="7" [(ngModel)]="noteDraft.content" placeholder="Scrivi qui i dettagli, elenchi o appunti..."></textarea>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button *ngIf="isEditing()" type="button" class="btn-del-modal" (click)="deleteNote(noteDraft, $event)">
+          🗑️ Elimina
+        </button>
+
+        <div class="right-btns">
+          <button type="button" class="btn-cancel" (click)="closeEditorModal()">Annulla</button>
+          <button 
+            type="button" 
+            class="btn-save" 
+            [disabled]="!noteDraft.title?.trim() || !noteDraft.content?.trim() || isSaving()" 
+            (click)="saveNote()">
+            {{ isSaving() ? 'Salvataggio...' : '💾 Salva Nota' }}
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+</div>
