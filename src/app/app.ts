@@ -41,6 +41,11 @@ export class App implements OnInit {
   isInitiativePage = signal<boolean>(false);
   sidebarOpen = signal<boolean>(true);
 
+  // --- STATO SOTTO-MENU DRAWER ---
+  isPartySubmenuOpen = signal<boolean>(false);
+  isSheetsSubmenuOpen = signal<boolean>(false);
+  isSpellsSubmenuOpen = signal<boolean>(false);
+
   constructor() {
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd)
@@ -50,31 +55,49 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
-
     this.a11yService.init();
-    
-    // 1. Verifica autorizzazione party
-    if (localStorage.getItem('jade_regent_authorized') === 'true') {
-      this.isUnlocked.set(true);
-    }
 
-    // 2. Ripristina scala testo salvata (o default a 100%)
-    const savedScale = localStorage.getItem('jade_regent_text_scale');
-    const scaleNum = savedScale ? parseInt(savedScale, 10) : 100;
-    if (this.availableScales.includes(scaleNum)) {
-      this.applyScale(scaleNum);
-    } else {
-      this.applyScale(100);
+    if (typeof window !== 'undefined') {
+      // 1. Verifica autorizzazione party
+      if (localStorage.getItem('jade_regent_authorized') === 'true') {
+        this.isUnlocked.set(true);
+      }
+
+      // 2. Ripristina scala testo salvata (o default a 100%)
+      const savedScale = localStorage.getItem('jade_regent_text_scale');
+      const scaleNum = savedScale ? parseInt(savedScale, 10) : 100;
+      if (this.availableScales.includes(scaleNum)) {
+        this.applyScale(scaleNum);
+      } else {
+        this.applyScale(100);
+      }
     }
 
     // Verifica rotta iniziale
     this.isInitiativePage.set(this.router.url.includes('/initiative'));
   }
 
+  // --- CONTROLLO SOTTOMENU ---
+  togglePartySubmenu(): void {
+    this.isPartySubmenuOpen.update(v => !v);
+  }
+
+  toggleSheetsSubmenu(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.isSheetsSubmenuOpen.update(v => !v);
+  }
+
+  toggleSpellsSubmenu(): void {
+    this.isSpellsSubmenuOpen.update(v => !v);
+  }
+
+  // --- CONTROLLO ACCESSO E MENU ---
   unlock(): void {
     const clean = this.passcode.trim();
     if (clean === this.SECRET_KEY || clean.toLowerCase() === this.SECRET_KEY.toLowerCase()) {
-      localStorage.setItem('jade_regent_authorized', 'true');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('jade_regent_authorized', 'true');
+      }
       this.isUnlocked.set(true);
       this.authError.set(false);
     } else {
@@ -95,6 +118,7 @@ export class App implements OnInit {
     this.sidebarOpen.update(v => !v);
   }
 
+  // --- SCALA TIPOGRAFICA DINAMICA ---
   cycleTextScale(): void {
     const currentIndex = this.availableScales.indexOf(this.textScale());
     const nextIndex = (currentIndex + 1) % this.availableScales.length;
@@ -103,10 +127,14 @@ export class App implements OnInit {
 
   private applyScale(scale: number): void {
     this.textScale.set(scale);
-    document.documentElement.style.fontSize = `${(scale / 100) * 16}px`;
-    document.documentElement.setAttribute('data-text-scale', scale.toString());
-    document.body.setAttribute('data-text-scale', scale.toString());
-    localStorage.setItem('jade_regent_text_scale', scale.toString());
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.fontSize = `${(scale / 100) * 16}px`;
+      document.documentElement.setAttribute('data-text-scale', scale.toString());
+      document.body.setAttribute('data-text-scale', scale.toString());
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('jade_regent_text_scale', scale.toString());
+    }
   }
 }
 

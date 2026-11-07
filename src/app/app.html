@@ -101,21 +101,101 @@
       <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
     </div>
 
-      <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">👥</span>
-        <span class="link-text">Compagnia & Eroi del Party</span>
-      </a>
+    <nav class="drawer-links">
 
-      <a routerLink="/characters/ryoujin" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">⚔️</span>
-        <span class="link-text">Scheda Ryoujin & Hisui</span>
-      </a>
 
-      <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">📜</span>
-        <span class="link-text">Grimorio Incantesimi</span>
-      </a>
+      <!-- SOTTOMENU: COMPAGNIA & EROI DELLA CAROVANA -->
+      <!-- 1. COMPAGNIA & EROI (LIVELLO 1) -->
+      <div class="submenu-group" [class.open]="isPartySubmenuOpen()">
+        <button type="button" class="submenu-trigger" (click)="togglePartySubmenu()">
+          <span class="link-icon">👥</span>
+          <span class="link-text">Compagnia & Eroi</span>
+          <span class="submenu-arrow">{{ isPartySubmenuOpen() ? '▾' : '▸' }}</span>
+        </button>
 
+        <div class="submenu-children" *ngIf="isPartySubmenuOpen()">
+
+          <!-- 1.A SCHEDE (LIVELLO 2 - APRIBILE CON LE 5 SCHEDE) -->
+          <div class="nested-submenu" [class.open]="isSheetsSubmenuOpen()">
+            <button type="button" class="nested-trigger" (click)="toggleSheetsSubmenu($event)">
+              <span class="sub-icon">⚔️</span>
+              <span class="nested-text">Schede Eroi</span>
+              <span class="nested-arrow">{{ isSheetsSubmenuOpen() ? '▾' : '▸' }}</span>
+            </button>
+
+            <!-- LIVELLO 3: LE 5 SCHEDE DEI PERSONAGGI -->
+            <div class="nested-children" *ngIf="isSheetsSubmenuOpen()">
+              <a routerLink="/characters" [queryParams]="{ tab: 'party' }" (click)="closeMenu()" class="nested-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <span class="deep-bullet">•</span>
+                <span>Tutte le Schede (Overview)</span>
+              </a>
+              <a routerLink="/characters/ryoujin" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                <span class="deep-bullet">⚔️</span>
+                <span>Ryoujin & Hisui</span>
+              </a>
+              <a routerLink="/characters/airyn" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                <span class="deep-bullet">🌿</span>
+                <span>Airyn (Druido)</span>
+              </a>
+              <a routerLink="/characters/azoi" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                <span class="deep-bullet">⚡</span>
+                <span>Azoi (Magus)</span>
+              </a>
+              <a routerLink="/characters/kaede" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                <span class="deep-bullet">🦊</span>
+                <span>Kaede (Ninja)</span>
+              </a>
+              <a routerLink="/characters/nijena" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                <span class="deep-bullet">🪕</span>
+                <span>Nijena (Barda)</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 1.B PNG & CAROVANA (LIVELLO 2 - APRE SUBITO LA TAB PNG) -->
+          <a routerLink="/characters" [queryParams]="{ tab: 'npcs' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
+            <span class="sub-icon">📜</span>
+            <span>PNG & Carovana</span>
+          </a>
+
+          <!-- 1.C BESTIARIO MASTER (LIVELLO 2 - APRE SUBITO LA TAB BESTIARIO) -->
+          <a routerLink="/characters" [queryParams]="{ tab: 'bestiary' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
+            <span class="sub-icon">👹</span>
+            <span>Bestiario Master</span>
+          </a>
+
+        </div>
+      </div>
+
+      <!--  SOTTOMENU: GRIMORIO INCANTESIMI FILTRATO -->
+      <div class="submenu-group" [class.open]="isSpellsSubmenuOpen()">
+        <button type="button" class="submenu-trigger" (click)="toggleSpellsSubmenu()">
+          <span class="link-icon">📜</span>
+          <span class="link-text">Grimorio Incantesimi</span>
+          <span class="submenu-arrow">{{ isSpellsSubmenuOpen() ? '▾' : '▸' }}</span>
+        </button>
+
+        <div class="submenu-children" *ngIf="isSpellsSubmenuOpen()">
+          <a routerLink="/spells" (click)="closeMenu()" class="sub-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <span class="sub-icon">✨</span>
+            <span>Tutti gli Incantesimi</span>
+          </a>
+          <a routerLink="/spells" [queryParams]="{ class: 'druid' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
+            <span class="sub-icon">🌿</span>
+            <span>Druido • Airyn</span>
+          </a>
+          <a routerLink="/spells" [queryParams]="{ class: 'magus' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
+            <span class="sub-icon">⚡</span>
+            <span>Magus • Azoi</span>
+          </a>
+          <a routerLink="/spells" [queryParams]="{ class: 'bard' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
+            <span class="sub-icon">🪕</span>
+            <span>Bardo • Nijena</span>
+          </a>
+        </div>
+      </div>
+
+      <!--  ALTRE VOCI -->
       <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
         <span class="link-icon">🐾</span>
         <span class="link-text">Forme Selvatiche (Airyn)</span>
