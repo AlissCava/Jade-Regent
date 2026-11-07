@@ -160,12 +160,27 @@
 
         <!-- LE 3 ARMI LEGGENDARIE DI RYOUJIN -->
         <div class="section-card">
-          <h2 class="section-title">
-            🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }}/+{{ rec.data.character.bab - 5 }})
-          </h2>
+          <div class="section-title-row">
+            <h2 class="section-title">
+              🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }}/+{{ rec.data.character.bab - 5 }})
+            </h2>
+            <button type="button" class="btn-quick-add" (click)="openLevelUpTab('weapons')">+ Aggiungi Arma</button>
+          </div>
           <div class="weapons-grid">
-            <!-- TODO: qui mancavano le 3 weapon-card di Ryoujin (il blocco era vuoto nel file originale).
-                 Reincolla qui le tue card delle armi. -->
+            <!-- TODO: reincolla qui le 3 weapon-card fisse di Ryoujin (nel file che mi hai mandato erano assenti). -->
+
+            <!-- ARMI AGGIUNTE DAL LEVEL UP (da rec.data.character.weapons) -->
+            <div class="weapon-card" *ngFor="let w of rec.data.character.weapons">
+              <div class="wpn-top">
+                <div><span class="wpn-badge">Arma</span><h3 class="wpn-name">{{ w.name }}</h3></div>
+                <div class="wpn-crit">Critico: {{ w.crit }}</div>
+              </div>
+              <div class="wpn-stats-row">
+                <div class="stat-calc"><span class="lbl">TxC</span><span class="val highlight">{{ w.attack_bonus }}</span></div>
+                <div class="stat-calc"><span class="lbl">Danno</span><span class="val highlight">{{ w.damage }}</span></div>
+              </div>
+              <div class="wpn-special-powers" *ngIf="w.special"><span>✨ {{ w.special }}</span></div>
+            </div>
           </div>
         </div>
 
