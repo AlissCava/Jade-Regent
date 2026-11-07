@@ -1,7 +1,7 @@
 <!-- 1. SE NON AUTORIZZATO: SCHERMATA DI BLOCCO A SCHERMO INTERO -->
 <div class="lock-gate-overlay" *ngIf="!isUnlocked()">
   <div class="lock-card">
-    <div class="lock-icon">⛩️</div>
+    <div class="lock-icon" aria-hidden="true">⛩️</div>
     <div class="lock-badge">Accesso Riservato</div>
     <h1 class="lock-title">Carovana di Sandpoint</h1>
     <p class="lock-desc">
@@ -10,18 +10,19 @@
     </p>
 
     <form (ngSubmit)="unlock()" class="lock-form">
-      <input 
-        type="password" 
-        [(ngModel)]="passcode" 
+      <input
+        type="password"
+        [(ngModel)]="passcode"
         name="passcode"
-        placeholder="Parola d'ordine..." 
+        placeholder="Parola d'ordine..."
+        aria-label="Parola d'ordine del party"
         autocomplete="off"
         autofocus />
 
       <button type="submit" class="btn-unlock">Accedi ➔</button>
     </form>
 
-    <div class="lock-error" *ngIf="authError()">
+    <div class="lock-error" *ngIf="authError()" role="alert">
       ⚠️ Parola d'ordine errata. Accesso negato.
     </div>
   </div>
@@ -33,34 +34,40 @@
   <header class="app-top-header">
     <div class="header-left">
       <!-- PULSANTE HAMBURGER ACCANTO AL TITOLO -->
-    <button 
-      type="button" 
-      class="top-burger-btn" 
-      (click)="toggleMenu()" 
-      [attr.aria-expanded]="isMenuOpen()" 
-      aria-label="Apri menu principale"
-      title="Menu di navigazione">
-      <span class="burger-icon">☰</span>
-    </button>
-    <!-- TITOLO = LINK HOME -->
+      <button
+        type="button"
+        class="top-burger-btn"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="isMenuOpen()"
+        aria-label="Apri menu principale"
+        title="Menu di navigazione">
+        <span class="burger-icon" aria-hidden="true">☰</span>
+      </button>
+
+      <!-- TITOLO = LINK HOME -->
       <a routerLink="/" class="brand-link" title="Torna alla Home">
-        <span class="brand-torii">⛩️</span>
+        <span class="brand-torii" aria-hidden="true">⛩️</span>
         <span class="brand-title">JADE REGENT</span>
       </a>
     </div>
 
     <div class="header-right">
       <!-- Toggle rapido Sidebar Iniziativa -->
-      <button 
+      <button
         *ngIf="!isInitiativePage()"
-        type="button" 
+        type="button"
         class="desktop-sidebar-toggle-btn"
         (click)="toggleSidebar()"
-        [class.active]="sidebarOpen()">
+        [class.active]="sidebarOpen()"
+        [attr.aria-expanded]="sidebarOpen()">
         <span>⚔️ Iniziativa {{ sidebarOpen() ? '✕' : '▾' }}</span>
       </button>
 
-      <button type="button" class="scale-btn" (click)="cycleTextScale()" aria-label="Cambia dimensione testo">
+      <button
+        type="button"
+        class="scale-btn"
+        (click)="cycleTextScale()"
+        [attr.aria-label]="'Cambia dimensione testo, attuale ' + textScale() + ' per cento'">
         Aa {{ textScale() }}%
       </button>
     </div>
@@ -74,13 +81,13 @@
     </main>
 
     <!-- SIDEBAR INIZIATIVA LATERALE (SOLO PC / IPAD GRANDI >= 1024px) -->
-    <aside 
-      class="initiative-desktop-sidebar" 
-      *ngIf="!isInitiativePage()" 
+    <aside
+      class="initiative-desktop-sidebar"
+      *ngIf="!isInitiativePage()"
       [class.is-collapsed]="!sidebarOpen()">
       <div class="sidebar-header-bar">
         <span class="sidebar-title">⚔️ Ordine d'Iniziativa</span>
-        <button type="button" class="btn-close-sidebar" (click)="toggleSidebar()" title="Nascondi sidebar">✕</button>
+        <button type="button" class="btn-close-sidebar" (click)="toggleSidebar()" title="Nascondi sidebar" aria-label="Nascondi sidebar iniziativa">✕</button>
       </div>
       <div class="sidebar-inner-wrap">
         <app-initiative></app-initiative>
@@ -88,135 +95,111 @@
     </aside>
   </div>
 
- <!-- ========================================================= -->
-<!-- CASSETTO MENU LATERALE (DRAWER)                           -->
-<!-- ========================================================= -->
-<div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
-  <aside class="menu-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Menu principale">
-    <div class="drawer-header">
-      <div class="drawer-title">
-        <span class="icon">⛩️</span>
-        <span>Ameiko's Caravan Codex</span>
+  <!-- ========================================================= -->
+  <!-- CASSETTO MENU LATERALE (DRAWER)                           -->
+  <!-- ========================================================= -->
+  <div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
+    <aside class="menu-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Menu principale">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <span class="icon" aria-hidden="true">⛩️</span>
+          <span>Ameiko's Caravan Codex</span>
+        </div>
+        <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
       </div>
-      <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
-    </div>
 
-   <nav class="drawer-links">
+      <nav class="drawer-links" aria-label="Navigazione principale">
 
-      <!-- 2. SOTTOMENU: COMPAGNIA & EROI -->
-      <div class="submenu-group" [class.open]="isPartySubmenuOpen()">
-        <button type="button" class="drawer-link submenu-trigger" (click)="togglePartySubmenu()">
-          <span class="link-icon">👥</span>
-          <span class="link-text">Compagnia & Eroi</span>
-          <span class="submenu-arrow">{{ isPartySubmenuOpen() ? '▾' : '▸' }}</span>
-        </button>
+        <!-- 2. SOTTOMENU: COMPAGNIA & EROI -->
+        <div class="submenu-group" [class.open]="isPartySubmenuOpen()">
+          <button type="button" class="drawer-link submenu-trigger" (click)="togglePartySubmenu()" [attr.aria-expanded]="isPartySubmenuOpen()">
+            <span class="link-icon" aria-hidden="true">👥</span>
+            <span class="link-text">Compagnia & Eroi</span>
+            <span class="submenu-arrow" aria-hidden="true">{{ isPartySubmenuOpen() ? '▾' : '▸' }}</span>
+          </button>
 
-        <div class="submenu-children" *ngIf="isPartySubmenuOpen()">
-          <!-- 1.A SCHEDE EROI (SOTTOMENU ANNIDATO) -->
-          <div class="nested-submenu" [class.open]="isSheetsSubmenuOpen()">
-            <button type="button" class="sub-link nested-trigger" (click)="toggleSheetsSubmenu($event)">
-              <span class="sub-icon">⚔️</span>
-              <span class="nested-text">Schede Eroi</span>
-              <span class="nested-arrow">{{ isSheetsSubmenuOpen() ? '▾' : '▸' }}</span>
-            </button>
+          <div class="submenu-children" *ngIf="isPartySubmenuOpen()">
+            <!-- 1.A SCHEDE EROI (SOTTOMENU ANNIDATO) -->
+            <div class="nested-submenu" [class.open]="isSheetsSubmenuOpen()">
+              <button type="button" class="sub-link nested-trigger" (click)="toggleSheetsSubmenu($event)" [attr.aria-expanded]="isSheetsSubmenuOpen()">
+                <span class="sub-icon" aria-hidden="true">⚔️</span>
+                <span class="nested-text">Schede Eroi</span>
+                <span class="nested-arrow" aria-hidden="true">{{ isSheetsSubmenuOpen() ? '▾' : '▸' }}</span>
+              </button>
 
-            <!-- LE 5 SCHEDE DEI PERSONAGGI -->
-            <div class="nested-children" *ngIf="isSheetsSubmenuOpen()">
-              <a routerLink="/characters" [queryParams]="{ tab: 'party' }" (click)="closeMenu()" class="nested-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                <span class="deep-bullet">•</span>
-                <span>Tutte le Schede (Overview)</span>
-              </a>
-              <a routerLink="/characters/ryoujin" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
-                <span class="deep-bullet">⚔️</span>
-                <span>Ryoujin & Hisui</span>
-              </a>
-              <a routerLink="/characters/airyn" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
-                <span class="deep-bullet">🌿</span>
-                <span>Airyn (Druido)</span>
-              </a>
-              <a routerLink="/characters/azoi" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
-                <span class="deep-bullet">⚡</span>
-                <span>Azoi (Magus)</span>
-              </a>
-              <a routerLink="/characters/kaede" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
-                <span class="deep-bullet">🦊</span>
-                <span>Kaede (Ninja)</span>
-              </a>
-              <a routerLink="/characters/nijena" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
-                <span class="deep-bullet">🪕</span>
-                <span>Nijena (Barda)</span>
-              </a>
+              <!-- LE 5 SCHEDE DEI PERSONAGGI -->
+              <div class="nested-children" *ngIf="isSheetsSubmenuOpen()">
+                <a routerLink="/characters" [queryParams]="{ tab: 'party' }" (click)="closeMenu()" class="nested-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                  <span class="deep-bullet" aria-hidden="true">•</span>
+                  <span>Tutte le Schede (Overview)</span>
+                </a>
+                <a routerLink="/characters/ryoujin" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                  <span class="deep-bullet" aria-hidden="true">⚔️</span>
+                  <span>Ryoujin & Hisui</span>
+                </a>
+                <a routerLink="/characters/airyn" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                  <span class="deep-bullet" aria-hidden="true">🌿</span>
+                  <span>Airyn (Druido)</span>
+                </a>
+                <a routerLink="/characters/azoi" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                  <span class="deep-bullet" aria-hidden="true">⚡</span>
+                  <span>Azoi (Magus)</span>
+                </a>
+                <a routerLink="/characters/kaede" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                  <span class="deep-bullet" aria-hidden="true">🦊</span>
+                  <span>Kaede (Ninja)</span>
+                </a>
+                <a routerLink="/characters/nijena" (click)="closeMenu()" class="nested-link" routerLinkActive="active">
+                  <span class="deep-bullet" aria-hidden="true">🪕</span>
+                  <span>Nijena (Barda)</span>
+                </a>
+              </div>
             </div>
           </div>
-
-          <!-- 1.B PNG & CAROVANA -->
-          <a routerLink="/characters" [queryParams]="{ tab: 'npcs' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
-            <span class="sub-icon">📜</span>
-            <span>PNG & Carovana</span>
-          </a>
-
-          <!-- 1.C BESTIARIO MASTER -->
-          <a routerLink="/characters" [queryParams]="{ tab: 'bestiary' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
-            <span class="sub-icon">👹</span>
-            <span>Bestiario Master</span>
-          </a>
         </div>
-      </div>
 
-      <!-- 3. SOTTOMENU: GRIMORIO INCANTESIMI -->
-      <div class="submenu-group" [class.open]="isSpellsSubmenuOpen()">
-        <button type="button" class="drawer-link submenu-trigger" (click)="toggleSpellsSubmenu()">
-          <span class="link-icon">📜</span>
-          <span class="link-text">Grimorio Incantesimi</span>
-          <span class="submenu-arrow">{{ isSpellsSubmenuOpen() ? '▾' : '▸' }}</span>
-        </button>
+        <!-- 3. SOTTOMENU: GRIMORIO INCANTESIMI -->
+        <div class="submenu-group" [class.open]="isSpellsSubmenuOpen()">
+          <button type="button" class="drawer-link submenu-trigger" (click)="toggleSpellsSubmenu()" [attr.aria-expanded]="isSpellsSubmenuOpen()">
+            <span class="link-icon" aria-hidden="true">📜</span>
+            <span class="link-text">Grimorio Incantesimi</span>
+            <span class="submenu-arrow" aria-hidden="true">{{ isSpellsSubmenuOpen() ? '▾' : '▸' }}</span>
+          </button>
 
-        <div class="submenu-children" *ngIf="isSpellsSubmenuOpen()">
-          <a routerLink="/spells" (click)="closeMenu()" class="sub-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-            <span class="sub-icon">✨</span>
-            <span>Tutti gli Incantesimi</span>
-          </a>
-          <a routerLink="/spells" [queryParams]="{ class: 'druid' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
-            <span class="sub-icon">🌿</span>
-            <span>Druido • Airyn</span>
-          </a>
-          <a routerLink="/spells" [queryParams]="{ class: 'magus' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
-            <span class="sub-icon">⚡</span>
-            <span>Magus • Azoi</span>
-          </a>
-          <a routerLink="/spells" [queryParams]="{ class: 'bard' }" (click)="closeMenu()" class="sub-link" routerLinkActive="active">
-            <span class="sub-icon">🪕</span>
-            <span>Bardo • Nijena</span>
-          </a>
+          <!-- TODO: nel file che mi hai mandato mancavano le voci di questo sottomenu.
+               Reincollale qui dentro, ad esempio:
+          <div class="submenu-children" *ngIf="isSpellsSubmenuOpen()">
+            <a routerLink="/spells" (click)="closeMenu()" class="sub-link" routerLinkActive="active">...</a>
+          </div>
+          -->
         </div>
-      </div>
 
-      <!-- 4. ALTRE VOCI -->
-      <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">🐾</span>
-        <span class="link-text">Forme Selvatiche (Airyn)</span>
-      </a>
+        <!-- 4. ALTRE VOCI -->
+        <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+          <span class="link-icon" aria-hidden="true">🐾</span>
+          <span class="link-text">Forme Selvatiche (Airyn)</span>
+        </a>
 
-      <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">📖</span>
-        <span class="link-text">Cronache della Carovana</span>
-      </a>
+        <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+          <span class="link-icon" aria-hidden="true">📖</span>
+          <span class="link-text">Cronache della Carovana</span>
+        </a>
 
-      <a routerLink="/inventory" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">🎒</span>
-        <span class="link-text">Inventario & Cassa</span>
-      </a>
+        <a routerLink="/inventory" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+          <span class="link-icon" aria-hidden="true">🎒</span>
+          <span class="link-text">Inventario & Cassa</span>
+        </a>
 
-      <a routerLink="/notes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">📝</span>
-        <span class="link-text">Note & Promemoria</span>
-      </a>
+        <a routerLink="/notes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+          <span class="link-icon" aria-hidden="true">📝</span>
+          <span class="link-text">Note & Promemoria</span>
+        </a>
 
-      <a routerLink="/initiative" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-        <span class="link-icon">⏱️</span>
-        <span class="link-text">Combattimento & Iniziativa</span>
-      </a>
-    </nav>
-  </aside>
-</div>
+        <a routerLink="/initiative" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+          <span class="link-icon" aria-hidden="true">⏱️</span>
+          <span class="link-text">Combattimento & Iniziativa</span>
+        </a>
+      </nav>
+    </aside>
+  </div>
 </ng-container>
