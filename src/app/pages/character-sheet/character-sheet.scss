@@ -1335,4 +1335,75 @@ $text-muted: #94a3b8;
   }
 }
 
+/* STRISCIA MANOVRE IN COMBATTIMENTO (BMC, DMC, DMC IMPREPARATO) */
+.combat-maneuvers-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 12px 0;
+
+  .maneuver-box {
+    background: #0c1424;
+    border: 1px solid #1e2c48;
+    border-radius: 12px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    .m-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #94a3b8;
+      margin-bottom: 3px;
+    }
+
+    .m-val {
+      font-family: 'Cinzel', serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .m-sub,
+    .m-hint {
+      font-size: 0.65rem;
+      color: #64748b;
+      margin-top: 3px;
+    }
+
+    &.cmb-btn {
+      cursor: pointer;
+      border-color: rgba(245, 158, 11, 0.45);
+      background: linear-gradient(145deg, #0d1527 0%, rgba(245, 158, 11, 0.12) 100%);
+      transition: transform 0.12s ease, border-color 0.15s ease;
+
+      .m-val { color: #f59e0b; }
+      .m-hint { color: #fde68a; font-weight: 700; }
+
+      &:hover {
+        border-color: #f59e0b;
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: scale(0.96);
+      }
+    }
+
+    &.cmd-box .m-val {
+      color: #38bdf8;
+    }
+
+    &.cmd-flat-box .m-val {
+      color: #cbd5e1;
+    }
+  }
+}
+
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }

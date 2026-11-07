@@ -173,6 +173,32 @@ export class CharacterSheetComponent implements OnInit {
     return Math.floor((dex - 10) / 2);
   }
 
+  // --- MANOVRE IN COMBATTIMENTO (BMC, DMC, DMC IMPREPARATO) ---
+  get charCmb(): number {
+    const c = this.charRecord()?.data.character;
+    if (c?.cmb !== undefined && c?.cmb !== null && c?.cmb !== ('' as any)) {
+      return Number(c.cmb);
+    }
+    return this.charBab + this.charStrMod;
+  }
+
+  get charCmd(): number {
+    const c = this.charRecord()?.data.character;
+    if (c?.cmd !== undefined && c?.cmd !== null && c?.cmd !== ('' as any)) {
+      return Number(c.cmd);
+    }
+    return 10 + this.charBab + this.charStrMod + this.charDexMod;
+  }
+
+  get charCmdFlatFooted(): number {
+    const c = this.charRecord()?.data.character;
+    if (c?.cmd_flat_footed !== undefined && c?.cmd_flat_footed !== null && c?.cmd_flat_footed !== ('' as any)) {
+      return Number(c.cmd_flat_footed);
+    }
+    const dexPenalty = Math.min(0, this.charDexMod);
+    return 10 + this.charBab + this.charStrMod + dexPenalty;
+  }
+
   // Calcoli specifici Samurai Ryoujin
   get powerAtkPenalty(): number { return 1 + Math.floor(this.charBab / 4); }
   get powerAtkDmgTwoHand(): number { return this.powerAtkPenalty * 3; }

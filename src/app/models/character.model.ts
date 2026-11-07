@@ -36,6 +36,9 @@ export interface CharacterSheetData {
     ac_total: number;
     ac_touch: number;
     ac_flat_footed: number;
+    cmb?: number | null;
+    cmd?: number | null;
+    cmd_flat_footed?: number | null;
     initiative: number;
     speed_meters: number;
     speed_squares: number;
@@ -49,10 +52,10 @@ export interface CharacterSheetData {
     int: number;
     wis: number;
     cha: number;
-    resolve_max?: number;
-    resolve_current?: number;
-    challenge_max?: number;
-    challenge_current?: number;
+    resolve_max: number;
+    resolve_current: number;
+    challenge_max: number;
+    challenge_current: number;
     weapons?: WeaponItem[];
     feats?: FeatItem[];
     special_resources?: SpecialResourceItem[];
@@ -68,6 +71,9 @@ export interface CharacterSheetData {
     ac_total: number;
     ac_touch: number;
     ac_flat_footed: number;
+    cmb?: number | null;
+    cmd?: number | null;
+    cmd_flat_footed?: number | null;
     initiative: number;
     speed_meters: number;
     speed_squares: number;
