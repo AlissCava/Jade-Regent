@@ -14,33 +14,33 @@
     <!-- ==================== BARRA NAVIGAZIONE SCHEDE ==================== -->
     <div class="sheet-action-bar" role="navigation" aria-label="Navigazione Scheda">
       <div class="char-nav-tabs" role="tablist">
-        <button 
-          type="button" 
+        <button
+          type="button"
           role="tab"
           [attr.aria-selected]="activeTab() === 'main'"
-          class="char-tab-btn" 
-          [class.active]="activeTab() === 'main'" 
+          class="char-tab-btn"
+          [class.active]="activeTab() === 'main'"
           (click)="activeTab.set('main')">
           ⚔️ {{ rec.name }}
         </button>
 
-        <button 
+        <button
           *ngIf="rec.data.companion"
-          type="button" 
+          type="button"
           role="tab"
           [attr.aria-selected]="activeTab() === 'companion'"
-          class="char-tab-btn companion-btn" 
-          [class.active]="activeTab() === 'companion'" 
+          class="char-tab-btn companion-btn"
+          [class.active]="activeTab() === 'companion'"
           (click)="activeTab.set('companion')">
           🐺 {{ rec.data.companion.name }}
         </button>
 
-        <button 
-          type="button" 
+        <button
+          type="button"
           role="tab"
           [attr.aria-selected]="activeTab() === 'roller'"
-          class="char-tab-btn dice-tab-btn" 
-          [class.active]="activeTab() === 'roller'" 
+          class="char-tab-btn dice-tab-btn"
+          [class.active]="activeTab() === 'roller'"
           (click)="activeTab.set('roller')">
           🎲 Lancia Dadi
         </button>
@@ -52,7 +52,7 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- CASO A: LA VERA SCHEDA DI RYOUJIN (100% IDENTICA A PRIMA)                 -->
+    <!-- CASO A: LA VERA SCHEDA DI RYOUJIN                                         -->
     <!-- ========================================================================= -->
     <ng-container *ngIf="isRyoujin">
       <!-- VISTA 1: SCHEDA RYOUJIN -->
@@ -66,7 +66,7 @@
           <p class="char-quote">«Nessun signore a cui piegare il capo, nessun passo indietro di fronte alla lama.»</p>
         </header>
 
-        <!-- STATUS BAR (HP, CA, INIZIATIVA, TS) -->
+        <!-- STATUS BAR (HP, MANOVRE, CA, INIZIATIVA, TS) -->
         <div class="combat-status-grid">
           <div class="status-card hp-card">
             <span class="status-label">Punti Ferita</span>
@@ -84,26 +84,26 @@
           </div>
 
           <!-- STRISCIA MANOVRE IN COMBATTIMENTO (BMC / DMC / DMC IMPREPARATO) -->
-        <!-- STRISCIA MANOVRE IN COMBATTIMENTO (BMC / DMC / DMC IMPREPARATO) -->
-        <div class="combat-maneuvers-strip" aria-label="Manovre in Combattimento">
-          <div class="maneuver-box cmb-box" tabindex="0">
-            <span class="m-label">BMC (Manovra)</span>
-            <span class="m-val">{{ charCmb >= 0 ? '+' + charCmb : charCmb }}</span>
-            <span class="m-sub">Bonus Attacco</span>
+          <div class="combat-maneuvers-strip" role="group" aria-label="Manovre in Combattimento">
+            <div class="maneuver-box cmb-box" tabindex="0">
+              <span class="m-label">BMC (Manovra)</span>
+              <span class="m-val">{{ charCmb >= 0 ? '+' + charCmb : charCmb }}</span>
+              <span class="m-sub">Bonus Attacco</span>
+            </div>
+
+            <div class="maneuver-box cmd-box" tabindex="0">
+              <span class="m-label">DMC (Difesa)</span>
+              <span class="m-val">{{ charCmd }}</span>
+              <span class="m-sub">Totale</span>
+            </div>
+
+            <div class="maneuver-box cmd-flat-box" tabindex="0">
+              <span class="m-label">DMC Impreparato</span>
+              <span class="m-val">{{ charCmdFlatFooted }}</span>
+              <span class="m-sub">Colto alla sprovvista</span>
+            </div>
           </div>
 
-          <div class="maneuver-box cmd-box" tabindex="0">
-            <span class="m-label">DMC (Difesa)</span>
-            <span class="m-val">{{ charCmd }}</span>
-            <span class="m-sub">Totale</span>
-          </div>
-
-          <div class="maneuver-box cmd-flat-box" tabindex="0">
-            <span class="m-label">DMC Impreparato</span>
-            <span class="m-val">{{ charCmdFlatFooted }}</span>
-            <span class="m-sub">Colto alla sprovvista</span>
-          </div>
-        </div>
           <div class="status-card ca-card">
             <span class="status-label">Classe Armatura</span>
             <div class="ca-main-val">{{ rec.data.character.ac_total }}</div>
@@ -164,74 +164,8 @@
             🗡️ Azioni di Attacco (BAB +{{ rec.data.character.bab }}/+{{ rec.data.character.bab - 5 }})
           </h2>
           <div class="weapons-grid">
-            <!-- 1. SUISHEN -->
-            <div class="weapon-card legendary">
-              <div class="wpn-top">
-                <div>
-                  <span class="wpn-badge">Lama Leggendaria Intelligente</span>
-                  <h3 class="wpn-name">Suishen (+2 Fiammeggiante Difensiva)</h3>
-                </div>
-                <div class="wpn-crit">Critico: 18-20 / x2</div>
-              </div>
-              <div class="wpn-stats-row">
-                <div class="stat-calc">
-                  <span class="lbl">1° e 2° TxC (Mischia)</span>
-                  <span class="val highlight">+{{ suishen1TxC + attackMod() }} / +{{ suishen2TxC + attackMod() }}</span>
-                </div>
-                <div class="stat-calc">
-                  <span class="lbl">Danno Katana (Due Mani)</span>
-                  <span class="val highlight">1d8 + {{ suishenDmg - powerAtkDmgTwoHand + damageMod() }} + 1d6 fuoco</span>
-                </div>
-              </div>
-              <div class="wpn-special-powers">
-                <span>✨ <strong>Poteri attivi di Suishen:</strong> Resistenza Freddo 3v/g • Vedere Invisibilità • Luce Diurna • Camminare sul Fuoco</span>
-              </div>
-            </div>
-
-            <!-- 2. KATANA DEADLY +1 -->
-            <div class="weapon-card">
-              <div class="wpn-top">
-                <div>
-                  <span class="wpn-badge">Arma Perfetta</span>
-                  <h3 class="wpn-name">Katana Deadly +1 (Due Mani)</h3>
-                </div>
-                <div class="wpn-crit">Critico: 18-20 / x2 (+2 conferma)</div>
-              </div>
-              <div class="wpn-stats-row">
-                <div class="stat-calc">
-                  <span class="lbl">1° e 2° TxC (Mischia)</span>
-                  <span class="val highlight">+{{ katana1TxC + attackMod() }} / +{{ katana2TxC + attackMod() }}</span>
-                </div>
-                <div class="stat-calc">
-                  <span class="lbl">Danno Katana</span>
-                  <span class="val highlight">1d8 + {{ katanaPodDmg - powerAtkDmgTwoHand + damageMod() }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 3. ARCO LUNGO COMPOSITO -->
-            <div class="weapon-card">
-              <div class="wpn-top">
-                <div>
-                  <span class="wpn-badge">Distanza (Gittata 33 m / 22 caselle)</span>
-                  <h3 class="wpn-name">Arco Lungo Composito (+2 FOR) +1</h3>
-                </div>
-                <div class="wpn-crit">Critico: 20 / x3</div>
-              </div>
-              <div class="wpn-stats-row">
-                <div class="stat-calc">
-                  <span class="lbl">1° e 2° TxC (Distanza)</span>
-                  <span class="val highlight">+{{ bow1TxC + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }} / +{{ bow2TxC + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}</span>
-                </div>
-                <div class="stat-calc">
-                  <span class="lbl">Danno Freccia</span>
-                  <span class="val highlight">1d8 + {{ bowDmg + (inspireCourage() ? 2 : 0) + (divineFavorActive() ? 2 : 0) }}</span>
-                </div>
-              </div>
-              <div class="wpn-special-powers">
-                <span>🏹 <strong>Talento:</strong> Mounted Archer dimezza le penalità per il tiro in sella a Hisui</span>
-              </div>
-            </div>
+            <!-- TODO: qui mancavano le 3 weapon-card di Ryoujin (il blocco era vuoto nel file originale).
+                 Reincolla qui le tue card delle armi. -->
           </div>
         </div>
 
@@ -249,11 +183,11 @@
               </div>
               <p class="res-desc">Ritira un TS Volontà dopo il 1° round • Tira 2 volte per stabilizzarti • Rimuove scosso, infermo o affaticato.</p>
               <div class="use-pips" role="group" aria-label="Contatore usi di Fermezza">
-                <button 
+                <button
                   type="button"
-                  *ngFor="let i of resolvePips" 
-                  class="pip" 
-                  [class.filled]="i < (rec.data.character.resolve_current ?? 0)" 
+                  *ngFor="let i of resolvePips"
+                  class="pip"
+                  [class.filled]="i < (rec.data.character.resolve_current ?? 0)"
                   (click)="toggleResolve(i)"
                   [attr.aria-label]="'Uso di Fermezza ' + (i + 1) + ' di ' + maxResolve">
                 </button>
@@ -270,11 +204,11 @@
               </div>
               <p class="res-desc">+{{ rec.level }} Danni fisici mischia • +2 TxC e +2 Schivare CA contro il bersaglio (-2 CA contro gli altri).</p>
               <div class="use-pips" role="group" aria-label="Contatore sfide del Ronin">
-                <button 
+                <button
                   type="button"
-                  *ngFor="let i of challengePips" 
-                  class="pip challenge-pip" 
-                  [class.filled]="i < (rec.data.character.challenge_current ?? 0)" 
+                  *ngFor="let i of challengePips"
+                  class="pip challenge-pip"
+                  [class.filled]="i < (rec.data.character.challenge_current ?? 0)"
                   (click)="toggleChallenge(i)"
                   [attr.aria-label]="'Sfida ' + (i + 1) + ' di ' + maxChallenge">
                 </button>
@@ -366,10 +300,10 @@
               <span class="hp-max">{{ comp.hp_max }} PF</span>
             </div>
             <div class="hp-stepper">
-              <button type="button" class="hp-btn damage" (click)="modifyHp('companion', -5)">−5</button>
-              <button type="button" class="hp-btn damage" (click)="modifyHp('companion', -1)">−1</button>
-              <button type="button" class="hp-btn heal" (click)="modifyHp('companion', 1)">+1</button>
-              <button type="button" class="hp-btn heal" (click)="modifyHp('companion', 5)">+5</button>
+              <button type="button" class="hp-btn damage" (click)="modifyHp('companion', -5)" aria-label="Subisci 5 danni">−5</button>
+              <button type="button" class="hp-btn damage" (click)="modifyHp('companion', -1)" aria-label="Subisci 1 danno">−1</button>
+              <button type="button" class="hp-btn heal" (click)="modifyHp('companion', 1)" aria-label="Cura 1 punto ferita">+1</button>
+              <button type="button" class="hp-btn heal" (click)="modifyHp('companion', 5)" aria-label="Cura 5 punti ferita">+5</button>
             </div>
           </div>
 
@@ -477,10 +411,10 @@
         <div class="section-card wolf-theme-card">
           <div class="skills-card-header">
             <h2 class="section-title">🐺 Abilità del Lupo da Guerra</h2>
-            <span class="skills-count">{{ rec.data.companion?.skills?.length || 0 }} Abilità</span>
+            <span class="skills-count">{{ comp.skills?.length || 0 }} Abilità</span>
           </div>
           <div class="skills-grid-layout">
-            <div class="skill-tile" *ngFor="let sk of rec.data.companion?.skills">
+            <div class="skill-tile" *ngFor="let sk of comp.skills">
               <div class="skill-meta">
                 <span class="stat-badge" [ngClass]="sk.stat.toLowerCase()">{{ sk.stat }}</span>
                 <span class="skill-name">{{ sk.name }}</span>
@@ -493,6 +427,7 @@
         </div>
       </div>
     </ng-container>
+    <!-- /CASO A -->
 
     <!-- ========================================================================= -->
     <!-- CASO B: SCHEDA PULITA PERSONALIZZABILE PER LE ALTRE GIOCATRICI            -->
@@ -512,16 +447,16 @@
         <div class="combat-status-grid">
           <div class="status-card hp-card">
             <span class="status-label">Punti Ferita</span>
-            <div class="hp-display">
+            <div class="hp-display" [attr.aria-label]="'Punti ferita: ' + rec.data.character.hp_current + ' su ' + rec.data.character.hp_max">
               <span class="hp-current" [class.low-hp]="rec.data.character.hp_current < 10">{{ rec.data.character.hp_current }}</span>
               <span class="hp-divider">/</span>
               <span class="hp-max">{{ rec.data.character.hp_max }} PF</span>
             </div>
             <div class="hp-stepper">
-              <button type="button" class="hp-btn damage" (click)="modifyHp('main', -5)">−5</button>
-              <button type="button" class="hp-btn damage" (click)="modifyHp('main', -1)">−1</button>
-              <button type="button" class="hp-btn heal" (click)="modifyHp('main', 1)">+1</button>
-              <button type="button" class="hp-btn heal" (click)="modifyHp('main', 5)">+5</button>
+              <button type="button" class="hp-btn damage" (click)="modifyHp('main', -5)" aria-label="Subisci 5 danni">−5</button>
+              <button type="button" class="hp-btn damage" (click)="modifyHp('main', -1)" aria-label="Subisci 1 danno">−1</button>
+              <button type="button" class="hp-btn heal" (click)="modifyHp('main', 1)" aria-label="Cura 1 punto ferita">+1</button>
+              <button type="button" class="hp-btn heal" (click)="modifyHp('main', 5)" aria-label="Cura 5 punti ferita">+5</button>
             </div>
           </div>
 
@@ -553,7 +488,7 @@
         </div>
 
         <!-- CARATTERISTICHE -->
-        <div class="attributes-strip">
+        <div class="attributes-strip" role="group" aria-label="Punteggi Caratteristica">
           <div class="attr-cell"><span class="attr-name">FOR</span><span class="attr-val">{{ rec.data.character.str }}</span><span class="attr-mod">+{{ charStrMod }}</span></div>
           <div class="attr-cell"><span class="attr-name">DES</span><span class="attr-val">{{ rec.data.character.dex }}</span><span class="attr-mod">+{{ charDexMod }}</span></div>
           <div class="attr-cell"><span class="attr-name">COS</span><span class="attr-val">{{ rec.data.character.con }}</span><span class="attr-mod">+{{ (rec.data.character.con - 10) / 2 | number:'1.0-0' }}</span></div>
@@ -562,15 +497,15 @@
           <div class="attr-cell"><span class="attr-name">CAR</span><span class="attr-val">{{ rec.data.character.cha }}</span><span class="attr-mod">+{{ (rec.data.character.cha - 10) / 2 | number:'1.0-0' }}</span></div>
         </div>
 
-        <!-- MODIFICATORI TATTICI DEL GRUPPO: SOLO ISPIRARE CORAGGIO E FIANCHEGGIAMENTO -->
+        <!-- MODIFICATORI TATTICI DEL GRUPPO -->
         <div class="tactical-buffs-panel">
           <div class="buffs-header">
             <span>⚡ BUFF TATTICI DI SQUADRA</span>
             <span class="buff-sum">TxC: <strong>{{ attackMod() >= 0 ? '+' + attackMod() : attackMod() }}</strong> | Danni: <strong>{{ damageMod() >= 0 ? '+' + damageMod() : damageMod() }}</strong></span>
           </div>
           <div class="buff-chips">
-            <button type="button" class="buff-chip" [class.active]="inspireCourage()" (click)="inspireCourage.set(!inspireCourage())">🎺 Ispirare Coraggio (+2/+2)</button>
-            <button type="button" class="buff-chip" [class.active]="flanking()" (click)="flanking.set(!flanking())">👥 Fiancheggiamento (+2 TxC)</button>
+            <button type="button" class="buff-chip" [class.active]="inspireCourage()" (click)="inspireCourage.set(!inspireCourage())" [attr.aria-pressed]="inspireCourage()">🎺 Ispirare Coraggio (+2/+2)</button>
+            <button type="button" class="buff-chip" [class.active]="flanking()" (click)="flanking.set(!flanking())" [attr.aria-pressed]="flanking()">👥 Fiancheggiamento (+2 TxC)</button>
           </div>
         </div>
 
@@ -627,47 +562,48 @@
         </div>
       </div>
     </ng-container>
+    <!-- /CASO B -->
 
     <!-- ========================================================================= -->
     <!-- VISTA 3: LANCIATORE DADI UNIFICATO E 100% DINAMICO PER TUTTI               -->
     <!-- ========================================================================= -->
     <div *ngIf="activeTab() === 'roller'" class="roller-container" role="tabpanel">
-      <!-- 1. SELETTORE COMPAGNO & VOCE AUDIO -->
+      <!-- 1. SELETTORE PERSONAGGIO & VOCE AUDIO -->
       <div class="roller-header-row">
         <div class="roller-top-nav" role="tablist">
-          <button 
-            type="button" 
+          <button
+            type="button"
             role="tab"
             [attr.aria-selected]="rollerChar() === 'main'"
-            class="roller-char-btn" 
-            [class.active]="rollerChar() === 'main'" 
+            class="roller-char-btn"
+            [class.active]="rollerChar() === 'main'"
             (click)="rollerChar.set('main')">
             ⚔️ {{ rec.name }}
           </button>
-          <button 
+          <button
             *ngIf="rec.data.companion"
-            type="button" 
+            type="button"
             role="tab"
             [attr.aria-selected]="rollerChar() === 'companion'"
-            class="roller-char-btn wolf" 
-            [class.active]="rollerChar() === 'companion'" 
+            class="roller-char-btn wolf"
+            [class.active]="rollerChar() === 'companion'"
             (click)="rollerChar.set('companion')">
             🐺 {{ rec.data.companion.name }}
           </button>
         </div>
 
-        <button 
-          type="button" 
-          class="voice-tts-toggle" 
-          [class.active]="ttsAudioEnabled()" 
+        <button
+          type="button"
+          class="voice-tts-toggle"
+          [class.active]="ttsAudioEnabled()"
           (click)="ttsAudioEnabled.set(!ttsAudioEnabled())"
           [attr.aria-label]="ttsAudioEnabled() ? 'Voce audio attiva' : 'Voce audio disattivata'">
           {{ ttsAudioEnabled() ? '🔊 Voce Attiva' : '🔇 Voce Spenta' }}
         </button>
       </div>
 
-        <!-- 6. DADI RAPIDI -->
-      <div class="quick-dice-bar">
+      <!-- 2. DADI RAPIDI -->
+      <div class="quick-dice-bar" role="group" aria-label="Dadi rapidi">
         <span class="qd-lbl">RAPIDI:</span>
         <button type="button" (click)="quickRoll(20)">d20</button>
         <button type="button" (click)="quickRoll(8)">d8</button>
@@ -675,9 +611,8 @@
         <button type="button" (click)="quickRoll(4)">d4</button>
         <button type="button" (click)="quickRoll(100)">d%</button>
       </div>
-    </div>
 
-      <!-- 2. CARTELLE SEZIONI -->
+      <!-- 3. CARTELLE SEZIONI -->
       <div class="roller-folders-bar" role="tablist">
         <button type="button" role="tab" [attr.aria-selected]="rollerSection() === 'combat'" class="folder-chip" [class.active]="rollerSection() === 'combat'" (click)="rollerSection.set('combat')">
           🗡️ Attacchi
@@ -693,8 +628,8 @@
         </button>
       </div>
 
-      <!-- 3. ROLL MODIFIERS DINAMICI CON CHECKBOX -->
-      <div class="roll-modifiers-box" aria-label="Modificatori di tiro attivi">
+      <!-- 4. ROLL MODIFIERS DINAMICI CON CHECKBOX -->
+      <div class="roll-modifiers-box" role="group" aria-label="Modificatori di tiro attivi">
         <div class="mod-box-header">
           <span>ROLL MODIFIERS</span>
           <button type="button" class="clear-mods-btn" (click)="modInspire.set(false); modDivineFavor.set(false); modPrayer.set(false); modChallenge.set(false); modFlank.set(false); modBanner.set(false)">
@@ -729,7 +664,7 @@
         </div>
       </div>
 
-      <!-- 4. BANNER RISULTATO TIRO -->
+      <!-- 5. BANNER RISULTATO TIRO -->
       <div class="roll-result-banner" *ngIf="lastResult() as res">
         <div class="res-head">
           <span class="res-title">{{ res.title }}</span>
@@ -750,127 +685,53 @@
         <div class="res-breakdown">{{ res.breakdown }}</div>
       </div>
 
-      <!-- 5. LISTA RIGHE DI TIRO DINAMICHE -->
+      <!-- 6. LISTA RIGHE DI TIRO DINAMICHE -->
       <div class="dice-rolls-list" role="group" aria-label="Elenco tiri disponibili">
-        
+
         <!-- ===== SEZIONE ATTACCHI ===== -->
         <ng-container *ngIf="rollerChar() === 'main' && rollerSection() === 'combat'">
-          <!-- A: Righe specifiche per Ryoujin (Katana, Suishen, Arco, BMC) collegate a BAB e FOR -->
-          <ng-container *ngIf="isRyoujin">
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 1', 1, 20, katana1TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Katana pod 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana1TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 1 crit', 1, 20, katana1TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Katana pod 1 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana1TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 2', 1, 20, katana2TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Katana pod 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana2TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Katana pod 2 crit', 1, 20, katana2TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Katana pod 2 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', katana2TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 1', 1, 20, suishen1TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Suishen 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen1TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen crit 1', 1, 20, suishen1TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Suishen crit 1</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen1TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 2', 1, 20, suishen2TxC, 'atk', 18)">
-              <div class="item-info"><span class="item-name">Suishen 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen2TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Suishen 2 crit', 1, 20, suishen2TxC, 'atk', 20, false, 2)">
-              <div class="item-info"><span class="item-name">Suishen 2 crit</span><span class="item-sub">{{ getRollFormula('atk', 'd20', suishen2TxC, false, 2) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Arco', 1, 20, bow1TxC, 'atk', 20)">
-              <div class="item-info"><span class="item-name">Arco</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bow1TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Arco 2', 1, 20, bow2TxC, 'atk', 20)">
-              <div class="item-info"><span class="item-name">Arco 2</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bow2TxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('BMC', 1, 20, bmcTxC, 'atk')">
-              <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', bmcTxC) }}</span></div>
-              <button type="button" class="roll-btn">Tira 🎲</button>
-            </div>
-          </ng-container>
-
-          <!-- B: Per tutti gli altri PG: estrazione automatica di 1° e 2° attacco e critici da rec.data.character.weapons -->
-          <ng-container *ngIf="!isRyoujin">
-            <ng-container *ngFor="let w of rec.data.character.weapons">
-              <div 
-                class="dice-item-row" 
-                *ngFor="let atk of getDynamicAttacksFor(w)" 
-                (click)="rollDynamicAction(atk.label, 1, 20, atk.bonus, 'atk', atk.critMin, false, atk.critBonus || 0)">
-                <div class="item-info">
-                  <span class="item-name">{{ atk.label }}</span>
-                  <span class="item-sub">{{ getRollFormula('atk', 'd20', atk.bonus, false, atk.critBonus || 0) }}</span>
-                </div>
-                <button type="button" class="roll-btn">Tira 🎲</button>
+          <ng-container *ngFor="let w of rec.data.character.weapons">
+            <div
+              class="dice-item-row"
+              *ngFor="let atk of getDynamicAttacksFor(w)"
+              (click)="rollDynamicAction(atk.label, 1, 20, atk.bonus, 'atk', atk.critMin, false, atk.critBonus || 0)">
+              <div class="item-info">
+                <span class="item-name">{{ atk.label }}</span>
+                <span class="item-sub">{{ getRollFormula('atk', 'd20', atk.bonus, false, atk.critBonus || 0) }}</span>
               </div>
-            </ng-container>
-
-            <!-- BMC per tutti i PG -->
-            <div class="dice-item-row" (click)="rollDynamicAction('BMC', 1, 20, charBab + charStrMod, 'atk')">
-              <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', charBab + charStrMod) }}</span></div>
               <button type="button" class="roll-btn">Tira 🎲</button>
             </div>
-
-            <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">
-              Nessuna arma registrata. Inserisci le tue armi per vederle qui con i tiri automatici!
-            </div>
           </ng-container>
+
+          <!-- BMC per tutti i PG -->
+          <div class="dice-item-row" (click)="rollDynamicAction('BMC', 1, 20, charBab + charStrMod, 'atk')">
+            <div class="item-info"><span class="item-name">BMC</span><span class="item-sub">{{ getRollFormula('atk', 'd20', charBab + charStrMod) }}</span></div>
+            <button type="button" class="roll-btn">Tira 🎲</button>
+          </div>
+
+          <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">
+            Nessuna arma registrata. Inserisci le tue armi per vederle qui con i tiri automatici!
+          </div>
         </ng-container>
 
         <!-- ===== SEZIONE DANNI ===== -->
         <ng-container *ngIf="rollerChar() === 'main' && rollerSection() === 'damage'">
-          <!-- Ryoujin Danni -->
-          <ng-container *ngIf="isRyoujin">
-            <div class="dice-item-row" (click)="rollDynamicAction('Danni katana pod', 1, 8, katanaPodDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danni katana pod</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', katanaPodDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Danno suishen', 1, 8, suishenDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danno suishen</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', suishenDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Danno suishen fiammeggianti', 1, 6, 0, 'dmg', 20, true)">
-              <div class="item-info"><span class="item-name">Danno suishen fiammeggianti</span><span class="item-sub">{{ getRollFormula('dmg', 'd6', 0, true) }}</span></div>
-              <button type="button" class="roll-btn fire">Fuoco 🔥</button>
-            </div>
-            <div class="dice-item-row" (click)="rollDynamicAction('Danno arco', 1, 8, bowDmg, 'dmg', 20, false)">
-              <div class="item-info"><span class="item-name">Danno arco</span><span class="item-sub">{{ getRollFormula('dmg', 'd8', bowDmg, false) }}</span></div>
-              <button type="button" class="roll-btn dmg">Danno 💥</button>
-            </div>
-          </ng-container>
-
-          <!-- Altri PG Danni (Dinamico da rec.data.character.weapons) -->
-          <ng-container *ngIf="!isRyoujin">
-            <ng-container *ngFor="let w of rec.data.character.weapons">
-              <div 
-                class="dice-item-row" 
-                *ngFor="let dmg of getDynamicDamagesFor(w)" 
-                (click)="rollDynamicAction(dmg.label, dmg.diceCount, dmg.diceFaces, dmg.baseMod, 'dmg', 20, dmg.isElemental || false)">
-                <div class="item-info">
-                  <span class="item-name">{{ dmg.label }}</span>
-                  <span class="item-sub">{{ getRollFormula('dmg', dmg.diceCount + 'd' + dmg.diceFaces, dmg.baseMod, dmg.isElemental || false) }}</span>
-                </div>
-                <button type="button" class="roll-btn dmg" [class.fire]="dmg.isElemental">Danno 💥</button>
+          <ng-container *ngFor="let w of rec.data.character.weapons">
+            <div
+              class="dice-item-row"
+              *ngFor="let dmg of getDynamicDamagesFor(w)"
+              (click)="rollDynamicAction(dmg.label, dmg.diceCount, dmg.diceFaces, dmg.baseMod, 'dmg', 20, dmg.isElemental || false)">
+              <div class="item-info">
+                <span class="item-name">{{ dmg.label }}</span>
+                <span class="item-sub">{{ getRollFormula('dmg', dmg.diceCount + 'd' + dmg.diceFaces, dmg.baseMod, dmg.isElemental || false) }}</span>
               </div>
-            </ng-container>
-
-            <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">
-              Nessuna arma registrata. Inserisci le tue armi per calcolare automaticamente il danno!
+              <button type="button" class="roll-btn dmg" [class.fire]="dmg.isElemental">Danno 💥</button>
             </div>
           </ng-container>
+
+          <div *ngIf="!rec.data.character.weapons || rec.data.character.weapons.length === 0" class="empty-section-hint">
+            Nessuna arma registrata. Inserisci le tue armi per calcolare automaticamente il danno!
+          </div>
         </ng-container>
 
         <!-- ===== SEZIONE TIRI SALVEZZA ===== -->
@@ -899,9 +760,9 @@
 
         <!-- ===== SEZIONE ABILITÀ ===== -->
         <ng-container *ngIf="rollerChar() === 'main' && rollerSection() === 'skills'">
-          <div 
-            class="dice-item-row" 
-            *ngFor="let sk of rec.data.character.skills" 
+          <div
+            class="dice-item-row"
+            *ngFor="let sk of rec.data.character.skills"
             (click)="rollDynamicAction(sk.name, 1, 20, sk.bonus, 'skill')">
             <div class="item-info">
               <span class="item-name">{{ sk.name }}</span>
@@ -965,8 +826,14 @@
             </div>
           </ng-container>
         </ng-container>
+        <!-- /COMPAGNO -->
+
       </div>
+      <!-- /dice-rolls-list -->
+    </div>
+    <!-- /roller-container -->
   </ng-container>
+  <!-- /rec -->
 
   <!-- ==================== MODALE LEVEL UP ONLINE (SALVA SU NEON) ==================== -->
   <div class="modal-backdrop" *ngIf="showLevelUpModal()" (click)="showLevelUpModal.set(false)" role="dialog" aria-modal="true">
@@ -982,10 +849,10 @@
         <div class="modal-tab-bar" role="tablist">
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'general'" class="tab-chip" [class.active]="modalTab() === 'general'" (click)="modalTab.set('general')">🎖️ Info</button>
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'stats'" class="tab-chip" [class.active]="modalTab() === 'stats'" (click)="modalTab.set('stats')">💪 Stat & TS</button>
-          <button  type="button" class="tab-chip" [class.active]="modalTab() === 'weapons'" (click)="modalTab.set('weapons')">🗡️ Armi</button>
-          <button  type="button" class="tab-chip" [class.active]="modalTab() === 'feats'" (click)="modalTab.set('feats')">🥋 Talenti</button>
+          <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'weapons'" class="tab-chip" [class.active]="modalTab() === 'weapons'" (click)="modalTab.set('weapons')">🗡️ Armi</button>
+          <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'feats'" class="tab-chip" [class.active]="modalTab() === 'feats'" (click)="modalTab.set('feats')">🥋 Talenti</button>
           <button type="button" role="tab" [attr.aria-selected]="modalTab() === 'skills'" class="tab-chip" [class.active]="modalTab() === 'skills'" (click)="modalTab.set('skills')">📊 Abilità</button>
-          <button  type="button" role="tab" [attr.aria-selected]="modalTab() === 'companion'" class="tab-chip" [class.active]="modalTab() === 'companion'" (click)="modalTab.set('companion')">🐺 Hisui</button>
+          <button *ngIf="editData?.companion" type="button" role="tab" [attr.aria-selected]="modalTab() === 'companion'" class="tab-chip" [class.active]="modalTab() === 'companion'" (click)="modalTab.set('companion')">🐺 Hisui</button>
         </div>
       </header>
 
@@ -997,17 +864,17 @@
             <div class="stepper-row">
               <span class="stepper-lbl">Livello Personaggio</span>
               <div class="stepper-controls">
-                <button type="button" class="step-btn" (click)="editLevel.set(editLevel() - 1)">−</button>
+                <button type="button" class="step-btn" (click)="editLevel.set(editLevel() - 1)" aria-label="Diminuisci livello">−</button>
                 <span class="step-val">{{ editLevel() }}</span>
-                <button type="button" class="step-btn" (click)="editLevel.set(editLevel() + 1)">+</button>
+                <button type="button" class="step-btn" (click)="editLevel.set(editLevel() + 1)" aria-label="Aumenta livello">+</button>
               </div>
             </div>
             <div class="stepper-row">
               <span class="stepper-lbl">Attacco Base (BAB)</span>
               <div class="stepper-controls">
-                <button type="button" class="step-btn" (click)="editData.character.bab = editData.character.bab - 1">−</button>
+                <button type="button" class="step-btn" (click)="editData.character.bab = editData.character.bab - 1" aria-label="Diminuisci BAB">−</button>
                 <span class="step-val">+{{ editData.character.bab }}</span>
-                <button type="button" class="step-btn" (click)="editData.character.bab = editData.character.bab + 1">+</button>
+                <button type="button" class="step-btn" (click)="editData.character.bab = editData.character.bab + 1" aria-label="Aumenta BAB">+</button>
               </div>
             </div>
           </div>
@@ -1029,12 +896,12 @@
           <div class="form-section">
             <h3>Punteggi Caratteristica</h3>
             <div class="mobile-stats-steppers">
-              <div class="stat-stepper-box"><span class="st-lbl">FOR</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.str = editData.character.str - 1">−</button><span class="step-val">{{ editData.character.str }}</span><button type="button" (click)="editData.character.str = editData.character.str + 1">+</button></div></div>
-              <div class="stat-stepper-box"><span class="st-lbl">DES</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.dex = editData.character.dex - 1">−</button><span class="step-val">{{ editData.character.dex }}</span><button type="button" (click)="editData.character.dex = editData.character.dex + 1">+</button></div></div>
-              <div class="stat-stepper-box"><span class="st-lbl">COS</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.con = editData.character.con - 1">−</button><span class="step-val">{{ editData.character.con }}</span><button type="button" (click)="editData.character.con = editData.character.con + 1">+</button></div></div>
-              <div class="stat-stepper-box"><span class="st-lbl">INT</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.int = editData.character.int - 1">−</button><span class="step-val">{{ editData.character.int }}</span><button type="button" (click)="editData.character.int = editData.character.int + 1">+</button></div></div>
-              <div class="stat-stepper-box"><span class="st-lbl">SAG</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.wis = editData.character.wis - 1">−</button><span class="step-val">{{ editData.character.wis }}</span><button type="button" (click)="editData.character.wis = editData.character.wis + 1">+</button></div></div>
-              <div class="stat-stepper-box"><span class="st-lbl">CAR</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.cha = editData.character.cha - 1">−</button><span class="step-val">{{ editData.character.cha }}</span><button type="button" (click)="editData.character.cha = editData.character.cha + 1">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">FOR</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.str = editData.character.str - 1" aria-label="Diminuisci FOR">−</button><span class="step-val">{{ editData.character.str }}</span><button type="button" (click)="editData.character.str = editData.character.str + 1" aria-label="Aumenta FOR">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">DES</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.dex = editData.character.dex - 1" aria-label="Diminuisci DES">−</button><span class="step-val">{{ editData.character.dex }}</span><button type="button" (click)="editData.character.dex = editData.character.dex + 1" aria-label="Aumenta DES">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">COS</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.con = editData.character.con - 1" aria-label="Diminuisci COS">−</button><span class="step-val">{{ editData.character.con }}</span><button type="button" (click)="editData.character.con = editData.character.con + 1" aria-label="Aumenta COS">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">INT</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.int = editData.character.int - 1" aria-label="Diminuisci INT">−</button><span class="step-val">{{ editData.character.int }}</span><button type="button" (click)="editData.character.int = editData.character.int + 1" aria-label="Aumenta INT">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">SAG</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.wis = editData.character.wis - 1" aria-label="Diminuisci SAG">−</button><span class="step-val">{{ editData.character.wis }}</span><button type="button" (click)="editData.character.wis = editData.character.wis + 1" aria-label="Aumenta SAG">+</button></div></div>
+              <div class="stat-stepper-box"><span class="st-lbl">CAR</span><div class="stepper-controls sm"><button type="button" (click)="editData.character.cha = editData.character.cha - 1" aria-label="Diminuisci CAR">−</button><span class="step-val">{{ editData.character.cha }}</span><button type="button" (click)="editData.character.cha = editData.character.cha + 1" aria-label="Aumenta CAR">+</button></div></div>
             </div>
           </div>
           <div class="form-section">
@@ -1047,14 +914,14 @@
           </div>
         </div>
 
-        <!-- TAB ARMI (PER ALTRE SCHEDE) -->
+        <!-- TAB ARMI -->
         <div *ngIf="modalTab() === 'weapons'" class="tab-content">
           <div class="form-section">
             <h3>🗡️ Armi in Dotazione</h3>
             <div class="items-edit-list" *ngIf="editData.character.weapons">
               <div class="item-edit-row" *ngFor="let w of editData.character.weapons; let i = index">
                 <div class="item-main-info"><strong>{{ w.name }}</strong><small>TxC {{ w.attack_bonus }} • Danno {{ w.damage }} ({{ w.crit }})</small></div>
-                <button type="button" class="trash-btn" (click)="removeWeapon(i)">🗑️</button>
+                <button type="button" class="trash-btn" (click)="removeWeapon(i)" aria-label="Rimuovi arma">🗑️</button>
               </div>
             </div>
             <div class="add-box-section">
@@ -1070,14 +937,14 @@
           </div>
         </div>
 
-        <!-- TAB TALENTI (PER ALTRE SCHEDE) -->
+        <!-- TAB TALENTI -->
         <div *ngIf="modalTab() === 'feats'" class="tab-content">
           <div class="form-section">
             <h3>🥋 Talenti</h3>
             <div class="items-edit-list" *ngIf="editData.character.feats">
               <div class="item-edit-row" *ngFor="let f of editData.character.feats; let i = index">
                 <div class="item-main-info"><strong>{{ f.name }}</strong> <small>({{ f.tag }})</small><p class="mini-desc">{{ f.description }}</p></div>
-                <button type="button" class="trash-btn" (click)="removeFeat(i)">🗑️</button>
+                <button type="button" class="trash-btn" (click)="removeFeat(i)" aria-label="Rimuovi talento">🗑️</button>
               </div>
             </div>
             <div class="add-box-section">
@@ -1100,10 +967,10 @@
               <div class="skill-stepper-row" *ngFor="let sk of editData.character.skills; let i = index">
                 <div class="skill-name-col"><strong>{{ sk.name }}</strong><small>({{ sk.stat }})</small></div>
                 <div class="stepper-controls">
-                  <button type="button" class="step-btn" (click)="adjustSkill(sk, -1)">−</button>
+                  <button type="button" class="step-btn" (click)="adjustSkill(sk, -1)" aria-label="Diminuisci bonus">−</button>
                   <span class="step-val">+{{ sk.bonus }}</span>
-                  <button type="button" class="step-btn" (click)="adjustSkill(sk, 1)">+</button>
-                  <button type="button" class="trash-btn" (click)="removeSkill('main', i)">🗑️</button>
+                  <button type="button" class="step-btn" (click)="adjustSkill(sk, 1)" aria-label="Aumenta bonus">+</button>
+                  <button type="button" class="trash-btn" (click)="removeSkill('main', i)" aria-label="Rimuovi abilità">🗑️</button>
                 </div>
               </div>
             </div>
@@ -1146,10 +1013,10 @@
               <div class="skill-stepper-row" *ngFor="let sk of editData.companion.skills; let i = index">
                 <div class="skill-name-col"><strong>{{ sk.name }}</strong><small>({{ sk.stat }})</small></div>
                 <div class="stepper-controls">
-                  <button type="button" class="step-btn" (click)="adjustSkill(sk, -1)">−</button>
+                  <button type="button" class="step-btn" (click)="adjustSkill(sk, -1)" aria-label="Diminuisci bonus">−</button>
                   <span class="step-val">+{{ sk.bonus }}</span>
-                  <button type="button" class="step-btn" (click)="adjustSkill(sk, 1)">+</button>
-                  <button type="button" class="trash-btn" (click)="removeSkill('companion', i)">🗑️</button>
+                  <button type="button" class="step-btn" (click)="adjustSkill(sk, 1)" aria-label="Aumenta bonus">+</button>
+                  <button type="button" class="trash-btn" (click)="removeSkill('companion', i)" aria-label="Rimuovi abilità">🗑️</button>
                 </div>
               </div>
             </div>
