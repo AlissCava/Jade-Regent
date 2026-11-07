@@ -1,163 +1,84 @@
-/* ========================================================
-   VARIABILI TEMA SCURO
-   ======================================================== */
-$bg-main: #060a12;
-$bg-card: #0d1527;
-$border-color: #1e2c48;
+$bg-header: rgba(9, 14, 26, 0.95);
+$border-color: rgba(255, 255, 255, 0.08);
 $gold: #f59e0b;
-$blue: #38bdf8;
-$crimson: #ef4444;
-$text-light: #ffffff;
-$text-muted: #94a3b8;
-$sidebar-w: 390px;
-
-:host {
-  display: block;
-  min-height: 100vh;
-  background-color: $bg-main;
-  color: $text-light;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
 
 /* ========================================================
-   SCHERMATA DI BLOCCO PASSWORD
-   ======================================================== */
-.lock-gate-overlay {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at center, #101c33 0%, #050811 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  z-index: 9999;
-
-  .lock-card {
-    background: $bg-card;
-    border: 1px solid rgba($gold, 0.4);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
-    border-radius: 16px;
-    padding: 2.2rem 1.8rem;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-
-    .lock-icon { font-size: 3rem; margin-bottom: 0.5rem; }
-    .lock-badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: $gold;
-      background: rgba($gold, 0.12);
-      border: 1px solid rgba($gold, 0.3);
-      padding: 3px 10px;
-      border-radius: 9999px;
-      margin-bottom: 0.8rem;
-    }
-    .lock-title {
-      font-family: 'Cinzel', serif;
-      font-size: 1.6rem;
-      color: #fff;
-      margin: 0 0 0.5rem;
-    }
-    .lock-desc {
-      font-size: 0.88rem;
-      color: $text-muted;
-      line-height: 1.4;
-      margin-bottom: 1.5rem;
-    }
-
-    .lock-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-
-      input {
-        background: #050811;
-        border: 1px solid $border-color;
-        border-radius: 8px;
-        color: #fff;
-        font-size: 0.95rem;
-        padding: 12px 14px;
-        text-align: center;
-        outline: none;
-        transition: border-color 0.15s ease;
-
-        &:focus { border-color: $gold; }
-      }
-
-      .btn-unlock {
-        background: $gold;
-        color: #000;
-        font-size: 0.95rem;
-        font-weight: 800;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: transform 0.1s ease, filter 0.15s ease;
-
-        &:hover { filter: brightness(1.1); }
-        &:active { transform: scale(0.98); }
-      }
-    }
-
-    .lock-error {
-      margin-top: 1rem;
-      font-size: 0.85rem;
-      color: $crimson;
-      font-weight: 600;
-    }
-  }
-}
-
-/* ========================================================
-   TOP HEADER GLOBALE
+   HEADER SUPERIORE GLOBALE
    ======================================================== */
 .app-top-header {
-  height: 56px;
-  background: #080d1a;
-  border-bottom: 1px solid $border-color;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
+  height: 52px;
+  background: $bg-header;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 14px;
+  box-sizing: border-box;
+  width: 100%;
 
   .header-left {
     display: flex;
     align-items: center;
-  }
+    gap: 10px;
+    min-width: 0;
 
-  .brand-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none !important;
-    color: #ffffff !important;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.15s ease;
+    .top-burger-btn {
+      width: 38px;
+      height: 38px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 8px;
+      color: $gold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
 
-    &:visited, &:active, &:link { color: #ffffff !important; text-decoration: none !important; }
+      .burger-icon {
+        font-size: 1.25rem;
+        line-height: 1;
+      }
 
-    .brand-torii { font-size: 1.35rem; line-height: 1; }
-    .brand-title {
-      font-family: 'Cinzel', serif;
-      font-size: 1.15rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      color: #ffffff;
-      line-height: 1;
+      &:hover {
+        background: $gold;
+        color: #0b0f19;
+      }
+
+      &:active {
+        transform: scale(0.92);
+      }
     }
 
-    &:hover {
-      filter: drop-shadow(0 0 8px rgba($gold, 0.4));
-      .brand-title { color: $gold; }
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      min-width: 0;
+
+      .brand-torii {
+        font-size: 1.25rem;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .brand-title {
+        font-family: 'Cinzel', serif;
+        font-size: clamp(0.95rem, 3.2vw, 1.2rem);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #ffffff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 
@@ -165,285 +86,231 @@ $sidebar-w: 390px;
     display: flex;
     align-items: center;
     gap: 8px;
-  }
+    flex-shrink: 0;
 
-  .scale-btn {
-    background: #0d1527;
-    border: 1px solid $border-color;
-    color: #cbd5e1;
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-
-    &:hover { border-color: $gold; color: $gold; }
-  }
-
-  .desktop-sidebar-toggle-btn {
-    display: none;
-  }
-}
-
-/* ========================================================
-   LAYOUT CENTRALE E CONTENUTI
-   ======================================================== */
-.app-main-layout {
-  width: 100%;
-  min-height: calc(100vh - 56px);
-  position: relative;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-.main-content {
-  width: 100%;
-  min-width: 0;
-  padding-bottom: 75px;
-  box-sizing: border-box;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              margin-right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* SIDEBAR INIZIATIVA: Nascosta su smartphone */
-.initiative-desktop-sidebar {
-  display: none;
-}
-
-/* ========================================================
-   SOLO SCHERMI GRANDI (PC, MACBOOK, IPAD >= 1024px)
-   ======================================================== */
-@media screen and (min-width: 1024px) {
-  .app-top-header {
     .desktop-sidebar-toggle-btn {
-      display: inline-flex;
+      display: none;
       align-items: center;
       gap: 6px;
-      background: #0d1527;
-      border: 1px solid $border-color;
+      background: #101c33;
+      border: 1px solid #1e2c48;
       color: #cbd5e1;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       padding: 6px 12px;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.15s ease;
 
-      &:hover, &.active {
+      &:hover {
         border-color: $gold;
         color: $gold;
-        background: #14223d;
+      }
+    }
+
+    .scale-btn {
+      background: #101c33;
+      border: 1px solid #1e2c48;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: $gold;
+        color: $gold;
+      }
+
+      &:active {
+        transform: scale(0.95);
       }
     }
   }
+}
 
-  /* LA PAGINA SI RESTRINGE FISICAMENTE PER FARE SPAZIO */
-  .main-content.with-sidebar {
-    width: calc(100% - #{$sidebar-w}) !important;
-    max-width: calc(100% - #{$sidebar-w}) !important;
-    margin-right: $sidebar-w !important;
+/* ========================================================
+   LAYOUT CENTRALE E SIDEBAR INIZIATIVA
+   ======================================================== */
+.app-main-layout {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 52px);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.router-content-area {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding-bottom: 2rem; /* Spazio naturale sul fondo senza barre fisse */
+}
+
+.initiative-desktop-sidebar {
+  display: none;
+}
+
+/* Schermi Desktop & Tablet Widescreen (>= 1024px) */
+@media screen and (min-width: 1024px) {
+  .app-top-header .header-right .desktop-sidebar-toggle-btn {
+    display: inline-flex;
   }
 
-  /* SIDEBAR FISSA A DESTRA */
   .initiative-desktop-sidebar {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 56px;
-    right: 0;
-    bottom: 60px;
-    width: $sidebar-w;
+    display: block;
+    width: 410px;
+    min-width: 410px;
+    max-width: 410px;
     background: #080c16;
     border-left: 1px solid #1a253a;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.45);
-    z-index: 50;
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    height: calc(100vh - 52px);
+    position: sticky;
+    top: 52px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 40;
+    transition: width 0.2s ease, min-width 0.2s ease, transform 0.2s ease;
 
     &.is-collapsed {
+      width: 0;
+      min-width: 0;
       transform: translateX(100%);
-      pointer-events: none;
-    }
-
-    .sidebar-header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: #0b1222;
-      border-bottom: 1px solid #1a253a;
-
-      .sidebar-title {
-        font-family: 'Cinzel', serif;
-        font-size: 0.85rem;
-        font-weight: 800;
-        color: $gold;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-
-      .btn-close-sidebar {
-        background: transparent;
-        border: none;
-        color: $text-muted;
-        font-size: 0.95rem;
-        cursor: pointer;
-        padding: 2px 6px;
-        border-radius: 4px;
-        &:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
-      }
+      border-left: none;
     }
 
     .sidebar-inner-wrap {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 10px 10px 20px;
+      width: 410px;
+      padding: 10px 8px 30px;
       box-sizing: border-box;
 
-      ::ng-deep {
-        .initiative-container {
-          max-width: 100% !important;
-          width: 100% !important;
-          height: auto !important;
-          min-height: auto !important;
-          max-height: none !important;
-          overflow: visible !important;
-          padding: 0 !important;
-          margin: 0 !important;
-        }
-
-        .combatants-list,
-        .characters-list,
-        .initiative-list {
-          height: auto !important;
-          max-height: none !important;
-          overflow: visible !important;
-        }
+      ::ng-deep .initiative-container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
+    }
 
-      &::-webkit-scrollbar { width: 5px; }
-      &::-webkit-scrollbar-thumb { background: #1e2c48; border-radius: 4px; }
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #1e2c48;
+      border-radius: 4px;
     }
   }
 }
 
 /* ========================================================
-   BOTTOM NAVIGATION BAR
-   ======================================================== */
-.bottom-nav-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: #080d1a;
-  border-top: 1px solid $border-color;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 1000;
-  padding: 0 4px;
-
-  .bottom-nav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: $text-muted;
-    text-decoration: none;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-size: 0.72rem;
-    transition: color 0.15s ease;
-
-    .btn-icon { font-size: 1.25rem; line-height: 1; margin-bottom: 2px; }
-    .btn-label { font-weight: 600; }
-
-    &:hover { color: #fff; }
-    &.active {
-      color: $gold;
-      .btn-icon { transform: scale(1.1); }
-    }
-  }
-}
-
-/* ========================================================
-   MENU DRAWER LATERALE
+   MENU CASSETTO (DRAWER)
    ======================================================== */
 .menu-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  z-index: 2000;
+  z-index: 2500;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
+  align-items: flex-start;
   justify-content: flex-start;
 
-  .drawer {
-    width: 280px;
-    max-width: 80%;
-    background: #0a101d;
-    height: 100%;
-    border-right: 1px solid $border-color;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+  .menu-drawer {
+    width: 320px;
+    max-width: 85vw;
+    height: 100vh;
+    background: #0d1527;
+    border-right: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 1.25rem 1rem;
+    box-shadow: 10px 0 35px rgba(0, 0, 0, 0.85);
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    overflow-y: auto;
+    animation: slideInDrawer 0.2s ease-out;
 
     .drawer-header {
-      padding: 16px;
-      border-bottom: 1px solid $border-color;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #1e2c48;
 
-      h3 {
+      .drawer-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         font-family: 'Cinzel', serif;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
         color: #fff;
-        margin: 0;
       }
 
       .close-drawer-btn {
-        background: transparent;
-        border: none;
-        color: $text-muted;
-        font-size: 1.2rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #15223c;
+        border: 1px solid #283958;
+        color: #cbd5e1;
         cursor: pointer;
-        &:hover { color: #fff; }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: #ef4444;
+          color: #fff;
+        }
       }
     }
 
     .drawer-links {
       display: flex;
       flex-direction: column;
-      padding: 12px 8px;
-      gap: 4px;
+      gap: 6px;
 
       .drawer-link {
         display: flex;
         align-items: center;
-        padding: 12px 14px;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: #080d18;
+        border: 1px solid #16243b;
         color: #cbd5e1;
         text-decoration: none;
-        font-size: 0.92rem;
+        font-size: 0.88rem;
         font-weight: 600;
-        border-radius: 8px;
         transition: all 0.15s ease;
 
+        .link-icon {
+          font-size: 1.2rem;
+          line-height: 1;
+        }
+
         &:hover {
-          background: #14223d;
-          color: $gold;
+          border-color: rgba($gold, 0.5);
+          background: #111e38;
+          color: #fff;
         }
 
         &.active {
-          background: rgba($gold, 0.12);
-          border-left: 3px solid $gold;
-          color: $gold;
+          border-color: $gold;
+          background: rgba($gold, 0.15);
+          color: #fef08a;
+          font-weight: 700;
         }
       }
     }
   }
+}
+
+@keyframes slideInDrawer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }

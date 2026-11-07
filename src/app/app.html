@@ -32,6 +32,17 @@
   <!-- HEADER IN ALTO -->
   <header class="app-top-header">
     <div class="header-left">
+      <!-- PULSANTE HAMBURGER ACCANTO AL TITOLO -->
+    <button 
+      type="button" 
+      class="top-burger-btn" 
+      (click)="toggleMenu()" 
+      [attr.aria-expanded]="isMenuOpen()" 
+      aria-label="Apri menu principale"
+      title="Menu di navigazione">
+      <span class="burger-icon">☰</span>
+    </button>
+    <!-- TITOLO = LINK HOME -->
       <a routerLink="/" class="brand-link" title="Torna alla Home">
         <span class="brand-torii">⛩️</span>
         <span class="brand-title">JADE REGENT</span>
@@ -77,61 +88,65 @@
     </aside>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR -->
-  <nav class="bottom-nav-bar" aria-label="Navigazione principale">
-    <button 
-      type="button" 
-      class="bottom-nav-btn burger-bottom-btn" 
-      (click)="toggleMenu()" 
-      [attr.aria-expanded]="isMenuOpen()" 
-      aria-label="Apri menu">
-      <span class="btn-icon">☰</span>
-      <span class="btn-label">Menu</span>
-    </button>
-
-    <a routerLink="/characters" class="bottom-nav-btn" routerLinkActive="active" aria-label="Party">
-      <span class="btn-icon">👥</span>
-      <span class="btn-label">Party</span>
-    </a>
-
-    <a routerLink="/wild-shapes" class="bottom-nav-btn" routerLinkActive="active" aria-label="Forme">
-      <span class="btn-icon">🐾</span>
-      <span class="btn-label">Forme</span>
-    </a>
-
-    <a routerLink="/spells" class="bottom-nav-btn" routerLinkActive="active" aria-label="Grimorio">
-      <span class="btn-icon">📜</span>
-      <span class="btn-label">Grimorio</span>
-    </a>
-
-    <a routerLink="/chronicles" class="bottom-nav-btn" routerLinkActive="active" aria-label="Cronache">
-      <span class="btn-icon">📖</span>
-      <span class="btn-label">Diario</span>
-    </a>
-
-    <a routerLink="/notes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-  <span class="link-icon">📝</span>
-  <span class="link-text">Note & Promemoria</span>
-</a>
-  </nav>
-
-  <!-- MENU DRAWER LATERALE -->
-  <div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
-    <div class="drawer" (click)="$event.stopPropagation()">
-      <div class="drawer-header">
-        <h3>Menu Carovana</h3>
-        <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
+ <!-- ========================================================= -->
+<!-- CASSETTO MENU LATERALE (DRAWER)                           -->
+<!-- ========================================================= -->
+<div class="menu-overlay" *ngIf="isMenuOpen()" (click)="closeMenu()">
+  <aside class="menu-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Menu principale">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <span class="icon">⛩️</span>
+        <span>Ameiko's Caravan Codex</span>
       </div>
-      <div class="drawer-links">
-        <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">🏠 Home</a>
-        <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">👥 Compagnia</a>
-        <a routerLink="/initiative" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">⚔️ Iniziativa & Nemici</a>
-        <a routerLink="/inventory" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">🎒 Inventario & Tesori</a>
-        <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">🐾 Forme Selvatiche</a>
-        <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📜 Grimorio</a>
-        <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">📖 Cronache</a>
-        <a routerLink="/notes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active"> 📝 Note & Promemoria</a>
-      </div>
+      <button type="button" class="close-drawer-btn" (click)="closeMenu()" aria-label="Chiudi menu">✕</button>
     </div>
-  </div>
+
+    <nav class="drawer-links">
+      <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <span class="link-icon">🏠</span>
+        <span class="link-text">Home / Dashboard</span>
+      </a>
+
+      <a routerLink="/characters" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">👥</span>
+        <span class="link-text">Compagnia & Eroi del Party</span>
+      </a>
+
+      <a routerLink="/characters/ryoujin" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">⚔️</span>
+        <span class="link-text">Scheda Ryoujin & Hisui</span>
+      </a>
+
+      <a routerLink="/spells" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">📜</span>
+        <span class="link-text">Grimorio Incantesimi</span>
+      </a>
+
+      <a routerLink="/wild-shapes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">🐾</span>
+        <span class="link-text">Forme Selvatiche (Airyn)</span>
+      </a>
+
+      <a routerLink="/chronicles" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">📖</span>
+        <span class="link-text">Cronache della Carovana</span>
+      </a>
+
+      <a routerLink="/inventory" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">🎒</span>
+        <span class="link-text">Inventario & Cassa</span>
+      </a>
+
+      <a routerLink="/notes" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">📝</span>
+        <span class="link-text">Note & Promemoria</span>
+      </a>
+
+      <a routerLink="/initiative" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <span class="link-icon">⏱️</span>
+        <span class="link-text">Combattimento & Iniziativa</span>
+      </a>
+    </nav>
+  </aside>
+</div>
 </ng-container>
