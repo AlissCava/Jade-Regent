@@ -102,11 +102,6 @@
     </div>
 
    <nav class="drawer-links">
-      <!-- 1. HOME -->
-      <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-        <span class="link-icon">🏠</span>
-        <span class="link-text">Home / Dashboard</span>
-      </a>
 
       <!-- 2. SOTTOMENU: COMPAGNIA & EROI -->
       <div class="submenu-group" [class.open]="isPartySubmenuOpen()">
